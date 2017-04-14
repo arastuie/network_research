@@ -4,7 +4,6 @@ main/Plots/*
 ssh_ideas_lab/*
 datasets/*
 docs/*
-Results/*
 
 *.gml
 *.png
