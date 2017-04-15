@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import scipy as sp
-import kmedians as kmed
+import GSC.kmedians as kmed
 
 class gsc:
     def __init__(self, graph, K):

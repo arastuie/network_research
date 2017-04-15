@@ -234,3 +234,35 @@ def get_cluster_coefficient(hard_cluster):
         cluster_coefficient[i] = cluster_count[i] * len(overlap_index) ** 2 / s
 
     return cluster_coefficient
+
+
+def get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(current_snapshot, next_snapshot, ego_node,
+                                                                        return_first_hop_nodes=False):
+    """
+    Divides all the nodes in the second hop of the current network into two groups:
+        1. All the nodes which formed an edge with the ego node in the next snapshot
+        2. All the ndoes which did not form an edge with the ego node in the next snapshot
+
+    :param current_snapshot: Snapshot of the current (base) network
+    :param next_snapshot: Snapshot of the next network
+    :param ego_node: The ego node of the whole ego centric network
+    :param return_first_hop_nodes: if true, also returns all the nodes in the first hop of the current snapshot
+    """
+    current_snap_first_hop_nodes = current_snapshot.neighbors(ego_node)
+
+    current_snap_second_hop_nodes = \
+        [n for n in current_snapshot.nodes() if n not in current_snap_first_hop_nodes]
+    current_snap_second_hop_nodes.remove(ego_node)
+
+    next_snap_first_hop_nodes = next_snapshot.neighbors(ego_node)
+
+    formed_edges_nodes_with_second_hop = \
+        [n for n in next_snap_first_hop_nodes if n in current_snap_second_hop_nodes]
+
+    not_formed_edges_nodes_with_second_hop = \
+        [n for n in current_snap_second_hop_nodes if n not in formed_edges_nodes_with_second_hop]
+
+    if return_first_hop_nodes:
+        return formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop, current_snap_first_hop_nodes
+    else:
+        return formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop

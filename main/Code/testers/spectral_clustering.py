@@ -1,6 +1,6 @@
+import numpy as np
 import networkx as nx
 from sklearn import cluster
-import numpy as np
 import matplotlib.pyplot as plt
 
 

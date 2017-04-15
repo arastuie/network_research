@@ -1,6 +1,6 @@
-import generalized_spectral_clustering as gsc
 import networkx as nx
 import helpers as h
+import GSC.generalized_spectral_clustering as gsc
 
 graph = nx.read_gml("../Data/karate.gml")
 
