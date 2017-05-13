@@ -33,5 +33,3 @@ for o in range(len(ego_centric_networks)):
 
     a4.run_tot_num_cluster_based_num_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
                                                  '../Plots/total_cluster_overall')
-
-
