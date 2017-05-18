@@ -42,6 +42,8 @@ def get_ego_centric_networks_in_fb(original_graph, n, hop=1, center=False):
     print("Generating the largest", n, "ego centric networks.")
     orig_snapshots = []
 
+    upper_node = n * 4
+
     oldest_timestamp = 1157454929
     seconds_in_90_days = 7776000
     for i in range(10):
@@ -76,11 +78,11 @@ def get_ego_centric_networks_in_fb(original_graph, n, hop=1, center=False):
         else:
             ego_centric_networks[min_index] = ego_centric_network_snapshots
 
-        # n -= 1
-        # if n == 0:
-        #     break
-
-    with open('../Data/biggest_50_ego.pckl', 'wb') as f:
+        upper_node -= 1
+        if upper_node == 0:
+            break
+        print(upper_node)
+    with open('../Data/random_50_ego.pckl', 'wb') as f:
          pickle.dump([ego_centric_networks, ego_nodes], f, protocol=-1)
 
     return ego_centric_networks, ego_nodes

@@ -23,13 +23,13 @@ num_cluster = 4
 
 for o in range(len(ego_centric_networks)):
 
-    a1.run_degree_based_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/degree_based')
+    a1.run_degree_based_analysis(ego_centric_networks[o], ego_nodes[o], o, False, '../Plots/degree_based')
 
-    a2.run_num_cluster_per_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
-                                       '../Plots/cluster_per_node')
-
-    a3.run_tot_num_cluster_of_all_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
-                                              '../Plots/total_cluster')
-
-    a4.run_tot_num_cluster_based_num_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
-                                                 '../Plots/total_cluster_overall')
+    # a2.run_num_cluster_per_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
+    #                                    '../Plots/cluster_per_node')
+    #
+    # a3.run_tot_num_cluster_of_all_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
+    #                                           '../Plots/total_cluster')
+    #
+    # a4.run_tot_num_cluster_based_num_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
+    #                                              '../Plots/total_cluster_overall')
