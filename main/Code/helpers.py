@@ -202,6 +202,8 @@ def keep_common_keys(dic_1, dic_2):
     return dic_1, dic_2
 
 
+# Returns n x n matrix with the percent of overlap of each cluster over another
+# entry ij shows what percent of nodes in i are also in j
 def get_cluster_overlap(hard_cluster):
     k = np.shape(hard_cluster)[1]
     cluster_overlap = np.ones((k, k))
@@ -268,3 +270,50 @@ def get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(current_
         return formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop, current_snap_first_hop_nodes
     else:
         return formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop
+
+
+def get_avg_num_neighbors(network, nodes=[]):
+    if len(nodes) == 0:
+        nodes = network.nodes()
+
+    if len(nodes) == 0:
+        return 0
+
+    avg = len(nx.neighbors(network, nodes[0]))
+    count = 1
+    for n in range(1, len(nodes)):
+        avg = (avg * count + len(nx.neighbors(network, nodes[n]))) / (count + 1)
+        count += 1
+
+    return avg
+
+
+# returns average number of common neighbors between ego-node and the node list
+def get_avg_num_cn(ego_net, ego_node, nodes):
+    if len(nodes) == 0:
+        return 0
+
+    avg = len(sorted(nx.common_neighbors(ego_net, ego_node, nodes[0])))
+    count = 1
+    for n in range(1, len(nodes)):
+        avg = (avg * count + len(sorted(nx.common_neighbors(ego_net, ego_node, nodes[n])))) / (count + 1)
+        count += 1
+
+    return avg
+
+
+def get_avg_num_cluster_per_node(network, clusters, cluster_node_list, nodes=[]):
+    if len(nodes) == 0:
+        nodes = network.nodes()
+
+    if len(nodes) == 0:
+        return 0
+
+    num_clusters = np.sum(clusters, axis=1)
+    avg = num_clusters[cluster_node_list.index(nodes[0])]
+    count = 1
+    for n in range(1, len(nodes)):
+        avg = (avg * count + num_clusters[cluster_node_list.index(nodes[n])]) / (count + 1)
+        count += 1
+
+    return avg
