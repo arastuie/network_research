@@ -1,4 +1,5 @@
 import re
+import sys
 import math
 import pickle
 import numpy as np
@@ -38,11 +39,29 @@ def read_facebook_graph():
     return original_graph
 
 
-def get_ego_centric_networks_in_fb(original_graph, n, hop=1, center=False):
-    print("Generating the largest", n, "ego centric networks.")
-    orig_snapshots = []
+def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_type='random', hop=1, center=False):
+    """
+    Returns n ego centric networks out of divided into 10 snapshots
+    
+    :param original_graph: The original graph containing all nodes and edges
+    :param n: Number of graphs ego centric networks wanted
+    :param pickle_file_name: name of the pickle file to save the result. It will be saved at '../Data/pickle_file_name'.
+    :param search_type: if 'random' will select n totally random nodes as the ego nodes
+                 if 'absolute_biggest' will select the nodes with the biggest number of neighbors
+                 if 'relative_biggest' will select the nodes with the biggest number of neighbors out of the first 
+                    n * 4 nodes
+    :param hop: Desired number of hops of the returned ego centric networks
+    :param center: if True, the ego node will be included to the ego centric networks
+    :return: 
+    """
+    if n > nx.number_of_nodes(original_graph):
+        sys.exit("There are not enough nodes to generate %d ego centric networks." % n)
 
-    upper_node = n * 4
+    if search_type != 'random' and search_type != 'absolute_biggest' and search_type != 'relative_biggest':
+        sys.exit("search_type '%s' is not acceptable." % search_type)
+
+    print("Generating %d %s ego centric networks." % (n, search_type))
+    orig_snapshots = []
 
     oldest_timestamp = 1157454929
     seconds_in_90_days = 7776000
@@ -55,35 +74,35 @@ def get_ego_centric_networks_in_fb(original_graph, n, hop=1, center=False):
     ego_centric_networks = []
     ego_nodes = []
 
-    ego_centric_size = []
-    min_index = 0
-    for node in nx.nodes(orig_snapshots[0]):
-        if len(ego_centric_networks) <= n:
-            ego_nodes.append(node)
-            ego_centric_size.append(len(orig_snapshots[0].neighbors(node)))
-            min_index = -1
-        elif len(orig_snapshots[0].neighbors(node)) > min(ego_centric_size):
-            min_index = ego_centric_size.index(min(ego_centric_size))
-            ego_nodes[min_index] = node
-            ego_centric_size[min_index] = len(orig_snapshots[0].neighbors(node))
-        else:
-            continue
+    orig_nodes = nx.nodes(orig_snapshots[0])
+    if search_type == 'random':
+        np.random.shuffle(orig_nodes)
+        ego_nodes = orig_nodes[0:n]
 
+    elif search_type == 'relative_biggest' or search_type == 'absolute_biggest':
+        max_node_search = n * 4
+        if search_type == 'absolute_biggest' or max_node_search > len(orig_nodes):
+            max_node_search = len(orig_nodes)
+
+        ego_centric_size = []
+        for i in range(max_node_search):
+            if len(ego_centric_networks) < n:
+                ego_nodes.append(orig_nodes[i])
+                ego_centric_size.append(len(orig_snapshots[0].neighbors(orig_nodes[i])))
+            elif len(orig_snapshots[0].neighbors(orig_nodes[i])) > min(ego_centric_size):
+                min_index = ego_centric_size.index(min(ego_centric_size))
+                ego_nodes[min_index] = orig_nodes[i]
+                ego_centric_size[min_index] = len(orig_snapshots[0].neighbors(orig_nodes[i]))
+
+    for node in ego_nodes:
         ego_centric_network_snapshots = []
         for i in range(len(orig_snapshots)):
             ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=hop, center=center))
 
-        if min_index == -1:
-            ego_centric_networks.append(ego_centric_network_snapshots)
-        else:
-            ego_centric_networks[min_index] = ego_centric_network_snapshots
+        ego_centric_networks.append(ego_centric_network_snapshots)
 
-        upper_node -= 1
-        if upper_node == 0:
-            break
-        print(upper_node)
-    with open('../Data/random_50_ego.pckl', 'wb') as f:
-         pickle.dump([ego_centric_networks, ego_nodes], f, protocol=-1)
+    with open('../Data/%s' % pickle_file_name, 'wb') as f:
+        pickle.dump([ego_centric_networks, ego_nodes], f, protocol=-1)
 
     return ego_centric_networks, ego_nodes
 

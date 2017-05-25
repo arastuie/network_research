@@ -6,11 +6,12 @@ import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 
 
-# reading FB graph
+# # reading FB graph
 # original_graph = h.read_facebook_graph()
-
-# extracting ego centric networks
-# ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, n=50, hop=2, center=True)
+#
+# # extracting ego centric networks
+# ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, 50, "random_50_ego_nets.pckl",
+#                                                                    search_type='random', hop=2, center=True)
 
 print("Loading Facebook largest 50 ego centric networks...")
 
