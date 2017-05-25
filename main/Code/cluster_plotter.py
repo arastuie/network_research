@@ -9,7 +9,7 @@ import GSC.generalized_spectral_clustering as gsc
 
 def get_cluster_info(ego_network, ego_node, clusters, node_list, first_hop_nodes, second_hop_nodes, nodes_will_form,
                      next_snap_first_hop_nodes):
-    info_sb = 'Ego-node ID: %d' % ego_node
+    info_sb = '\nEgo-node ID: %d' % ego_node
     info_sb += "\n********************************************\n NUMBER OF NODES\n"
     info_sb += "\t In the first hop: %d\n" % len(first_hop_nodes)
     info_sb += "\t In the second hop: %d\n" % len(second_hop_nodes)
@@ -68,12 +68,13 @@ def get_cluster_info(ego_network, ego_node, clusters, node_list, first_hop_nodes
                                               first_hop_nodes]),len([n for n in cn_neighbors if n in second_hop_nodes]))
 
         len([n for n in nx.neighbors(ego_network, unique[cn]) if n in first_hop_nodes])
-        info_sb += "\nPercent of which ego node's new neighbors come from the second hop: {0}%\n".format(
-                                   100 * len(nodes_will_form) / (len(next_snap_first_hop_nodes) - len(first_hop_nodes)))
 
-    info_sb += "********************************************\n\n"
+    info_sb += "\nPercent of which ego node's new neighbors come from the second hop: {0}%\n".format(
+                               100 * len(nodes_will_form) / (len(next_snap_first_hop_nodes) - len(first_hop_nodes)))
 
-    file = open('../Results/txt/%d ego-net info.txt' % ego_node, 'w')
+    info_sb += "********************************************\n\n\n\n"
+
+    file = open('../Results/txt/ego-nets info.txt', 'a')
     file.write(info_sb)
     file.close()
 
