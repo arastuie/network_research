@@ -43,10 +43,10 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
                                                                                   ego_node, True)
 
         # <editor-fold desc="Run Regularized Spectral Clustering">
-        if len(current_snap_first_hop_nodes) < 20:
+        if len(current_snap_first_hop_nodes) < 50:
             continue
         gsc_model = gsc.gsc(ego_net_snapshots[i].subgraph(current_snap_first_hop_nodes), num_cluster)
-        node_list, clusters = gsc_model.get_clusters(kmedian_max_iter=1000, num_cluster_per_node=False)
+        node_list, clusters = gsc_model.get_clusters(kmedian_max_iter=1500, num_cluster_per_node=False)
         # </editor-fold>
 
         # <editor-fold desc="Analyze formed edges">
@@ -59,9 +59,12 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
             for c in common_neighbors:
                 clusters_formed.append(clusters[node_list.index(c)])
 
-            clusters_formed = np.sum(clusters_formed, axis=0)
-            clusters_formed[clusters_formed > 0] = 1
-            clusters_formed = np.sum(clusters_formed)
+            # clusters_formed = np.sum(clusters_formed, axis=0)
+            # clusters_formed[clusters_formed > 0] = 1
+            # clusters_formed = np.sum(clusters_formed)
+            # tot_n_cluster_formed.append(clusters_formed)
+
+            clusters_formed = np.mean(np.sum(clusters_formed, axis=1))
             tot_n_cluster_formed.append(clusters_formed)
         # </editor-fold>
 
@@ -75,9 +78,12 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
             for c in common_neighbors:
                 clusters_not_formed.append(clusters[node_list.index(c)])
 
-            clusters_not_formed = np.sum(clusters_not_formed, axis=0)
-            clusters_not_formed[clusters_not_formed > 0] = 1
-            clusters_not_formed = np.sum(clusters_not_formed)
+            # clusters_not_formed = np.sum(clusters_not_formed, axis=0)
+            # clusters_not_formed[clusters_not_formed > 0] = 1
+            # clusters_not_formed = np.sum(clusters_not_formed)
+            # tot_n_cluster_not_formed.append(clusters_not_formed)
+
+            clusters_not_formed = np.mean(np.sum(clusters_not_formed, axis=1))
             tot_n_cluster_not_formed.append(clusters_not_formed)
         # </editor-fold>
 
@@ -92,3 +98,11 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
         h.plot_formed_vs_not('tot_cluster', tot_n_cluster_formed_in_snapshots,
                              tot_n_cluster_not_formed_in_snapshots, plot_number=ego_net_num, save_plot=save_plot,
                              save_path=plot_save_path)
+    #     f = []
+    #     nf = []
+    #     for i in range(len(tot_n_cluster_formed_in_snapshots)):
+    #         f.append(np.mean(tot_n_cluster_formed_in_snapshots[i]))
+    #         nf.append(np.mean(tot_n_cluster_not_formed_in_snapshots[i]))
+    #     return np.mean(f), np.mean(nf)
+    #
+    # return -1, -1

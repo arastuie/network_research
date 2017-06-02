@@ -12,7 +12,7 @@ def run_tot_num_cluster_based_num_cn_analysis(ego_net_snapshots, ego_node, num_c
     Total number of clusters per of all common neighbors analysis (with the second hop):
         1. Finds all the nodes in the second hop which formed and did not form an edge with the ego node in the next
            snapshot
-        2. Finds clusters in the second hop of the snapshot
+        2. Finds clusters in the first hop of the snapshot
         3. Finds the total number of clusters all the common neighbors belong to (all common neighbors between a node
            found in step 1 and the ego node)
         5. Separate the list in step 3 based on the number of common neighbors of formed or not formed edges.

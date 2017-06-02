@@ -118,7 +118,6 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
     for i in range(len(formed)):
         formed_mean = np.mean(formed[i])
         not_formed_mean = np.mean(not_formed[i])
-
         p = fig.add_subplot(n_row, n_col, i + 1)
 
         p.hist(formed[i], color='r', alpha=0.8,
