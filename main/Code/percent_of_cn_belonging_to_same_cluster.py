@@ -5,16 +5,15 @@ import networkx as nx
 import GSC.generalized_spectral_clustering as gsc
 
 
-def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_cluster, ego_net_num, save_plot=False,
-                                           plot_save_path=''):
+def run_percent_of_cn_belonging_to_same_cluster(ego_net_snapshots, ego_node, num_cluster, ego_net_num, save_plot=False,
+                                                plot_save_path=''):
 
     """
     Total number of clusters per of all common neighbors analysis (with the second hop):
         1. Finds all the nodes in the second hop which formed and did not form an edge with the ego node in the next
            snapshot
         2. Finds clusters in the second hop of the snapshot
-        3. Finds the total number of clusters all the common neighbors belong to (all common neighbors between a node
-           found in step 1 and the ego node)
+        3.
         4. Plots a histogram comparing the total number of clusters all the common neighbors of two target nodes belong
            to. Common neighbors between the ego node and the nodes in the second hop which formed an edge vs the ones
            which did not.
@@ -32,8 +31,8 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
         print(sys.stderr, "Please provide the path to which plots should be saved.")
         sys.exit(1)
 
-    tot_n_cluster_formed_in_snapshots = []
-    tot_n_cluster_not_formed_in_snapshots = []
+    formed_max_concentrations_in_snapshots = {}
+    not_formed_max_concentrations_in_snapshots = {}
 
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
@@ -48,7 +47,7 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
         gsc_model = gsc.gsc(ego_net_snapshots[i].subgraph(current_snap_first_hop_nodes), num_cluster)
         node_list, clusters = gsc_model.get_clusters(kmedian_max_iter=1500, num_cluster_per_node=False)
         # </editor-fold>
-
+        print("\n\n###### FORMED ###########")
         # <editor-fold desc="Analyze formed edges">
         # List of total number of clusters that all the common neighbors of a formed edge belong to
         tot_n_cluster_formed = []
@@ -56,19 +55,22 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
             common_neighbors = nx.common_neighbors(ego_net_snapshots[i], u, ego_node)
             clusters_formed = []
 
+            cn_count = 0
             for c in common_neighbors:
                 clusters_formed.append(clusters[node_list.index(c)])
+                cn_count += 1
 
-            # clusters_formed = np.sum(clusters_formed, axis=0)
-            # clusters_formed[clusters_formed > 0] = 1
-            # clusters_formed = np.sum(clusters_formed)
-            # tot_n_cluster_formed.append(clusters_formed)
+            if cn_count == 0:
+                continue
 
-            # Calculating the mean of number of clusters of all the common neighbors before adding it to the list
-            clusters_formed = np.mean(np.sum(clusters_formed, axis=1))
-            tot_n_cluster_formed.append(clusters_formed)
+            # tot_cluster_count = np.sum(clusters_formed)
+            # if tot_cluster_count == 0:
+            #     continue
+            print(np.sum(clusters_formed, axis=0) / cn_count)
+            max_concentration = max(np.sum(clusters_formed, axis=0) / cn_count)
+            h.add_to_dic(formed_max_concentrations_in_snapshots, cn_count, max_concentration)
         # </editor-fold>
-
+        print("\n\n###### NOT FORMED ###########")
         # <editor-fold desc="Analyze not formed edges">
         # List of total number of clusters that all the common neighbors of a not formed edge belong to
         tot_n_cluster_not_formed = []
@@ -76,34 +78,32 @@ def run_tot_num_cluster_of_all_cn_analysis(ego_net_snapshots, ego_node, num_clus
             common_neighbors = nx.common_neighbors(ego_net_snapshots[i], u, ego_node)
             clusters_not_formed = []
 
+            cn_count = 0
             for c in common_neighbors:
                 clusters_not_formed.append(clusters[node_list.index(c)])
+                cn_count += 1
 
-            # clusters_not_formed = np.sum(clusters_not_formed, axis=0)
-            # clusters_not_formed[clusters_not_formed > 0] = 1
-            # clusters_not_formed = np.sum(clusters_not_formed)
-            # tot_n_cluster_not_formed.append(clusters_not_formed)
+            if cn_count == 0:
+                continue
 
-            clusters_not_formed = np.mean(np.sum(clusters_not_formed, axis=1))
-            tot_n_cluster_not_formed.append(clusters_not_formed)
+            # tot_cluster_count = np.sum(clusters_not_formed)
+            # if tot_cluster_count == 0:
+            #     continue
+            print(np.sum(clusters_not_formed, axis=0) / cn_count)
+            max_concentration = max(np.sum(clusters_not_formed, axis=0) / cn_count)
+            h.add_to_dic(not_formed_max_concentrations_in_snapshots, cn_count, max_concentration)
         # </editor-fold>
 
-        if len(tot_n_cluster_formed) != 0 and len(tot_n_cluster_not_formed) != 0:
-            tot_n_cluster_formed_in_snapshots.append(tot_n_cluster_formed)
-            tot_n_cluster_not_formed_in_snapshots.append(tot_n_cluster_not_formed)
-
-    if len(tot_n_cluster_formed_in_snapshots) != 0:
-        if save_plot:
-            plot_save_path += '/ego_net_%d_tot_cluster_all_cn.png' % ego_net_num
-
-        h.plot_formed_vs_not('tot_cluster', tot_n_cluster_formed_in_snapshots,
-                             tot_n_cluster_not_formed_in_snapshots, plot_number=ego_net_num, save_plot=save_plot,
-                             save_path=plot_save_path)
-    #     f = []
-    #     nf = []
-    #     for i in range(len(tot_n_cluster_formed_in_snapshots)):
-    #         f.append(np.mean(tot_n_cluster_formed_in_snapshots[i]))
-    #         nf.append(np.mean(tot_n_cluster_not_formed_in_snapshots[i]))
-    #     return np.mean(f), np.mean(nf)
+    # formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots = h.keep_common_keys(
+    #     formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots)
     #
-    # return -1, -1
+    # if len(formed_max_concentrations_in_snapshots) != 0:
+    #     if save_plot:
+    #         plot_save_path += '/ego_net_%d_cluster_concentration.png' % ego_net_num
+    #
+    #     n_edges = nx.number_of_edges(ego_net_snapshots[len(ego_net_snapshots) - 1])
+    #     n_nodes = nx.number_of_nodes(ego_net_snapshots[len(ego_net_snapshots) - 1])
+    #
+    #     h.plot_formed_vs_not_dic(formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots,
+    #                              plot_number=ego_net_num, n_edges=n_edges, n_nodes=n_nodes, save_plot=save_plot,
+    #                              save_path=plot_save_path)

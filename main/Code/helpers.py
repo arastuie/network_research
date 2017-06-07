@@ -179,7 +179,7 @@ def plot_formed_vs_not_dic(formed, not_formed, plot_number, n_edges, n_nodes, sa
         plt.ylabel('Relative Frequency')
         plt.xlabel('(*)')
         plt.title("NCN: %d" % key)
-        plt.suptitle('Total Number of Clusters All Common Neighbors Belong to (*) \n'
+        plt.suptitle('Percent of which CNs belong to the same cluster (*) \n'
                      'Ego Centric Network of Node %d. n_edges: %d | n_nodes: %d | edge to node ratio: %d'
                      % (plot_number, n_edges, n_nodes, n_edges / n_nodes))
         count += 1
