@@ -16,7 +16,7 @@ import percent_of_cn_belonging_to_same_cluster as a5
 # ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, 50, "random_50_ego_nets.pckl",
 #                                                                    search_type='random', hop=2, center=True)
 
-print("Loading Facebook largest 50 ego centric networks...")
+print("Loading Facebook random 200 ego centric networks...")
 
 with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
     ego_centric_networks, ego_nodes = pickle.load(f)

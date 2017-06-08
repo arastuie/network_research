@@ -39,9 +39,11 @@ class gsc:
         Z_norm = Z / np.linalg.norm(Z, axis=1, keepdims=True)
 
         # thresholding at 1/k to get hard membership
-        hard_cluster = np.where(Z_norm < (1 / self.K), 0, 1)
+        hard_cluster = np.where(Z_norm < 0.5, 0, 1)
 
         if num_cluster_per_node:
             hard_cluster = np.sum(hard_cluster, axis=1)
 
-        return self.node_list, hard_cluster
+        # return self.node_list, hard_cluster
+
+        return self.node_list, Z_norm

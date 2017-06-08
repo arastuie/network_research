@@ -45,9 +45,10 @@ def run_percent_of_cn_belonging_to_same_cluster(ego_net_snapshots, ego_node, num
         if len(current_snap_first_hop_nodes) < 50:
             continue
         gsc_model = gsc.gsc(ego_net_snapshots[i].subgraph(current_snap_first_hop_nodes), num_cluster)
+        # gsc_model = gsc.gsc(ego_net_snapshots[i], num_cluster)
         node_list, clusters = gsc_model.get_clusters(kmedian_max_iter=1500, num_cluster_per_node=False)
         # </editor-fold>
-        print("\n\n###### FORMED ###########")
+
         # <editor-fold desc="Analyze formed edges">
         # List of total number of clusters that all the common neighbors of a formed edge belong to
         tot_n_cluster_formed = []
@@ -66,11 +67,11 @@ def run_percent_of_cn_belonging_to_same_cluster(ego_net_snapshots, ego_node, num
             # tot_cluster_count = np.sum(clusters_formed)
             # if tot_cluster_count == 0:
             #     continue
-            print(np.sum(clusters_formed, axis=0) / cn_count)
+
             max_concentration = max(np.sum(clusters_formed, axis=0) / cn_count)
             h.add_to_dic(formed_max_concentrations_in_snapshots, cn_count, max_concentration)
         # </editor-fold>
-        print("\n\n###### NOT FORMED ###########")
+
         # <editor-fold desc="Analyze not formed edges">
         # List of total number of clusters that all the common neighbors of a not formed edge belong to
         tot_n_cluster_not_formed = []
@@ -89,21 +90,21 @@ def run_percent_of_cn_belonging_to_same_cluster(ego_net_snapshots, ego_node, num
             # tot_cluster_count = np.sum(clusters_not_formed)
             # if tot_cluster_count == 0:
             #     continue
-            print(np.sum(clusters_not_formed, axis=0) / cn_count)
+
             max_concentration = max(np.sum(clusters_not_formed, axis=0) / cn_count)
             h.add_to_dic(not_formed_max_concentrations_in_snapshots, cn_count, max_concentration)
         # </editor-fold>
 
-    # formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots = h.keep_common_keys(
-    #     formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots)
-    #
-    # if len(formed_max_concentrations_in_snapshots) != 0:
-    #     if save_plot:
-    #         plot_save_path += '/ego_net_%d_cluster_concentration.png' % ego_net_num
-    #
-    #     n_edges = nx.number_of_edges(ego_net_snapshots[len(ego_net_snapshots) - 1])
-    #     n_nodes = nx.number_of_nodes(ego_net_snapshots[len(ego_net_snapshots) - 1])
-    #
-    #     h.plot_formed_vs_not_dic(formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots,
-    #                              plot_number=ego_net_num, n_edges=n_edges, n_nodes=n_nodes, save_plot=save_plot,
-    #                              save_path=plot_save_path)
+    formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots = h.keep_common_keys(
+        formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots)
+
+    if len(formed_max_concentrations_in_snapshots) != 0:
+        if save_plot:
+            plot_save_path += '/ego_net_%d_cluster_concentration.png' % ego_net_num
+
+        n_edges = nx.number_of_edges(ego_net_snapshots[len(ego_net_snapshots) - 1])
+        n_nodes = nx.number_of_nodes(ego_net_snapshots[len(ego_net_snapshots) - 1])
+
+        h.plot_formed_vs_not_dic(formed_max_concentrations_in_snapshots, not_formed_max_concentrations_in_snapshots,
+                                 plot_number=ego_net_num, n_edges=n_edges, n_nodes=n_nodes, save_plot=save_plot,
+                                 save_path=plot_save_path)
