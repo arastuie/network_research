@@ -7,6 +7,7 @@ import num_cluster_per_cn_analysis as a2
 import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 import percent_of_cn_belonging_to_same_cluster as a5
+import hop_degree_analysis as a6
 
 
 # # reading FB graph
@@ -48,5 +49,7 @@ for o in range(len(ego_centric_networks)):
     # a4.run_tot_num_cluster_based_num_cn_analysis(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
     #                                              '../Plots/total_cluster_overall')
 
-    a5.run_percent_of_cn_belonging_to_same_cluster(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
-                                                   '../Plots/percent_of_cn_belonging_to_same_cluster')
+    # a5.run_percent_of_cn_belonging_to_same_cluster(ego_centric_networks[o], ego_nodes[o], num_cluster, o, True,
+    #                                                '../Plots/percent_of_cn_belonging_to_same_cluster')
+
+    a6.run_hop_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/hop_degree_based')
