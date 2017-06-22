@@ -45,12 +45,12 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                                          current_snap_first_hop_nodes]))
+                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                #                           current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                           current_snap_first_hop_nodes]) - 1)
+                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                          current_snap_first_hop_nodes]) - 1)
 
             degree_formed.append(np.mean(temp_degree_formed))
         # </editor-fold>
@@ -63,12 +63,12 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                                              current_snap_first_hop_nodes]))
+                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                #                               current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                               current_snap_first_hop_nodes]) - 1)
+                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                              current_snap_first_hop_nodes]) - 1)
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
