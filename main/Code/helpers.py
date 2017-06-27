@@ -9,50 +9,8 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
 
-def read_gplus_graph():
-    file = open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt")
-    print("Reading in the original Google+ graph...")
-
-    original_graph = nx.DiGraph()
-
-    for l in file:
-        p = re.compile('\d+')
-        nums = p.findall(l)
-
-        # add nodes if not exist
-        for i in range(2):
-            nums[i] = int(nums[i])
-
-        original_graph.add_edge(nums[0], nums[1], snapshot=nums[2])
-
-
-    file.close()
-    print("Original graph in.")
-    return original_graph
-
-
-def read_gplus_ego_graph(n, pickle_file_name):
+def read_gplus_ego_graph(n):
     print("Reading in Google+ data...")
-
-    # with open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt") as infile:
-    #     all_nodes = []
-    #     cnt = 0
-    #     print(cnt, end='\r')
-    #     for l in infile:
-    #         if cnt % 10000 == 0:
-    #             print(cnt, end='\r')
-    #
-    #         nums = l.split(" ")
-    #         all_nodes.append(nums[0])
-    #         all_nodes.append(nums[1])
-    #
-    #         cnt += 1
-    #
-    #     all_nodes = np.unique(all_nodes)
-    #     all_nodes = all_nodes.astype(int)
-    #     print("There are {0} nodes in the graph.".format(len(all_nodes)))
-    #     with open('../Data/gplus-nodes-np-array.pckl', 'wb') as f:
-    #         pickle.dump(all_nodes, f, protocol=-1)
 
     with open('../Data/gplus-nodes-list.pckl', 'rb') as f:
         all_nodes = pickle.load(f)
@@ -61,42 +19,61 @@ def read_gplus_ego_graph(n, pickle_file_name):
     all_nodes = None
 
     print("Selected {0} random nodes...".format(n))
-    ego_centric_networks = {}
 
-    Parallel(n_jobs=10)(delayed(read_ego_gplus_graph)(ego_node, ego_centric_networks) for ego_node in ego_nodes)
-
-    with open('../Data/%s' % pickle_file_name, 'wb') as f:
-        pickle.dump(ego_centric_networks, f, protocol=-1)
-
-    return ego_centric_networks
+    Parallel(n_jobs=20)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
 
 
-def read_ego_gplus_graph(ego_node, networks):
-    networks[ego_node] = nx.DiGraph()
+def read_ego_gplus_pickle(ego_node):
+    pickle_files = ['gplus-edges-snap-0-list.pckl', 'gplus-edges-snap-1-list.pckl', 'gplus-edges-snap-2-list.pckl',
+                    'gplus-edges-snap-3-list.pckl']
+
+    ego_net = nx.DiGraph()
+
+    for i in range(4):
+        with open('../Data/%s' % pickle_files[i], 'rb') as f:
+            snapshot_edges = pickle.load(f)
+
+        for u, v, attr in snapshot_edges:
+            if u == ego_node or v == ego_node:
+                ego_net.add_edge(u, v, attr)
+
+        neighbors = ego_net.nodes()
+
+        for u, v, attr in snapshot_edges:
+            if u in neighbors or v in neighbors:
+                ego_net.add_edge(u, v, attr)
+
+    with open('../Data/gplus-ego/{0}.pckle'.format(ego_node), 'wb') as f:
+        pickle.dump([ego_node, ego_net], f, protocol=-1)
+
+
+def read_ego_gplus_graph(ego_node):
+    ego_net = nx.DiGraph()
 
     with open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt") as infile:
         for l in infile:
             nums = l.split(" ")
-
-            for i in range(2):
-                nums[i] = int(nums[i])
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
 
             if ego_node == nums[0] or ego_node == nums[1]:
-                networks[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
-    neighbors = networks[ego_node].neighbors(ego_node)
+    neighbors = ego_net.nodes()
 
     with open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt") as infile:
         for l in infile:
             nums = l.split(" ")
-
-            for i in range(2):
-                nums[i] = int(nums[i])
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
 
             if nums[0] in neighbors or nums[1] in neighbors:
-                networks[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
-    print("{0} networks in!".format(len(networks)))
+    with open('../Data/gplus-ego/{0}.pckle'.format(ego_node), 'wb') as f:
+        pickle.dump([ego_node, ego_net], f, protocol=-1)
+
+    print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
 
 
 def get_ego_centric_networks_in_gplus(original_graph, n, pickle_file_name, search_type='random', hop=1, center=False):
