@@ -37,18 +37,27 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
     ego_net_snapshots = []
 
-    for r in range(4):
+    # find out what snapshot the ego node first appeared in
+    first_snapshot = 3
+    for u, v, d in ego_net.edges(ego_node, data=True):
+        if d['snapshot'] < first_snapshot:
+            first_snapshot = d['snapshot']
+            if first_snapshot == 0:
+                break
+
+    if first_snapshot > 2:
+        return
+
+    for r in range(first_snapshot, 4):
         temp_net = nx.Graph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
 
         if ego_node not in temp_net:
+            print("ego not in network")
             if len(ego_net_snapshots) > 0:
                 print("Ego node was deleted. Node: {0}".format(ego_node))
             continue
 
         ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True))
-
-    if len(ego_net_snapshots) < 2:
-        return
 
     degree_formed_in_snapshots = []
     degree_not_formed_in_snapshots = []
@@ -71,12 +80,12 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                                          current_snap_first_hop_nodes]))
+                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                #                           current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                           current_snap_first_hop_nodes]) - 1)
+                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                          current_snap_first_hop_nodes]) - 1)
 
             degree_formed.append(np.mean(temp_degree_formed))
 
@@ -94,8 +103,8 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
                                               current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                               current_snap_first_hop_nodes]) - 1)
+                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                              current_snap_first_hop_nodes]) - 1)
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
@@ -110,7 +119,7 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
         h.plot_formed_vs_not('hop_degree', degree_formed_in_snapshots,
                              degree_not_formed_in_snapshots, plot_number=ego_node, save_plot=save_plot,
-                             save_path=plot_save_path, hop_number=1)
+                             save_path=plot_save_path, hop_number=2)
 
         print("Graph analyzed!")
 

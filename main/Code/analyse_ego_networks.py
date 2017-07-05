@@ -10,7 +10,7 @@ import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 import percent_of_cn_belonging_to_same_cluster as a5
 import hop_degree_analysis as a6
-import gplus_hop_degree_analysis as a6
+import gplus_hop_degree_analysis_2 as a6
 
 
 # # reading FB graph
@@ -48,4 +48,4 @@ print("Analysing ego centric networks...")
 #
 #     a6.run_hop_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/gplus_hop_degree_based')
 
-Parallel(n_jobs=20)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based') for ego_node_file in os.listdir('../Data/gplus-ego'))
+Parallel(n_jobs=15)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based_2') for ego_node_file in os.listdir('../Data/gplus-ego'))

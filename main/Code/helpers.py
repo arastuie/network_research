@@ -243,10 +243,12 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
 
 
 def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=False, save_path='', hop_number=1):
-    fig = plt.figure()
+    fig = None
 
     if save_plot:
         fig = plt.figure(figsize=(30, 15), dpi=200)
+    else:
+        fig = plt.figure()
 
     n_row = math.ceil(len(formed) / 5)
     n_col = math.ceil(len(not_formed) / n_row)
@@ -289,8 +291,8 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
     else:
         current_fig = plt.gcf()
         current_fig.savefig(save_path)
-    #fig.clf()
-    #plt.clf()
+
+    plt.close(fig)
 
 
 def plot_formed_vs_not_dic(formed, not_formed, plot_number, n_edges, n_nodes, save_plot=False, save_path=''):
