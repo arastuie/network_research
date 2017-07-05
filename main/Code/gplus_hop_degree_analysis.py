@@ -3,6 +3,7 @@ import helpers as h
 import networkx as nx
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 
 
 def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=''):
@@ -31,14 +32,23 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
         ego_node, ego_net = pickle.load(f)
 
     # return if the network has less than 30 nodes
-    if nx.number_of_nodes(ego_net) < 100:
+    if nx.number_of_nodes(ego_net) < 30:
         return
 
     ego_net_snapshots = []
 
     for r in range(4):
-        ego_net_snapshots.append(nx.Graph([(u, v, d) for u, v, d in ego_net.edges(data=True)
-                                 if d['snapshot'] <= r]))
+        temp_net = nx.Graph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+
+        if ego_node not in temp_net:
+            if len(ego_net_snapshots) > 0:
+                print("Ego node was deleted. Node: {0}".format(ego_node))
+            continue
+
+        ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True))
+
+    if len(ego_net_snapshots) < 2:
+        return
 
     degree_formed_in_snapshots = []
     degree_not_formed_in_snapshots = []
@@ -49,6 +59,8 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
             h.get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(ego_net_snapshots[i],
                                                                                   ego_net_snapshots[i + 1],
                                                                                   ego_node, True)
+        if len(formed_edges_nodes_with_second_hop) < 1:
+            continue
 
         # <editor-fold desc="Analyze formed edges">
         # List of degrees of nodes in the second hop which formed an edge with the ego node
@@ -59,14 +71,15 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
             for c in common_neighbors:
                 # first hop test
-                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                #                           current_snap_first_hop_nodes]))
+                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                                          current_snap_first_hop_nodes]))
 
                 # second hop test
-                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                                          current_snap_first_hop_nodes]) - 1)
+                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                #                           current_snap_first_hop_nodes]) - 1)
 
             degree_formed.append(np.mean(temp_degree_formed))
+
         # </editor-fold>
         # <editor-fold desc="Analyze not formed edges">
         # List of degrees of nodes in the second hop which did not form an edge with the ego node
@@ -77,12 +90,12 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
             for c in common_neighbors:
                 # first hop test
-                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                #                               current_snap_first_hop_nodes]))
+                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                                              current_snap_first_hop_nodes]))
 
                 # second hop test
-                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                                              current_snap_first_hop_nodes]) - 1)
+                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                #                               current_snap_first_hop_nodes]) - 1)
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
@@ -95,8 +108,9 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
         if save_plot:
             plot_save_path += '/%d_hop_degree.png' % ego_node
 
-        h.plot_formed_vs_not('degree', degree_formed_in_snapshots,
+        h.plot_formed_vs_not('hop_degree', degree_formed_in_snapshots,
                              degree_not_formed_in_snapshots, plot_number=ego_node, save_plot=save_plot,
-                             save_path=plot_save_path)
+                             save_path=plot_save_path, hop_number=1)
 
-    print("Graph analyzed!")
+        print("Graph analyzed!")
+

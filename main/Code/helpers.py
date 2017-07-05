@@ -242,7 +242,7 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
     return ego_centric_networks, ego_nodes
 
 
-def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=False, save_path=''):
+def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=False, save_path='', hop_number=1):
     fig = plt.figure()
 
     if save_plot:
@@ -277,6 +277,12 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
             plt.xlabel('(*)')
             plt.suptitle('Total Number of Clusters All Common Neighbors Belong to (*) \n'
                          'Ego Centric Network of Node %d' % plot_number)
+        elif plot_type == 'hop_degree':
+            plt.xlabel('Degree of Common Neighbor')
+            if hop_number == 1:
+                plt.suptitle('Degree of Common Neighbors within the first hop \n Ego Centric Network of Node %d' % plot_number)
+            elif hop_number == 2:
+                plt.suptitle('Degree of Common Neighbors outside of the first hop \n Ego Centric Network of Node %d' % plot_number)
 
     if not save_plot:
         plt.show()
