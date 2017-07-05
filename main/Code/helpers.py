@@ -9,10 +9,42 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
 
+raw_gplus_path = "/shared/DataSets/GooglePlus_Gong2012/raw/imc12/direct_social_structure.txt"
+
+
+def gplus_get_all_nodes_first_appeared(snapshot):
+    nodes = set()
+
+    cnt = 0
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+
+            if cnt % 100000 == 0:
+                print(cnt, end='\r')
+            cnt += 1
+
+            nums = l.split(" ")
+            nums[2] = int(nums[2])
+            if nums[2] != snapshot:
+                continue
+
+            nodes.update([int(nums[0]), int(nums[1])])
+
+    node_list = list(nodes)
+    nodes = None
+
+    print('\nNumber of nodes in snapshot {0}: {1}'.format(snapshot, len(node_list)))
+
+    with open('../Data/gplus/gplus-nodes-snap-{0}-list.pckl'.format(snapshot), 'wb') as f:
+        pickle.dump(node_list, f, protocol=-1)
+
+    return node_list
+
+
 def read_gplus_ego_graph(n):
     print("Reading in Google+ data...")
 
-    with open('../Data/gplus-nodes-list.pckl', 'rb') as f:
+    with open('../Data/gplus/gplus-nodes-snap-0-list.pckl', 'rb') as f:
         all_nodes = pickle.load(f)
 
     ego_nodes = random.sample(all_nodes, n)
@@ -20,7 +52,36 @@ def read_gplus_ego_graph(n):
 
     print("Selected {0} random nodes...".format(n))
 
-    Parallel(n_jobs=20)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
+    Parallel(n_jobs=15)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
+
+
+def read_ego_gplus_graph(ego_node):
+    ego_net = nx.DiGraph()
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            if ego_node == nums[0] or ego_node == nums[1]:
+                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+
+    neighbors = ego_net.nodes()
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            if nums[0] in neighbors or nums[1] in neighbors:
+                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+
+    with open('../Data/gplus-ego/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
+        pickle.dump([ego_node, ego_net], f, protocol=-1)
+
+    print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
 
 
 def read_ego_gplus_pickle(ego_node):
@@ -45,101 +106,6 @@ def read_ego_gplus_pickle(ego_node):
 
     with open('../Data/gplus-ego/{0}.pckle'.format(ego_node), 'wb') as f:
         pickle.dump([ego_node, ego_net], f, protocol=-1)
-
-
-def read_ego_gplus_graph(ego_node):
-    ego_net = nx.DiGraph()
-
-    with open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt") as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if ego_node == nums[0] or ego_node == nums[1]:
-                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    neighbors = ego_net.nodes()
-
-    with open("/shared/DataSets/GooglePlus_Gong2012/gplus/imc12/direct_social_structure.txt") as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in neighbors or nums[1] in neighbors:
-                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    with open('../Data/gplus-ego/{0}.pckle'.format(ego_node), 'wb') as f:
-        pickle.dump([ego_node, ego_net], f, protocol=-1)
-
-    print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
-
-
-def get_ego_centric_networks_in_gplus(original_graph, n, pickle_file_name, search_type='random', hop=1, center=False):
-    """
-    Returns n ego centric networks from the existing 4 snapshots
-
-    :param original_graph: The original graph containing all nodes and edges
-    :param n: Number of graphs ego centric networks wanted
-    :param pickle_file_name: name of the pickle file to save the result. It will be saved at '../Data/pickle_file_name'.
-    :param search_type: if 'random' will select n totally random nodes as the ego nodes
-                 if 'absolute_biggest' will select the nodes with the biggest number of neighbors
-                 if 'relative_biggest' will select the nodes with the biggest number of neighbors out of the first
-                    n * 4 nodes
-    :param hop: Desired number of hops of the returned ego centric networks
-    :param center: if True, the ego node will be included to the ego centric networks
-    :return:
-    """
-    if n > nx.number_of_nodes(original_graph):
-        sys.exit("There are not enough nodes to generate %d ego centric networks." % n)
-
-    if search_type != 'random' and search_type != 'absolute_biggest' and search_type != 'relative_biggest':
-        sys.exit("search_type '%s' is not acceptable." % search_type)
-
-    print("Generating %d %s ego centric networks." % (n, search_type))
-    orig_snapshots = []
-
-    for i in range(4):
-        orig_snapshots.append(nx.DiGraph([(u, v, d) for u, v, d in original_graph.edges(data=True)
-                                          if d['snapshot'] <= i]))
-
-    orig_snapshots.append(original_graph)
-
-    ego_centric_networks = []
-    ego_nodes = []
-
-    orig_nodes = nx.nodes(orig_snapshots[0])
-    if search_type == 'random':
-        np.random.shuffle(orig_nodes)
-        ego_nodes = orig_nodes[0:n]
-
-    elif search_type == 'relative_biggest' or search_type == 'absolute_biggest':
-        max_node_search = n * 4
-        if search_type == 'absolute_biggest' or max_node_search > len(orig_nodes):
-            max_node_search = len(orig_nodes)
-
-        ego_centric_size = []
-        for i in range(max_node_search):
-            if len(ego_centric_networks) < n:
-                ego_nodes.append(orig_nodes[i])
-                ego_centric_size.append(len(orig_snapshots[0].neighbors(orig_nodes[i])))
-            elif len(orig_snapshots[0].neighbors(orig_nodes[i])) > min(ego_centric_size):
-                min_index = ego_centric_size.index(min(ego_centric_size))
-                ego_nodes[min_index] = orig_nodes[i]
-                ego_centric_size[min_index] = len(orig_snapshots[0].neighbors(orig_nodes[i]))
-
-    for node in ego_nodes:
-        ego_centric_network_snapshots = []
-        for i in range(len(orig_snapshots)):
-            ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=hop, center=center))
-
-        ego_centric_networks.append(ego_centric_network_snapshots)
-
-    with open('../Data/%s' % pickle_file_name, 'wb') as f:
-        pickle.dump([ego_centric_networks, ego_nodes], f, protocol=-1)
-
-    return ego_centric_networks, ego_nodes
 
 
 # Reading facebook data

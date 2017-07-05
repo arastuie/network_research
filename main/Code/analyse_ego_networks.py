@@ -10,7 +10,7 @@ import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 import percent_of_cn_belonging_to_same_cluster as a5
 import hop_degree_analysis as a6
-import gplus_hop_degree_analysis_2 as a6
+import gplus_hop_degree_analysis as a6
 
 
 # # reading FB graph

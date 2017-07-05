@@ -106,3 +106,5 @@ ego_centric_networks = h.read_gplus_ego_graph(200)
 #
 #     with open('../Data/gplus-edges-snap-3-list.pckl', 'wb') as f:
 #         pickle.dump(all_edges, f, protocol=-1)
+
+# h.gplus_get_all_nodes_first_appeared(0)
