@@ -12,23 +12,23 @@ from joblib import Parallel, delayed
 raw_gplus_path = "/shared/DataSets/GooglePlus_Gong2012/raw/imc12/direct_social_structure.txt"
 
 
-def gplus_get_all_nodes_first_appeared(snapshot):
+def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
     nodes = set()
 
     cnt = 0
     with open(raw_gplus_path) as infile:
         for l in infile:
 
-            if cnt % 100000 == 0:
-                print(cnt, end='\r')
-            cnt += 1
+            # if cnt % 100000 == 0:
+            #     print(cnt, end='\r')
+            # cnt += 1
 
             nums = l.split(" ")
             nums[2] = int(nums[2])
-            if nums[2] != snapshot:
-                continue
-
-            nodes.update([int(nums[0]), int(nums[1])])
+            print(nums[2])
+            if nums[2] == snapshot:
+                nodes.update([int(nums[0]), int(nums[1])])
+                print("added")
 
     node_list = list(nodes)
     nodes = None
@@ -212,7 +212,7 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
     fig = None
 
     if save_plot:
-        fig = plt.figure(figsize=(30, 15), dpi=200)
+        fig = plt.figure(figsize=(15, 8), dpi=100)
     else:
         fig = plt.figure()
 

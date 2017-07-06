@@ -48,4 +48,5 @@ print("Analysing ego centric networks...")
 #
 #     a6.run_hop_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/gplus_hop_degree_based')
 
-Parallel(n_jobs=15)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based_2') for ego_node_file in os.listdir('../Data/gplus-ego'))
+Parallel(n_jobs=20)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based')
+                    for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))

@@ -29,7 +29,7 @@ import pickle
 # ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_gplus(graph, 200, "random_200_gplus_ego_nets.pckl",
 #                                                                       search_type='random', hop=2, center=True)
 
-ego_centric_networks = h.read_gplus_ego_graph(200)
+# ego_centric_networks = h.read_gplus_ego_graph(200)
 
 # with open('../Data/gplus-nodes-list.pckl', 'rb') as f:
 #     nodes = pickle.load(f)
@@ -107,4 +107,4 @@ ego_centric_networks = h.read_gplus_ego_graph(200)
 #     with open('../Data/gplus-edges-snap-3-list.pckl', 'wb') as f:
 #         pickle.dump(all_edges, f, protocol=-1)
 
-# h.gplus_get_all_nodes_first_appeared(0)
+h.gplus_get_all_nodes_appeared_in_snapshot(0)
