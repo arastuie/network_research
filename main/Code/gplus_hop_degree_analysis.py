@@ -3,7 +3,6 @@ import helpers as h
 import networkx as nx
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 
 
 def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=''):
@@ -79,12 +78,12 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                                          current_snap_first_hop_nodes]))
+                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                #                           current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                           current_snap_first_hop_nodes]) - 1)
+                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                          current_snap_first_hop_nodes]) - 1)
 
             degree_formed.append(np.mean(temp_degree_formed))
 
@@ -98,12 +97,12 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
-                                              current_snap_first_hop_nodes]))
+                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
+                #                               current_snap_first_hop_nodes]))
 
                 # second hop test
-                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                #                               current_snap_first_hop_nodes]) - 1)
+                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                                              current_snap_first_hop_nodes]) - 1)
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
