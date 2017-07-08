@@ -36,6 +36,9 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
                                                                                   ego_net_snapshots[i + 1],
                                                                                   ego_node, True)
 
+        if len(formed_edges_nodes_with_second_hop) < 1:
+            return
+
         # <editor-fold desc="Analyze formed edges">
         # List of degrees of nodes in the second hop which formed an edge with the ego node
         degree_formed = []
@@ -43,14 +46,19 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
             common_neighbors = nx.common_neighbors(ego_net_snapshots[i], u, ego_node)
             temp_degree_formed = []
 
+            u_neighbors = set(nx.neighbors(ego_net_snapshots[i], u))
+
             for c in common_neighbors:
                 # first hop test
                 # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
                 #                           current_snap_first_hop_nodes]))
 
                 # second hop test
-                temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                                          current_snap_first_hop_nodes]) - 1)
+                # temp_degree_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                #                           current_snap_first_hop_nodes]) - 1)
+
+                # Overlap with second hop node's neighbor test
+                temp_degree_formed.append(len(u_neighbors.intersection(ego_net_snapshots[i].neighbors(c))))
 
             degree_formed.append(np.mean(temp_degree_formed))
         # </editor-fold>
@@ -61,14 +69,19 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
             common_neighbors = nx.common_neighbors(ego_net_snapshots[i], u, ego_node)
             temp_degree_not_formed = []
 
+            u_neighbors = set(nx.neighbors(ego_net_snapshots[i], u))
+
             for c in common_neighbors:
                 # first hop test
                 # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n in
                 #                               current_snap_first_hop_nodes]))
 
                 # second hop test
-                temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
-                                              current_snap_first_hop_nodes]) - 1)
+                # temp_degree_not_formed.append(len([n for n in ego_net_snapshots[i].neighbors(c) if n not in
+                #                               current_snap_first_hop_nodes]) - 1)
+
+                # Overlap with second hop node's neighbor test
+                temp_degree_not_formed.append(len(u_neighbors.intersection(ego_net_snapshots[i].neighbors(c))))
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
@@ -84,3 +97,5 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
         h.plot_formed_vs_not('degree', degree_formed_in_snapshots,
                              degree_not_formed_in_snapshots, plot_number=ego_net_num, save_plot=save_plot,
                              save_path=plot_save_path)
+
+    print("Graph analyzed! {0}".format(ego_net_num))

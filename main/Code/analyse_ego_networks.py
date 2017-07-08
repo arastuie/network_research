@@ -21,10 +21,10 @@ import gplus_hop_degree_directed_analysis as a7
 # ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, 50, "random_50_ego_nets.pckl",
 #                                                                    search_type='random', hop=2, center=True)
 
-# print("Loading Facebook random 200 ego centric networks...")
-#
-# with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
-#     ego_centric_networks, ego_nodes = pickle.load(f)
+print("Loading Facebook random 200 ego centric networks...")
+
+with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
+    ego_centric_networks, ego_nodes = pickle.load(f)
 
 print("Analysing ego centric networks...")
 
@@ -52,6 +52,10 @@ print("Analysing ego centric networks...")
 # Parallel(n_jobs=20)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based')
 #                     for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
 
-Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
-                    (ego_node_file, True, '../Plots/gplus_hop_degree_based')
-                    for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
+Parallel(n_jobs=20)(delayed(a6.run_hop_degree_analysis)
+                    (ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/hop_degree_based')
+                    for o in range(len(ego_centric_networks)))
+
+# Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
+#                     (ego_node_file, True, '../Plots/gplus_hop_degree_based')
+#                     for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))

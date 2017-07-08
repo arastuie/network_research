@@ -112,12 +112,12 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, save_plot=False, plot_s
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                                              .intersection(current_snap_first_hop_nodes)))
+                # temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
+                #                               .intersection(current_snap_first_hop_nodes)))
 
                 # second hop test
-                # temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                #                               .intersection(current_snap_second_hop_nodes)))
+                temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
+                                              .intersection(current_snap_second_hop_nodes)))
 
             degree_formed.append(np.mean(temp_degree_formed))
 
@@ -139,12 +139,12 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, save_plot=False, plot_s
 
             for c in common_neighbors:
                 # first hop test
-                temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                                                  .intersection(current_snap_first_hop_nodes)))
+                # temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
+                #                                   .intersection(current_snap_first_hop_nodes)))
 
                 # second hop test
-                # temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                #                                   .intersection(current_snap_second_hop_nodes)))
+                temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
+                                                  .intersection(current_snap_second_hop_nodes)))
 
             degree_not_formed.append(np.mean(temp_degree_not_formed))
         # </editor-fold>
