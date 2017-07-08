@@ -36,8 +36,8 @@ def run_hop_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=
                                                                                   ego_net_snapshots[i + 1],
                                                                                   ego_node, True)
 
-        if len(formed_edges_nodes_with_second_hop) < 1:
-            return
+        if len(formed_edges_nodes_with_second_hop) == 0:
+            continue
 
         # <editor-fold desc="Analyze formed edges">
         # List of degrees of nodes in the second hop which formed an edge with the ego node
