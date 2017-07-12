@@ -204,6 +204,23 @@ def get_t03_type_v_nodes(ego_net, ego_node):
 
     return v_nodes
 
+
+def get_t05_type_v_nodes(ego_net, ego_node):
+    v_nodes = {}
+    temp_z_nodes = set(ego_net.successors(ego_node)).intersection(ego_net.predecessors(ego_node))
+    for z in temp_z_nodes:
+        temp_v_nodes = set(ego_net.predecessors(z)) - set(ego_net.successors(z))
+        for v in temp_v_nodes:
+            if ego_net.has_edge(ego_node, v):
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    return v_nodes
+
+
 def get_t06_type_v_nodes(ego_net, ego_node):
     v_nodes = {}
     temp_z_nodes = set(ego_net.successors(ego_node)) - set(ego_net.predecessors(ego_node))
