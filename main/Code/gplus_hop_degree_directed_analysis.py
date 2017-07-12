@@ -1,21 +1,21 @@
 import sys
-import helpers as h
+import directed_graphs_helpers as dh
 import networkx as nx
 import numpy as np
 import pickle
 
 
-def gplus_run_hop_degree_directed_analysis(ego_net_file, save_plot=False, plot_save_path=''):
+def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_means, save_plot=False,
+                                           plot_save_base_path=''):
 
-    """
-    Degree based analysis (with the second hop in directed graph):
+    """o
+    Degree based analysis in directed settings:
         background:
                 * The analyzed ego-centric network consists of all the predecessors and successors of all the
                     nodes in the first hop and the ego.
-                * The first hop of a network is considered to be all the the successors of the ego node.
-                * The second hop of a network is considered to be all the predecessors of all the nodes in the first
-                    hop, which are not in the first hop.
-                * A common neighbor between two nodes is considered to be a node that is a successor of both nodes.
+                * The first hop of a network is considered to be all the successors of the ego.
+                * The second hop of a network is considered to be all the successors of the nodes in the first hop.
+                * A common neighbor between two nodes is the 'Z' node. This will differ based on the triangle_type.
                 * Notice that in this test, a new connection for the ego is a new successor not a new predecessor.
 
         First, read in the network and divide the given ego_net_file into 4 different snapshots, then:
@@ -33,27 +33,45 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, save_plot=False, plot_s
             7. Plot a histogram comparing the result found in step 3 and step 6 (Only one figure containing all the
                 plots will be plotted at the end)
 
-    :param ego_net_snapshots: Snapshots of an ego-centric network
-    :param ego_node: The ego node
-    :param ego_net_num: The number of the ego network, only used for the plot title
+    :return:
+    :param ego_net_file: Name of the ego_net_file to analyze.
+    :param triangle_type: This is the type of triangle that you want to test. It ranges from T01 - T09. Check out the
+                Data/triangle-types-directed.png to see the types.
+    :param overall_means: A dictionary consisting of 'formed_in_degree_first_hop': [],
+                'not_formed_in_degree_first_hop': [], 'formed_in_degree_second_hop': [],
+                'not_formed_in_degree_second_hop': [], 'formed_out_degree_first_hop': [],
+                'not_formed_out_degree_first_hop': [], 'formed_out_degree_second_hop': [],
+                'not_formed_out_degree_second_hop': [], to hold the overall scores.
     :param save_plot: If true, saves the plot, also a path should be passed as the next argument.
-    :param plot_save_path: Path to save the plot. ex: '../Plots/degree_based'
+    :param plot_save_base_path: Base path to save the plot. ex: '../Plots/degree_based'
+                Make sure all four different folders are in the given path. 'in_degree_first_hop, in_degree_second_hop,
+                out_degree_first_hop, out_degree_second_hop'
     """
-
+    triangle_type_func = {
+        'T01': dh.get_t01_type_v_nodes,
+        'T02': dh.get_t02_type_v_nodes,
+        'T06': dh.get_t06_type_v_nodes
+    }
     # Exit if plot should be saved, put there is no path
-    if save_plot and plot_save_path == '':
+    if save_plot and plot_save_base_path == '':
         print(sys.stderr, "Please provide the path to which plots should be saved.")
         sys.exit(1)
 
     with open('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, 'rb') as f:
         ego_node, ego_net = pickle.load(f)
 
+    # Plotting related info
+    ego_net_number_of_nodes = nx.number_of_nodes(ego_net)
+    ego_net_number_of_edges = nx.number_of_edges(ego_net)
+    tot_num_v_nodes = 0
+    num_v_nodes_formed = 0
+    num_v_nodes_not_formed = 0
+
     # return if the network has less than 30 nodes
-    if nx.number_of_nodes(ego_net) < 30:
+    if ego_net_number_of_nodes < 30:
         return
 
     ego_net_snapshots = []
-    one_hop_ego_net_snapshots = []
 
     # find out what snapshot the ego node first appeared in
     first_snapshot = 3
@@ -76,90 +94,150 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, save_plot=False, plot_s
         temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
         ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
 
-    degree_formed_in_snapshots = []
-    degree_not_formed_in_snapshots = []
+    snapshots_formed_z_in_degree_first_hop = []
+    snapshots_formed_z_out_degree_first_hop = []
+    snapshots_formed_z_in_degree_second_hop = []
+    snapshots_formed_z_out_degree_second_hop = []
+
+    snapshots_not_formed_z_in_degree_first_hop = []
+    snapshots_not_formed_z_out_degree_first_hop = []
+    snapshots_not_formed_z_in_degree_second_hop = []
+    snapshots_not_formed_z_out_degree_second_hop = []
 
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
-        current_snap_first_hop_nodes = ego_net_snapshots[i].successors(ego_node)
+        first_hop_nodes = ego_net_snapshots[i].successors(ego_node)
 
-        current_snap_second_hop_nodes = set()
-        for n in current_snap_first_hop_nodes:
-            current_snap_second_hop_nodes = current_snap_second_hop_nodes.union(ego_net_snapshots[i].predecessors(n))
+        v_nodes = triangle_type_func[triangle_type](ego_net, ego_node)
 
-        current_snap_second_hop_nodes = list(current_snap_second_hop_nodes - set(current_snap_first_hop_nodes))
+        # Checks whether or not any edge were formed, if not skips to next snapshot
+        has_any_formed = False
+        for v in v_nodes:
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                print("formed found!!!!")
+                has_any_formed = True
+                break
 
-        formed_edges_nodes_with_second_hop = \
-            [n for n in ego_net_snapshots[i + 1].successors(ego_node) if n in current_snap_second_hop_nodes]
-
-        if len(formed_edges_nodes_with_second_hop) < 1:
+        tot_num_v_nodes += len(v_nodes)
+        if not has_any_formed:
+            num_v_nodes_not_formed += len(v_nodes)
+            print("Total 'V' found: {0}".format(tot_num_v_nodes))
             continue
 
-        not_formed_edges_nodes_with_second_hop = \
-            [n for n in current_snap_second_hop_nodes if n not in formed_edges_nodes_with_second_hop]
+        second_hop_nodes = set()
+        for n in second_hop_nodes:
+            second_hop_nodes = second_hop_nodes.union(ego_net_snapshots[i].successors(n))
+        second_hop_nodes = list(second_hop_nodes - set(first_hop_nodes))
 
-        # <editor-fold desc="Analyze formed edges">
-        # List of degrees of nodes in the second hop which formed an edge with the ego node
-        degree_formed = []
-        for u in formed_edges_nodes_with_second_hop:
-            common_neighbors = set(ego_net_snapshots[i].successors(ego_node)).intersection(
-                ego_net_snapshots[i].successors(u))
+        # ANALYSIS
+        formed_z_in_degree_first_hop = []
+        formed_z_out_degree_first_hop = []
+        formed_z_in_degree_second_hop = []
+        formed_z_out_degree_second_hop = []
 
-            if len(common_neighbors) == 0:
-                continue
+        not_formed_z_in_degree_first_hop = []
+        not_formed_z_out_degree_first_hop = []
+        not_formed_z_in_degree_second_hop = []
+        not_formed_z_out_degree_second_hop = []
+        for v in v_nodes:
+            temp_in_degree_first_hop = []
+            temp_out_degree_first_hop = []
+            temp_in_degree_second_hop = []
+            temp_out_degree_second_hop = []
 
-            temp_degree_formed = []
+            for z in v_nodes[v]:
+                z_preds = set(ego_net_snapshots[i].predecessors(z))
+                z_succs = set(ego_net_snapshots[i].successors(z))
+                temp_in_degree_first_hop.append(len(z_preds.intersection(first_hop_nodes)))
+                temp_out_degree_first_hop.append(len(z_succs.intersection(first_hop_nodes)))
+                temp_in_degree_second_hop.append(len(z_preds.intersection(second_hop_nodes)))
+                temp_out_degree_second_hop.append(len(z_succs.intersection(second_hop_nodes)))
 
-            for c in common_neighbors:
-                # first hop test
-                # temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                #                               .intersection(current_snap_first_hop_nodes)))
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
+                formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+                formed_z_in_degree_second_hop.append(np.mean(temp_in_degree_second_hop))
+                formed_z_out_degree_second_hop.append(np.mean(temp_out_degree_second_hop))
+                num_v_nodes_formed += 1
+            else:
+                not_formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
+                not_formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+                not_formed_z_in_degree_second_hop.append(np.mean(temp_in_degree_second_hop))
+                not_formed_z_out_degree_second_hop.append(np.mean(temp_out_degree_second_hop))
+                num_v_nodes_not_formed += 1
 
-                # second hop test
-                temp_degree_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                                              .intersection(current_snap_second_hop_nodes)))
+        snapshots_formed_z_in_degree_first_hop.append(formed_z_in_degree_first_hop)
+        snapshots_formed_z_out_degree_first_hop.append(formed_z_out_degree_first_hop)
+        snapshots_formed_z_in_degree_second_hop.append(formed_z_in_degree_second_hop)
+        snapshots_formed_z_out_degree_second_hop.append(formed_z_out_degree_second_hop)
 
-            degree_formed.append(np.mean(temp_degree_formed))
+        snapshots_not_formed_z_in_degree_first_hop.append(not_formed_z_in_degree_first_hop)
+        snapshots_not_formed_z_out_degree_first_hop.append(not_formed_z_out_degree_first_hop)
+        snapshots_not_formed_z_in_degree_second_hop.append(not_formed_z_in_degree_second_hop)
+        snapshots_not_formed_z_out_degree_second_hop.append(not_formed_z_out_degree_second_hop)
 
-        if len(degree_formed) == 0:
-            return
+    # Return if there was no V node found
+    if len(snapshots_formed_z_in_degree_first_hop) == 0:
+        print("No 'V' found!")
+        return
 
-        # </editor-fold>
-        # <editor-fold desc="Analyze not formed edges">
-        # List of degrees of nodes in the second hop which did not form an edge with the ego node
-        degree_not_formed = []
-        for u in not_formed_edges_nodes_with_second_hop:
-            common_neighbors = set(ego_net_snapshots[i].successors(ego_node)).intersection(
-                ego_net_snapshots[i].successors(u))
+    # PLOTTING
+    # get the average number
+    tot_num_v_nodes = tot_num_v_nodes / (3 - first_snapshot)
+    num_v_nodes_formed = num_v_nodes_formed / (3 - first_snapshot)
+    num_v_nodes_not_formed = num_v_nodes_not_formed / (3 - first_snapshot)
 
-            if len(common_neighbors) == 0:
-                continue
+    subtitle = "Ego Centric Network of Node {0} / Total Number of Nodes: {1} / Total Number of Edges: {2} \n " \
+               "Avg Total Number of 'V' Nodes found with {3} Relation: {4} / Ones Formed: {5} / Ones Not Formed: {6}"\
+        .format(ego_node, ego_net_number_of_nodes, ego_net_number_of_edges, triangle_type, tot_num_v_nodes,
+                num_v_nodes_formed, num_v_nodes_not_formed)
 
-            temp_degree_not_formed = []
+    # in-degree first hop
+    dh.plot_formed_vs_not(snapshots_formed_z_in_degree_first_hop, snapshots_not_formed_z_in_degree_first_hop,
+                          xlabel="In-degree of 'Z' Nodes",
+                          subtitle="In_degree of 'Z' Nodes Within the First Hop \n {0}".format(subtitle),
+                          overall_mean_formed=overall_means['formed_in_degree_first_hop'],
+                          overall_mean_not_formed=overall_means['not_formed_in_degree_first_hop'],
+                          save_plot=save_plot,
+                          save_path="{0}/in_degree_first_hop/{1}.png".format(plot_save_base_path, ego_node))
 
-            for c in common_neighbors:
-                # first hop test
-                # temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                #                                   .intersection(current_snap_first_hop_nodes)))
+    # in-degree second hop
+    dh.plot_formed_vs_not(snapshots_formed_z_in_degree_first_hop, snapshots_not_formed_z_in_degree_first_hop,
+                          xlabel="In-degree of 'Z' Nodes",
+                          subtitle="In_degree of 'Z' Nodes Within the Second Hop \n {0}".format(subtitle),
+                          overall_mean_formed=overall_means['formed_in_degree_second_hop'],
+                          overall_mean_not_formed=overall_means['not_formed_in_degree_second_hop'],
+                          save_plot=save_plot,
+                          save_path="{0}/in_degree_second_hop/{1}.png".format(plot_save_base_path, ego_node))
 
-                # second hop test
-                temp_degree_not_formed.append(len(set(ego_net_snapshots[i].predecessors(c))
-                                                  .intersection(current_snap_second_hop_nodes)))
+    # out-degree first hop
+    dh.plot_formed_vs_not(snapshots_formed_z_in_degree_first_hop, snapshots_not_formed_z_in_degree_first_hop,
+                          xlabel="Out-degree of 'Z' Nodes",
+                          subtitle="Out_degree of 'Z' Nodes Within the First Hop \n {0}".format(subtitle),
+                          overall_mean_formed=overall_means['formed_out_degree_first_hop'],
+                          overall_mean_not_formed=overall_means['not_formed_out_degree_first_hop'],
+                          save_plot=save_plot,
+                          save_path="{0}/out_degree_first_hop/{1}.png".format(plot_save_base_path, ego_node))
 
-            degree_not_formed.append(np.mean(temp_degree_not_formed))
-        # </editor-fold>
+    # out-degree second hop
+    dh.plot_formed_vs_not(snapshots_formed_z_in_degree_first_hop, snapshots_not_formed_z_in_degree_first_hop,
+                          xlabel="Out-degree of 'Z' Nodes",
+                          subtitle="Out_degree of 'Z' Nodes Within the Second Hop \n {0}".format(subtitle),
+                          overall_mean_formed=overall_means['formed_out_degree_second_hop'],
+                          overall_mean_not_formed=overall_means['not_formed_out_degree_second_hop'],
+                          save_plot=save_plot,
+                          save_path="{0}/out_degree_second_hop/{1}.png".format(plot_save_base_path, ego_node))
 
-        if len(degree_formed) != 0 and len(degree_not_formed) != 0:
-            degree_formed_in_snapshots.append(degree_formed)
-            degree_not_formed_in_snapshots.append(degree_not_formed)
+    print("OVERALL SCORES:")
+    print("In-degree First Hop:\n\tFEM:{0}\tNFEM:{1}".format(np.mean(overall_means['formed_in_degree_first_hop']),
+                                                             np.mean(overall_means['not_formed_in_degree_first_hop'])))
 
-    if len(degree_formed_in_snapshots) != 0:
-        if save_plot:
-            plot_save_path += '/%d_hop_degree.png' % ego_node
+    print("In-degree Second Hop:\n\tFEM:{0}\tNFEM:{1}".format(np.mean(overall_means['formed_in_degree_second_hop']),
+                                                             np.mean(overall_means['not_formed_in_degree_second_hop'])))
 
-        h.plot_formed_vs_not('hop_degree', degree_formed_in_snapshots,
-                             degree_not_formed_in_snapshots, plot_number=ego_node, save_plot=save_plot,
-                             save_path=plot_save_path, hop_number=2)
+    print("Out-degree First Hop:\n\tFEM:{0}\tNFEM:{1}".format(np.mean(overall_means['formed_out_degree_first_hop']),
+                                                             np.mean(overall_means['not_formed_out_degree_first_hop'])))
 
-        print("Graph analyzed!")
-
+    print("Out-degree Second Hop:\n\tFEM:{0}\tNFEM:{1}".format(np.mean(overall_means['formed_out_degree_second_hop']),
+                                                            np.mean(overall_means['not_formed_out_degree_second_hop'])))
+    print("\nGraph analyzed!\n")

@@ -10,7 +10,7 @@ import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 import percent_of_cn_belonging_to_same_cluster as a5
 import hop_degree_analysis as a6
-# import gplus_hop_degree_analysis as a6
+#import gplus_hop_degree_directed_analysis_t06 as a7
 import gplus_hop_degree_directed_analysis as a7
 
 
@@ -20,11 +20,11 @@ import gplus_hop_degree_directed_analysis as a7
 # # extracting ego centric networks
 # ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, 50, "random_50_ego_nets.pckl",
 #                                                                    search_type='random', hop=2, center=True)
-
-print("Loading Facebook random 200 ego centric networks...")
-
-with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
-    ego_centric_networks, ego_nodes = pickle.load(f)
+#
+# print("Loading Facebook random 200 ego centric networks...")
+#
+# with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
+#     ego_centric_networks, ego_nodes = pickle.load(f)
 
 print("Analysing ego centric networks...")
 
@@ -52,10 +52,25 @@ print("Analysing ego centric networks...")
 # Parallel(n_jobs=20)(delayed(a6.gplus_run_hop_degree_analysis)(ego_node_file, True, '../Plots/gplus_hop_degree_based')
 #                     for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
 
-Parallel(n_jobs=20)(delayed(a6.run_hop_degree_analysis)
-                    (ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/hop_degree_based')
-                    for o in range(len(ego_centric_networks)))
+# Parallel(n_jobs=20)(delayed(a6.run_hop_degree_analysis)
+#                     (ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/hop_degree_based')
+#                     for o in range(len(ego_centric_networks)))
 
 # Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
 #                     (ego_node_file, True, '../Plots/gplus_hop_degree_based')
 #                     for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
+
+overall_means = {
+    'formed_in_degree_first_hop': [],
+    'not_formed_in_degree_first_hop': [],
+    'formed_in_degree_second_hop': [],
+    'not_formed_in_degree_second_hop': [],
+    'formed_out_degree_first_hop': [],
+    'not_formed_out_degree_first_hop': [],
+    'formed_out_degree_second_hop': [],
+    'not_formed_out_degree_second_hop': [],
+}
+
+Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
+                    (ego_node_file, 'T06', overall_means, True, '../Plots/hop_degree_based')
+                    for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
