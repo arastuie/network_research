@@ -50,11 +50,12 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
                 out_degree_first_hop, out_degree_second_hop'
     """
     triangle_type_func = {
-        'T01': dh.get_t01_type_v_nodes,
-        'T02': dh.get_t02_type_v_nodes,
-        'T03': dh.get_t03_type_v_nodes,
-        'T05': dh.get_t05_type_v_nodes,
-        'T06': dh.get_t06_type_v_nodes
+        'T01': dh.get_t01_type_nodes,
+        'T02': dh.get_t02_type_nodes,
+        'T03': dh.get_t03_type_nodes,
+        'T04': dh.get_t04_type_nodes,
+        'T05': dh.get_t05_type_nodes,
+        'T06': dh.get_t06_type_nodes
     }
     # Exit if plot should be saved, put there is no path
     if save_plot and plot_save_base_path == '':

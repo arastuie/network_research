@@ -253,33 +253,120 @@ def get_t04_type_nodes(ego_net, ego_node):
 
 
 def get_t05_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node)).intersection(ego_net.predecessors(ego_node))
+    second_hop_nodes = set()
+
     v_nodes = {}
-    temp_z_nodes = set(ego_net.successors(ego_node)).intersection(ego_net.predecessors(ego_node))
-    for z in temp_z_nodes:
-        temp_v_nodes = set(ego_net.predecessors(z)) - set(ego_net.successors(z))
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v):
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
             else:
                 v_nodes[v].append(z)
 
-    return v_nodes
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
 def get_t06_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node)) - set(ego_net.predecessors(ego_node))
+    second_hop_nodes = set()
+
     v_nodes = {}
-    temp_z_nodes = set(ego_net.successors(ego_node)) - set(ego_net.predecessors(ego_node))
-    for z in temp_z_nodes:
-        temp_v_nodes = set(ego_net.predecessors(z)) - set(ego_net.successors(z))
-        temp_v_nodes.remove(ego_node)
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v):
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
             else:
                 v_nodes[v].append(z)
 
-    return v_nodes
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
+def get_t07_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.predecessors(ego_node)) - set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z)) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
+def get_t08_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.predecessors(ego_node)) - set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
+def get_t09_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.predecessors(ego_node)) - set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)) - set(ego_net.predecessors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
