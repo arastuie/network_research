@@ -72,5 +72,5 @@ overall_means = {
 }
 
 Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
-                    (ego_node_file, 'T05', overall_means, True, '../Plots/hop_degree_based')
-                    for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
+                    ('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, 'T01', overall_means, True,
+                     '../Plots/hop_degree_based') for ego_net_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))

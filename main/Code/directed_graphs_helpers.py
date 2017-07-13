@@ -144,8 +144,8 @@ def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed
         plt.xlabel(xlabel)
         plt.suptitle(subtitle)
 
-    overall_mean_formed.append(np.mean(overall_means_formed))
-    overall_mean_not_formed.append(np.mean(overall_means_not_formed))
+    # overall_mean_formed.append(np.mean(overall_means_formed))
+    # overall_mean_not_formed.append(np.mean(overall_means_not_formed))
 
     if not save_plot:
         plt.show()
@@ -157,20 +157,27 @@ def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed
 
 
 def get_t01_type_v_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node)).intersection(ego_net.predecessors(ego_node))
+    second_hop_nodes = set()
+
     v_nodes = {}
-    temp_z_nodes = set(ego_net.successors(ego_node)).intersection(ego_net.predecessors(ego_node))
-    for z in temp_z_nodes:
-        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z))
-        temp_v_nodes.remove(ego_node)
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z)) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v):
+            if ego_net.has_edge(ego_node, v) or v == ego_node:
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
             else:
                 v_nodes[v].append(z)
 
-    return v_nodes
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
 def get_t02_type_v_nodes(ego_net, ego_node):
