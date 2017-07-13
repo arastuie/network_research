@@ -8,29 +8,31 @@ import pickle
 def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_means, save_plot=False,
                                            plot_save_base_path=''):
 
-    """o
+    """
     Degree based analysis in directed settings:
         background:
+                * The 'directed relationships' with U, Z and, V nodes, mentioned through this documentation is referring
+                    to the relationships listed out in Data/triangle-types-directed.png.
                 * The analyzed ego-centric network consists of all the predecessors and successors of all the
                     nodes in the first hop and the ego.
-                * The first hop of a network is considered to be all the successors of the ego.
-                * The second hop of a network is considered to be all the successors of the nodes in the first hop.
-                * A common neighbor between two nodes is the 'Z' node. This will differ based on the triangle_type.
+                * The first hop of a network is considered to be all Z nodes which have the given T0X relationship with
+                    the ego node.
+                * The second hop of a network is considered to be all the V nodes which have the given T0X relationship
+                    with any of the nodes in the first hop. Also, none of these V nodes should be in the first hop.
+                * A common neighbor between the ego (U) and any of the V nodes, is the 'Z' node. This will differ based
+                    on the given T0X triangle_type.
                 * Notice that in this test, a new connection for the ego is a new successor not a new predecessor.
 
         First, read in the network and divide the given ego_net_file into 4 different snapshots, then:
 
         For every snapshot of the ego centric network:
-            1. Find all the nodes in the second hop which the ego started following in the next snapshot, as well as
-                those which the ego did not start to follow
-            2. Find all common neighbors between the ego and all the nodes that the ego started to follow in the next
-                snapshot
-            3. For each common neighbor, find all of its predecessors, then check how many of them are in the first hop
-                or the second hop, depending on the test
-            5. Find all common neighbors between the ego and all the nodes that the ego did not start to follow in the
-                next snapshot
-            6. Repeat step 3 on the common neighbors found in step 5
-            7. Plot a histogram comparing the result found in step 3 and step 6 (Only one figure containing all the
+            1. Find the nodes in the first and second hop.
+            2. For each node V in the second hop, find all the of its common neighbors with the ego.
+            3. For each common neighbor, find all of its predecessors (in-degree) and successors (out-degree), then
+                check how many of them are in the first hop or the second hop, depending on the test.
+            4. Check whether or not ego-node started following the V node in the next snapshot, and divide the results
+                in step 3 into two groups, the ones which the ego started following and the ones that it did not.
+            7. Plot a histogram comparing the result the two groups found in step 4 (Only one figure containing all the
                 plots will be plotted at the end)
 
     :return:
@@ -110,14 +112,19 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
     for i in range(len(ego_net_snapshots) - 1):
         first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
 
-        # Checks whether or not any edge were formed, if not skips to next snapshot
+        # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
         has_any_formed = False
+        has_any_not_formed = False
         for v in v_nodes:
             if ego_net_snapshots[i + 1].has_edge(ego_node, v):
                 has_any_formed = True
+            else:
+                has_any_not_formed = True
+
+            if has_any_formed and has_any_not_formed:
                 break
 
-        if not has_any_formed:
+        if not has_any_formed or not has_any_not_formed:
             continue
 
         tot_num_v_nodes += len(v_nodes)
