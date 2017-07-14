@@ -55,7 +55,10 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
         'T03': dh.get_t03_type_nodes,
         'T04': dh.get_t04_type_nodes,
         'T05': dh.get_t05_type_nodes,
-        'T06': dh.get_t06_type_nodes
+        'T06': dh.get_t06_type_nodes,
+        'T07': dh.get_t07_type_nodes,
+        'T08': dh.get_t08_type_nodes,
+        'T09': dh.get_t09_type_nodes,
     }
     # Exit if plot should be saved, put there is no path
     if save_plot and plot_save_base_path == '':
