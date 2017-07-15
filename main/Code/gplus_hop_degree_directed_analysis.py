@@ -196,6 +196,8 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
                "Form: {6:.1f}".format(ego_node, ego_net_number_of_nodes, ego_net_number_of_edges, triangle_type,
                                       tot_num_v_nodes, num_v_nodes_formed, num_v_nodes_not_formed)
 
+    plot_save_base_path += '/' + triangle_type
+
     # in-degree first hop
     dh.plot_formed_vs_not(snapshots_formed_z_in_degree_first_hop, snapshots_not_formed_z_in_degree_first_hop,
                           xlabel="Mean In-degree of 'Z' Nodes",
@@ -231,22 +233,3 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
                           overall_mean_not_formed=overall_means['not_formed_out_degree_second_hop'],
                           save_plot=save_plot,
                           save_path="{0}/out_degree_second_hop/{1}.png".format(plot_save_base_path, ego_node))
-
-    # print("OVERALL SCORES:")
-    # print("In-degree First Hop:\n\tFEM:{0:.3f}\tNFEM:{1:.3f}"
-    #       .format(np.mean(overall_means['formed_in_degree_first_hop']),
-    #               np.mean(overall_means['not_formed_in_degree_first_hop'])))
-    #
-    # print("In-degree Second Hop:\n\tFEM:{0:.3f}\tNFEM:{1:.3f}"
-    #       .format(np.mean(overall_means['formed_in_degree_second_hop']),
-    #               np.mean(overall_means['not_formed_in_degree_second_hop'])))
-    #
-    # print("Out-degree First Hop:\n\tFEM:{0:.3f}\tNFEM:{1:.3f}"
-    #       .format(np.mean(overall_means['formed_out_degree_first_hop']),
-    #               np.mean(overall_means['not_formed_out_degree_first_hop'])))
-    #
-    # print("Out-degree Second Hop:\n\tFEM:{0:.3f}\tNFEM:{1:.3f}"
-    #       .format(np.mean(overall_means['formed_out_degree_second_hop']),
-    #               np.mean(overall_means['not_formed_out_degree_second_hop'])))
-
-    print("\nGraph analyzed!\n")

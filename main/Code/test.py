@@ -112,20 +112,20 @@ import os
 
 # h.gplus_get_all_nodes_appeared_in_snapshot(0)
 
-overall_means = {
-    'formed_in_degree_first_hop': [],
-    'not_formed_in_degree_first_hop': [],
-    'formed_in_degree_second_hop': [],
-    'not_formed_in_degree_second_hop': [],
-    'formed_out_degree_first_hop': [],
-    'not_formed_out_degree_first_hop': [],
-    'formed_out_degree_second_hop': [],
-    'not_formed_out_degree_second_hop': [],
-}
-
-# directed_analysis.gplus_run_hop_degree_directed_analysis('862541.pckle', 'T01', overall_means, False, '../Plots/hop_degree_based')
-Parallel(n_jobs=2)(delayed(directed_analysis.gplus_run_hop_degree_directed_analysis)
-                    ('../Data/gplus-ego/%s' % ego_net_file, 'T01', overall_means, True,
-                     '../Plots/hop_degree_based') for ego_net_file in os.listdir('../Data/gplus-ego'))
-
-print(len(overall_means['formed_in_degree_first_hop']))
+# overall_means = {
+#     'formed_in_degree_first_hop': [],
+#     'not_formed_in_degree_first_hop': [],
+#     'formed_in_degree_second_hop': [],
+#     'not_formed_in_degree_second_hop': [],
+#     'formed_out_degree_first_hop': [],
+#     'not_formed_out_degree_first_hop': [],
+#     'formed_out_degree_second_hop': [],
+#     'not_formed_out_degree_second_hop': [],
+# }
+#
+# # directed_analysis.gplus_run_hop_degree_directed_analysis('862541.pckle', 'T01', overall_means, False, '../Plots/hop_degree_based')
+# Parallel(n_jobs=2)(delayed(directed_analysis.gplus_run_hop_degree_directed_analysis)
+#                     ('../Data/gplus-ego/%s' % ego_net_file, 'T01', overall_means, True,
+#                      '../Plots/hop_degree_based') for ego_net_file in os.listdir('../Data/gplus-ego'))
+#
+# print(len(overall_means['formed_in_degree_first_hop']))

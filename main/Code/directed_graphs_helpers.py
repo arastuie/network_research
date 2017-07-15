@@ -110,7 +110,6 @@ def read_ego_gplus_pickle(ego_node):
 def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed, overall_mean_not_formed,
                        save_plot=False, save_path=''):
     fig = None
-
     if save_plot:
         fig = plt.figure(figsize=(15, 8), dpi=100)
     else:
@@ -130,12 +129,10 @@ def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed
         overall_means_not_formed.append(not_formed_mean)
         p = fig.add_subplot(n_row, n_col, i + 1)
 
-        p.hist(formed[i], color='r', alpha=0.8,
-               weights=np.zeros_like(formed[i]) + 1. / len(formed[i]),
+        p.hist(formed[i], color='r', alpha=0.8, weights=np.zeros_like(formed[i]) + 1. / len(formed[i]),
                label="FEM: {0:.2f}".format(formed_mean))
 
-        p.hist(not_formed[i], color='b', alpha=0.5,
-               weights=np.zeros_like(not_formed[i]) + 1. / len(not_formed[i]),
+        p.hist(not_formed[i], color='b', alpha=0.5, weights=np.zeros_like(not_formed[i]) + 1. / len(not_formed[i]),
                label="NFEM: {0:.2f}".format(not_formed_mean))
 
         p.legend(loc='upper right')
@@ -144,8 +141,8 @@ def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed
         plt.xlabel(xlabel)
         plt.suptitle(subtitle)
 
-    # overall_mean_formed.append(np.mean(overall_means_formed))
-    # overall_mean_not_formed.append(np.mean(overall_means_not_formed))
+    overall_mean_formed.append(np.mean(overall_means_formed))
+    overall_mean_not_formed.append(np.mean(overall_means_not_formed))
 
     if not save_plot:
         plt.show()
@@ -167,7 +164,7 @@ def get_t01_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -191,7 +188,7 @@ def get_t02_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -215,7 +212,7 @@ def get_t03_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -239,7 +236,7 @@ def get_t04_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -263,7 +260,7 @@ def get_t05_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -287,7 +284,7 @@ def get_t06_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -311,7 +308,7 @@ def get_t07_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -335,7 +332,7 @@ def get_t08_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]
@@ -359,7 +356,7 @@ def get_t09_type_nodes(ego_net, ego_node):
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if ego_net.has_edge(ego_node, v) or v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(v, ego_node):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]

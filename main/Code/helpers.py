@@ -123,12 +123,10 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
         not_formed_mean = np.mean(not_formed[i])
         p = fig.add_subplot(n_row, n_col, i + 1)
 
-        p.hist(formed[i], color='r', alpha=0.8,
-               weights=np.zeros_like(formed[i]) + 1. / len(formed[i]),
+        p.hist(formed[i], color='r', alpha=0.8, weights=np.zeros_like(formed[i]) + 1. / len(formed[i]),
                label="FEM: {0:.2f}".format(formed_mean))
 
-        p.hist(not_formed[i], color='b', alpha=0.5,
-               weights=np.zeros_like(not_formed[i]) + 1. / len(not_formed[i]),
+        p.hist(not_formed[i], color='b', alpha=0.5, weights=np.zeros_like(not_formed[i]) + 1. / len(not_formed[i]),
                label="NFEM: {0:.2f}".format(not_formed_mean))
 
         p.legend(loc='upper right')
