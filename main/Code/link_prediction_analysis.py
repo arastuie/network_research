@@ -10,4 +10,7 @@ with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
 print("Networks in!")
 
 for i in range(len(ego_centric_networks)):
-    print(lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i]))
+    scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
+
+    if scores is not None:
+        print(scores)
