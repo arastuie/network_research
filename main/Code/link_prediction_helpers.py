@@ -24,7 +24,6 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         }
     }
 
-
     for i in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
@@ -57,11 +56,11 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         y_scores_dcaa = list(preprocessing.normalize(y_scores_dcaa, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_dcaa, lp_result['degree_corrected_adamic_adar'])
 
-    if len(lp_result['auroc']) == 0:
+    if len(lp_result['adamic_adar']['auroc']) == 0:
         return
 
     for method in lp_result:
-        for score in method:
+        for score in lp_result[method]:
             lp_result[method][score] = np.mean(lp_result[method][score])
 
     return lp_result
