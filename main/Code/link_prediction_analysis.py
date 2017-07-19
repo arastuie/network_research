@@ -9,8 +9,11 @@ with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
 
 print("Networks in!")
 
+lp_results = []
 for i in range(len(ego_centric_networks)):
     scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
 
     if scores is not None:
-        print(scores)
+        lp_results.append(scores)
+
+lp_helpers.plot_auroc_hist(lp_results)

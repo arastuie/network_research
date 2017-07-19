@@ -1,7 +1,8 @@
-import networkx as nx
-import numpy as np
-from sklearn import metrics, preprocessing
 import math
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+from sklearn import metrics, preprocessing
 
 
 def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
@@ -98,3 +99,23 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         scores.append(sum(1 / math.log(d) for d in other_degrees))
 
     return scores
+
+
+def plot_auroc_hist(lp_results):
+    aurocs = {}
+    for lp_method in lp_results[0]:
+        aurocs[lp_method] = []
+
+    for lp_result in lp_results:
+        for lp_method in lp_result:
+            aurocs[lp_method].append(lp_result[lp_method]['auroc'])
+
+    plt.figure()
+    bins = np.linspace(0, 1, 100)
+    for lp_method in aurocs:
+        plt.hist(aurocs[lp_method], bins, label='%s' % lp_method, alpha=0.6)
+    plt.ylabel('Frequency')
+    plt.xlabel('Area Under ROC')
+    plt.title('AUROC Histogram of Ego Centric Graphs')
+    plt.legend(loc="upper left")
+    plt.show()
