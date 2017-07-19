@@ -217,8 +217,12 @@ def plot_cdf(graphs):
 def explode_to_ego_centric(graph):
     ego_centric_graphs = []
 
+    cnt = 0
     for node in nx.nodes(graph):
         ego_centric_graphs.append(nx.ego_graph(graph, node))
+        cnt +=1
+        if cnt > 5:
+            break
 
     return ego_centric_graphs
 

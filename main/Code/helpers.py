@@ -8,6 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
+
 # Reading facebook data
 def read_facebook_graph():
     file = open("../Data/facebook-links.txt", 'r')
@@ -23,11 +24,8 @@ def read_facebook_graph():
         nums[0] = int(nums[0])
         nums[1] = int(nums[1])
 
-        if not original_graph.has_node(nums[0]):
-            original_graph.add_node(nums[0])
-
-        if not original_graph.has_node(nums[1]):
-            original_graph.add_node(nums[1])
+        original_graph.add_node(nums[0])
+        original_graph.add_node(nums[1])
 
         if len(nums) == 2:
             nums.append(-1)
