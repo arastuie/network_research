@@ -2,6 +2,7 @@ import numpy as np
 from sklearn import linear_model
 from sklearn.model_selection import KFold
 from sklearn.metrics import roc_curve, average_precision_score, auc
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def run_linear_regression(path, aa_only):
@@ -11,6 +12,9 @@ def run_linear_regression(path, aa_only):
         data_x = data[:, :1]
     else:
         data_x = data[:, :2]
+
+    poly = PolynomialFeatures(2)
+    data_x = poly.fit_transform(data_x)
 
     data_y = data[:, -1]
 
@@ -46,8 +50,9 @@ def run_linear_regression(path, aa_only):
     # print("Mean Avg Precision: {0}".format(np.mean(avg_ps)))
 
     if aa_only:
-        return np.mean(coefs[:, 0]), np.mean(aurocs), np.mean(avg_ps)
+        return np.mean(coefs[:, 1]), np.mean(coefs[:, 2]), np.mean(aurocs), np.mean(avg_ps)
     else:
-        return np.mean(coefs[:, 0]), np.mean(coefs[:, 1]), np.mean(aurocs), np.mean(avg_ps)
+        return np.mean(coefs[:, 1]), np.mean(coefs[:, 2]), np.mean(coefs[:, 3]), np.mean(coefs[:, 4]), \
+               np.mean(coefs[:, 5]), np.mean(aurocs), np.mean(avg_ps)
 
 
