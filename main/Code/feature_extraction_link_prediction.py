@@ -4,6 +4,7 @@ import math
 import os
 from joblib import Parallel, delayed
 
+
 def get_ego_net(ego_node, orig_snaps):
     ego_snapshots = []
     for i in range(len(orig_snaps)):
