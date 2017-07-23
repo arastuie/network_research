@@ -6,7 +6,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 
 def run_linear_regression(path, aa_only):
-    data = np.loadtxt('../Data/fb_lp_features/477.txt', delimiter=',')
+    data = np.loadtxt(path, delimiter=',')
 
     if aa_only:
         data_x = data[:, :1]

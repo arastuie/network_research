@@ -24,10 +24,12 @@ import os
 
 aa_only_scores = []
 both_scores = []
-
+cnt = 1
 for path in os.listdir('../Data/fb_lp_features'):
-    aa_only_scores.append(lr.run_linear_regression('../Data/fb_lp_features/{0}'.format(path), True))
+    aa_only_scores.append(list(lr.run_linear_regression('../Data/fb_lp_features/{0}'.format(path), True)))
     both_scores.append(list(lr.run_linear_regression('../Data/fb_lp_features/{0}'.format(path), False)))
+    print(cnt, end='\r')
+    cnt += 1
 
 aa_only_scores = np.array(aa_only_scores)
 print("AA Only:")
