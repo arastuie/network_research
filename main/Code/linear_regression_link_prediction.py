@@ -27,7 +27,7 @@ def run_linear_regression(path, aa_only):
         X_train, X_test = data_x[train_index], data_x[test_index]
         y_train, y_test = data_y[train_index], data_y[test_index]
 
-        if sum(y_train) < 1:
+        if sum(y_train) < 1 or sum(y_test) < 1:
             continue
 
         regr = linear_model.LinearRegression()
