@@ -17,3 +17,4 @@ for i in range(len(ego_centric_networks)):
         lp_results.append(scores)
 
 lp_helpers.plot_auroc_hist(lp_results)
+lp_helpers.plot_pr_hist(lp_results)

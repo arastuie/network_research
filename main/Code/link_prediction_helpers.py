@@ -27,6 +27,10 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
 
     for i in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) < 30:
+            continue
+
         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
         second_hop_nodes.remove(ego_node)
 
@@ -53,7 +57,8 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         evaluate_prediction_result(y_true, y_scores_aa, lp_result['adamic_adar'])
 
         y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
-        y_scores_dcaa = np.array(y_scores_dcaa).astype(float).reshape(1, -1)
+        y_scores_dcaa = shift_up(y_scores_dcaa)
+        y_scores_dcaa = y_scores_dcaa.astype(float).reshape(1, -1)
         y_scores_dcaa = list(preprocessing.normalize(y_scores_dcaa, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_dcaa, lp_result['degree_corrected_adamic_adar'])
 
@@ -94,9 +99,17 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
             first_hop_degrees.append(len(cn_neighbors.intersection(first_hop_nodes)))
-            other_degrees.append(len(cn_neighbors - first_hop_nodes))
+            other_degrees.append(len(cn_neighbors))
 
-        scores.append(sum(1 / math.log(d) for d in other_degrees))
+        for i in range(len(first_hop_degrees)):
+            if first_hop_degrees[i] == 0:
+                first_hop_degrees[i] = 1.5
+            elif first_hop_degrees[i] == 1:
+                first_hop_degrees[i] = 1.75
+
+        other_degrees_index = sum(1 / math.log(d) for d in other_degrees)
+        first_hop_degree_index = sum(1 / math.log(d * 50) for d in first_hop_degrees)
+        scores.append(other_degrees_index - first_hop_degree_index)
 
     return scores
 
@@ -110,12 +123,54 @@ def plot_auroc_hist(lp_results):
         for lp_method in lp_result:
             aurocs[lp_method].append(lp_result[lp_method]['auroc'])
 
+    for lp_method in aurocs:
+        print("Mean AUROC of {0}: {1}".format(lp_method, np.mean(aurocs[lp_method])))
+
+    print()
+
     plt.figure()
     bins = np.linspace(0, 1, 100)
     for lp_method in aurocs:
-        plt.hist(aurocs[lp_method], bins, label='%s' % lp_method, alpha=0.6)
+        plt.hist(aurocs[lp_method], bins, label='%s' % lp_method, alpha=0.5)
     plt.ylabel('Frequency')
     plt.xlabel('Area Under ROC')
     plt.title('AUROC Histogram of Ego Centric Graphs')
     plt.legend(loc="upper left")
     plt.show()
+
+
+def plot_pr_hist(lp_results):
+    aupr = {}
+    for lp_method in lp_results[0]:
+        aupr[lp_method] = []
+
+    for lp_result in lp_results:
+        for lp_method in lp_result:
+            aupr[lp_method].append(lp_result[lp_method]['average_precision'])
+
+    for lp_method in aupr:
+        print("Mean AUPR of {0}: {1}".format(lp_method, np.mean(aupr[lp_method])))
+
+    print()
+
+    plt.figure()
+    bins = np.linspace(0, 1, 100)
+    for lp_method in aupr:
+        plt.hist(aupr[lp_method], bins, label='%s' % lp_method, alpha=0.5)
+    plt.ylabel('Frequency')
+    plt.xlabel('Area Under Precision Recall (Average Precision)')
+    plt.title('AUPR Histogram of Ego Centric Graphs')
+    plt.legend(loc="upper right")
+    plt.show()
+
+
+def shift_up(arr):
+    arr = np.array(arr)
+    arr_min = arr.min()
+
+    if arr_min >= 0:
+        return arr
+
+    arr += abs(arr_min)
+
+    return arr
