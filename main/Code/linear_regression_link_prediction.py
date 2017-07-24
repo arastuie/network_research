@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn import linear_model
 from sklearn.model_selection import KFold
-from sklearn.metrics import roc_curve, average_precision_score, auc
+from sklearn.metrics import roc_curve, average_precision_score, auc, f1_score
 from sklearn.preprocessing import PolynomialFeatures
 
 
@@ -13,9 +13,8 @@ def run_linear_regression(path, aa_only):
     else:
         data_x = data[:, :2]
 
-    poly = PolynomialFeatures(2)
-    data_x = poly.fit_transform(data_x)
-
+    # poly = PolynomialFeatures(1)
+    # data_x = poly.fit_transform(data_x)
     data_y = data[:, -1]
 
     coefs = []
@@ -30,15 +29,19 @@ def run_linear_regression(path, aa_only):
         if sum(y_train) < 1 or sum(y_test) < 1:
             continue
 
-        regr = linear_model.LinearRegression()
+        # regr = linear_model.LinearRegression()
+        regr = linear_model.LogisticRegression(max_iter=1000, C=1)
         regr.fit(X_train, y_train)
-        coefs.append(regr.coef_)
-
+        coefs.append(regr.coef_[0])
+        
         # Prediction Scores
-        y_score = regr.predict(X_test)
+        y_score = regr.predict_proba(X_test)[:, -1]
         fpr, tpr, thresholds = roc_curve(y_test, y_score, pos_label=1)
         auroc = auc(fpr, tpr)
         average_precision = average_precision_score(y_test, y_score)
+
+        # f1 = f1_score(y_test, y_score, average='binary')
+        # f1s.append(f1)
 
         aurocs.append(auroc)
         avg_ps.append(average_precision)
@@ -50,9 +53,8 @@ def run_linear_regression(path, aa_only):
     # print("Mean Avg Precision: {0}".format(np.mean(avg_ps)))
 
     if aa_only:
-        return np.mean(coefs[:, 1]), np.mean(coefs[:, 2]), np.mean(aurocs), np.mean(avg_ps)
+        return np.mean(coefs[:, 0]), np.mean(aurocs), np.mean(avg_ps)
     else:
-        return np.mean(coefs[:, 1]), np.mean(coefs[:, 2]), np.mean(coefs[:, 3]), np.mean(coefs[:, 4]), \
-               np.mean(coefs[:, 5]), np.mean(aurocs), np.mean(avg_ps)
+        return np.mean(coefs[:, 0]), np.mean(coefs[:, 1]), np.mean(aurocs), np.mean(avg_ps)
 
 

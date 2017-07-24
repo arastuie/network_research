@@ -15,7 +15,7 @@ def get_ego_net(ego_node, orig_snaps):
 
     total_edges_formed = 0
 
-    file = open('../Data/fb_lp_features/{0}.txt'.format(ego_node), 'w')
+    file = open('../Data/fb_lp_features_reciprocal/{0}.txt'.format(ego_node), 'w')
 
     for s in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[s].neighbors(ego_node))
@@ -43,7 +43,7 @@ def get_ego_net(ego_node, orig_snaps):
                     first_hop_degrees[ii] = 1.75
 
             aa_index = sum(1 / math.log(d) for d in total_degrees)
-            dc_aa_index = sum(math.log(d) for d in first_hop_degrees)
+            dc_aa_index = sum(1 / math.log(d) for d in first_hop_degrees)
             did_form = ego_snapshots[s + 1].has_edge(ego_node, n)
             file.write("{0},{1},{2},{3},{4},{5}\n".format(aa_index, dc_aa_index, density, average_num_edge, s,
                                                           int(did_form)))
@@ -54,7 +54,7 @@ def get_ego_net(ego_node, orig_snaps):
     file.close()
 
     if total_edges_formed < 10:
-        os.remove('../Data/fb_lp_features/{0}.txt'.format(ego_node))
+        os.remove('../Data/fb_lp_features_reciprocal/{0}.txt'.format(ego_node))
     else:
         print("Network in.")
 
