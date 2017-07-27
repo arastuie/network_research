@@ -24,7 +24,7 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
             'average_precision': []
         }
     }
-
+    
     for i in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
 
@@ -57,8 +57,8 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         evaluate_prediction_result(y_true, y_scores_aa, lp_result['adamic_adar'])
 
         y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
-        y_scores_dcaa = shift_up(y_scores_dcaa)
-        y_scores_dcaa = y_scores_dcaa.astype(float).reshape(1, -1)
+        # y_scores_dcaa = shift_up(y_scores_dcaa)
+        y_scores_dcaa = np.array(y_scores_dcaa).astype(float).reshape(1, -1)
         y_scores_dcaa = list(preprocessing.normalize(y_scores_dcaa, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_dcaa, lp_result['degree_corrected_adamic_adar'])
 
@@ -98,18 +98,20 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
 
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
-            first_hop_degrees.append(len(cn_neighbors.intersection(first_hop_nodes)))
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+            first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
             other_degrees.append(len(cn_neighbors))
 
-        for i in range(len(first_hop_degrees)):
-            if first_hop_degrees[i] == 0:
-                first_hop_degrees[i] = 1.5
-            elif first_hop_degrees[i] == 1:
-                first_hop_degrees[i] = 1.75
+        # for i in range(len(first_hop_degrees)):
+        #     if first_hop_degrees[i] == 0:
+        #         first_hop_degrees[i] = .1
+        #     elif first_hop_degrees[i] == 1:
+        #         first_hop_degrees[i] = 1.5
 
-        other_degrees_index = sum(1 / math.log(d) for d in other_degrees)
-        first_hop_degree_index = sum(1 / math.log(d * 50) for d in first_hop_degrees)
-        scores.append(other_degrees_index - first_hop_degree_index)
+        # other_degrees_index = sum(1 / math.log(d) for d in other_degrees)
+        first_hop_degree_index = sum(math.exp(d) for d in first_hop_degrees)
+        # first_hop_degree_index = sum(first_hop_degrees)
+        scores.append(first_hop_degree_index)
 
     return scores
 
@@ -174,3 +176,59 @@ def shift_up(arr):
     arr += abs(arr_min)
 
     return arr
+
+
+def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
+    percent_aa = []
+    percent_dcaa = []
+    for i in range(len(ego_snapshots) - 1):
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) < 30:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0 or len(second_hop_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            # adding node tuple for adamic adar
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+
+        y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+
+        combo_scores = np.concatenate((np.array(y_scores_aa).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dcaa).astype(float).reshape(-1, 1),
+                                       np.array(y_true).reshape(-1, 1)), axis=1)
+
+        combo_scores_aa_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+        combo_scores_dcaa_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
+        ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
+        ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
+        ones_aa = combo_scores_aa_sorted[ones_index_aa]
+        ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
+
+        ones_index_aa = ones_index_aa / len(y_true)
+        ones_index_dcaa = ones_index_dcaa / len(y_true)
+
+        for m in ones_index_aa:
+            percent_aa.append(m)
+
+        for m in ones_index_dcaa:
+            percent_dcaa.append(m)
+
+    return percent_aa, percent_dcaa
