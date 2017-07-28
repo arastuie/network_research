@@ -99,21 +99,58 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
             x = len(cn_neighbors.intersection(first_hop_nodes))
-            first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-            other_degrees.append(len(cn_neighbors))
+            # # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
+            first_hop_degrees.append(x)
+            # other_degrees.append(len(cn_neighbors))
 
-        # for i in range(len(first_hop_degrees)):
-        #     if first_hop_degrees[i] == 0:
-        #         first_hop_degrees[i] = .1
-        #     elif first_hop_degrees[i] == 1:
-        #         first_hop_degrees[i] = 1.5
+        for i in range(len(first_hop_degrees)):
+            if first_hop_degrees[i] == 0:
+                first_hop_degrees[i] = 1.33
+            elif first_hop_degrees[i] == 1:
+                first_hop_degrees[i] = 1.66
 
-        # other_degrees_index = sum(1 / math.log(d) for d in other_degrees)
-        first_hop_degree_index = sum(math.exp(d) for d in first_hop_degrees)
+        # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
+        first_hop_degree_index = sum(math.log(d) for d in first_hop_degrees)
         # first_hop_degree_index = sum(first_hop_degrees)
         scores.append(first_hop_degree_index)
 
     return scores
+
+
+def double_degree_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
+    scores = []
+    for u, v in non_edges:
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        double_degree_aa = 0
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+            x = cn_neighbors.intersection(first_hop_nodes)
+            y = cn_neighbors - first_hop_nodes
+            if len(x) != 0:
+                double_degree_aa += sum(1 / math.log(d) for d in ego_net.degree(x).values())
+
+            if len(y) != 0:
+                double_degree_aa -= sum(math.log(d) for d in ego_net.degree(y).values())
+
+        scores.append(double_degree_aa)
+
+    return scores
+
+
+def common_neighbor_hop(ego_net, non_edges, first_hop_nodes, formed_nodes):
+    degree_formation = []
+    for u, v in non_edges:
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        has_formed = int(v in formed_nodes)
+
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+
+            degree_formation.append([x / len(first_hop_nodes), len(cn_neighbors) / nx.number_of_nodes(ego_net),
+                                     has_formed])
+
+    return degree_formation
 
 
 def plot_auroc_hist(lp_results):
@@ -164,6 +201,17 @@ def plot_pr_hist(lp_results):
     plt.title('AUPR Histogram of Ego Centric Graphs')
     plt.legend(loc="upper right")
     plt.show()
+
+
+def plot_degree_scatter(degree_formation):
+    formed = degree_formation[np.where(degree_formation[:, 2] == 1)[0]]
+    not_formed = degree_formation[np.where(degree_formation[:, 2] == 0)[0]]
+    # plt.scatter(formed[:, 0], formed[:, 1], label="Formed", color='green', marker='*', s=100)
+    plt.scatter(not_formed[:, 0], not_formed[:, 1], label="Not Formed", color='red', marker='o', s=5, alpha=0.5)
+    plt.xlabel("Local Degree")
+    plt.ylabel("Global Degree")
+    plt.show()
+    plt.close()
 
 
 def shift_up(arr):
@@ -217,18 +265,53 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
 
         combo_scores_aa_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
         combo_scores_dcaa_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
-        ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
-        ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
-        ones_aa = combo_scores_aa_sorted[ones_index_aa]
-        ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
+        # ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
+        # ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
+        # ones_aa = combo_scores_aa_sorted[ones_index_aa]
+        # ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
 
-        ones_index_aa = ones_index_aa / len(y_true)
-        ones_index_dcaa = ones_index_dcaa / len(y_true)
+        top_n = math.ceil(len(y_true) * 0.03)
+        percent_aa.append(sum(combo_scores_aa_sorted[:top_n, 2]) / top_n)
+        percent_dcaa.append(sum(combo_scores_dcaa_sorted[:top_n, 2]) / top_n)
 
-        for m in ones_index_aa:
-            percent_aa.append(m)
-
-        for m in ones_index_dcaa:
-            percent_dcaa.append(m)
+        # ones_index_aa = ones_index_aa / len(y_true)
+        # ones_index_dcaa = ones_index_dcaa / len(y_true)
+        #
+        # for m in ones_index_aa:
+        #     percent_aa.append(m)
+        #
+        # for m in ones_index_dcaa:
+        #     percent_dcaa.append(m)
 
     return percent_aa, percent_dcaa
+
+
+def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):
+    degree_formation = None
+    for i in range(len(ego_snapshots) - 1):
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) < 30:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0 or len(second_hop_nodes) == 0:
+            continue
+
+        non_edges = []
+
+        for n in second_hop_nodes:
+            # adding node tuple for adamic adar
+            non_edges.append((ego_node, n))
+
+        degrees = common_neighbor_hop(ego_snapshots[i], non_edges, first_hop_nodes, formed_nodes)
+        if degree_formation is None:
+            degree_formation = np.array(degrees)
+        else:
+            degree_formation = np.concatenate((degree_formation, np.array(degrees)))
+
+    return degree_formation
