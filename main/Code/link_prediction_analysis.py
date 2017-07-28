@@ -43,19 +43,33 @@ print("Networks in!")
 # print("aa -> {0}".format(np.mean(percent_aa)))
 # print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
 
-degree_formation = None
-for i in range(len(ego_centric_networks)):
-    degrees = lp_helpers.ego_net_link_formation_hop_degree(ego_centric_networks[i], ego_nodes[i])
+# degree_formation = None
+# for i in range(len(ego_centric_networks)):
+#     degrees = lp_helpers.ego_net_link_formation_hop_degree(ego_centric_networks[i], ego_nodes[i])
+#
+#     if degrees is not None:
+#         if degree_formation is None:
+#             degree_formation = np.array(degrees)
+#         else:
+#             degree_formation = np.concatenate((degree_formation, np.array(degrees)))
+#
+#     print('{0}'.format(i), end='\r')
+#
+# lp_helpers.plot_degree_scatter(degree_formation)
 
-    if degrees is not None:
-        if degree_formation is None:
-            degree_formation = np.array(degrees)
+index_comparison = None
+for i in range(len(ego_centric_networks)):
+    comparison = lp_helpers.run_adamic_adar_on_ego_net_ranking_plot(ego_centric_networks[i], ego_nodes[i])
+
+    if comparison is not None:
+        if index_comparison is None:
+            index_comparison = np.array(comparison)
         else:
-            degree_formation = np.concatenate((degree_formation, np.array(degrees)))
+            index_comparison = np.concatenate((index_comparison, np.array(comparison)))
 
     print('{0}'.format(i), end='\r')
 
-lp_helpers.plot_degree_scatter(degree_formation)
+lp_helpers.plot_degree_scatter(index_comparison)
 
 # aa_only_scores = []
 # both_scores = []

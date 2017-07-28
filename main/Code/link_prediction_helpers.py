@@ -92,25 +92,25 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
     scores = []
 
     for u, v in non_edges:
-        first_hop_degrees = []
+        # first_hop_degrees = []
         other_degrees = []
         common_neighbors = nx.common_neighbors(ego_net, u, v)
 
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
-            x = len(cn_neighbors.intersection(first_hop_nodes))
+            # x = len(cn_neighbors.intersection(first_hop_nodes))
             # # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-            first_hop_degrees.append(x)
-            # other_degrees.append(len(cn_neighbors))
+            # first_hop_degrees.append(x)
+            other_degrees.append(len(cn_neighbors))
 
-        for i in range(len(first_hop_degrees)):
-            if first_hop_degrees[i] == 0:
-                first_hop_degrees[i] = 1.33
-            elif first_hop_degrees[i] == 1:
-                first_hop_degrees[i] = 1.66
+        # for i in range(len(first_hop_degrees)):
+        #     if first_hop_degrees[i] == 0:
+        #         first_hop_degrees[i] = 1.33
+        #     elif first_hop_degrees[i] == 1:
+        #         first_hop_degrees[i] = 1.66
 
         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
-        first_hop_degree_index = sum(math.log(d) for d in first_hop_degrees)
+        first_hop_degree_index = sum(math.log(d) for d in other_degrees)
         # first_hop_degree_index = sum(first_hop_degrees)
         scores.append(first_hop_degree_index)
 
@@ -206,10 +206,10 @@ def plot_pr_hist(lp_results):
 def plot_degree_scatter(degree_formation):
     formed = degree_formation[np.where(degree_formation[:, 2] == 1)[0]]
     not_formed = degree_formation[np.where(degree_formation[:, 2] == 0)[0]]
-    # plt.scatter(formed[:, 0], formed[:, 1], label="Formed", color='green', marker='*', s=100)
-    plt.scatter(not_formed[:, 0], not_formed[:, 1], label="Not Formed", color='red', marker='o', s=5, alpha=0.5)
-    plt.xlabel("Local Degree")
-    plt.ylabel("Global Degree")
+    plt.scatter(formed[:, 0], formed[:, 1], label="Formed", color='green', marker='*', s=100)
+    plt.scatter(not_formed[:, 0], not_formed[:, 1], label="Not Formed", color='red', marker='o', s=5, alpha=0.1)
+    plt.xlabel("Normalized AA")
+    plt.ylabel("Normalized Sum Ln(degree)")
     plt.show()
     plt.close()
 
@@ -315,3 +315,51 @@ def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):
             degree_formation = np.concatenate((degree_formation, np.array(degrees)))
 
     return degree_formation
+
+
+def run_adamic_adar_on_ego_net_ranking_plot(ego_snapshots, ego_node):
+    index_comparison = None
+    for i in range(len(ego_snapshots) - 1):
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) < 30:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0 or len(second_hop_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            # adding node tuple for adamic adar
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+        y_scores_aa = np.array(y_scores_aa).astype(float).reshape(1, -1)
+        y_scores_aa = list(preprocessing.normalize(y_scores_aa, norm='max')[0])
+
+        y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+        y_scores_dcaa = np.array(y_scores_dcaa).astype(float).reshape(1, -1)
+        y_scores_dcaa = list(preprocessing.normalize(y_scores_dcaa, norm='max')[0])
+
+        combo_scores = np.concatenate((np.array(y_scores_aa).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dcaa).astype(float).reshape(-1, 1),
+                                       np.array(y_true).reshape(-1, 1)), axis=1)
+
+        if index_comparison is None:
+            index_comparison = np.array(combo_scores)
+        else:
+            index_comparison = np.concatenate((index_comparison, np.array(combo_scores)))
+
+    return index_comparison
