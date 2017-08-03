@@ -88,22 +88,25 @@ def evaluate_prediction_result(y_true, y_scores, lp_result):
     return
 
 
-def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes, orig_snap):
+def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
     scores = []
 
     for u, v in non_edges:
-        # first_hop_degrees = []
-        other_degrees = []
-        common_neighbors = nx.common_neighbors(orig_snap, u, v)
+        first_hop_degrees = []
+        # other_degrees = []
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
 
-        cn = 0
         for c in common_neighbors:
-            # cn_neighbors = set(nx.neighbors(orig_snap, c))
-            cn += len(list(nx.common_neighbors(orig_snap, u, c)))
-            # cn += len(list(nx.common_neighbors(orig_snap, v, c)))
-            # x = len(cn_neighbors.intersection(first_hop_nodes))
-            # # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-            # first_hop_degrees.append(x)
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+            y = len(cn_neighbors) - x
+            if x == 0:
+                x = 0.5
+
+            if y == 0:
+                y = 0.5
+            # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
+            first_hop_degrees.append((x * x / y) + (y * y / x))
             # other_degrees.append(len(cn_neighbors))
 
         # for i in range(len(first_hop_degrees)):
@@ -113,9 +116,9 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes, orig
         #         first_hop_degrees[i] = 1.66
 
         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
-        # first_hop_degree_index = sum(math.log(d) for d in other_degrees)
+        first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
         # first_hop_degree_index = sum(first_hop_degrees)
-        scores.append(cn)
+        scores.append(first_hop_degree_index)
 
     return scores
 
@@ -229,7 +232,7 @@ def shift_up(arr):
     return arr
 
 
-def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, orig_snaps):
+def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
     percent_aa = []
     percent_dcaa = []
     for i in range(len(ego_snapshots) - 1):
@@ -260,7 +263,7 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, orig_snaps):
 
         y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
 
-        y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes, orig_snaps[i])
+        y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
 
         combo_scores = np.concatenate((np.array(y_scores_aa).astype(float).reshape(-1, 1),
                                        np.array(y_scores_dcaa).astype(float).reshape(-1, 1),

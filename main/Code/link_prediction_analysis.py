@@ -27,22 +27,22 @@ print("Networks in!")
 # lp_helpers.plot_auroc_hist(lp_results)
 # lp_helpers.plot_pr_hist(lp_results)
 
-fb_graph = helpers.read_facebook_graph()
-
-orig_snapshots = []
-
-oldest_timestamp = 1157454929
-seconds_in_90_days = 7776000
-for i in range(10):
-    orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in fb_graph.edges(data=True)
-                                    if d['timestamp'] < (oldest_timestamp + seconds_in_90_days * i)]))
-orig_snapshots.append(fb_graph)
-fb_graph = None
+# fb_graph = helpers.read_facebook_graph()
+#
+# orig_snapshots = []
+#
+# oldest_timestamp = 1157454929
+# seconds_in_90_days = 7776000
+# for i in range(10):
+#     orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in fb_graph.edges(data=True)
+#                                     if d['timestamp'] < (oldest_timestamp + seconds_in_90_days * i)]))
+# orig_snapshots.append(fb_graph)
+# fb_graph = None
 
 percent_aa = []
 percent_dcaa = []
 for i in range(len(ego_centric_networks)):
-    aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i], orig_snapshots)
+    aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i])
 
     for m in aa:
         percent_aa.append(m)
