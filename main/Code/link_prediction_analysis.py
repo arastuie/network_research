@@ -4,6 +4,7 @@ import link_prediction_helpers as lp_helpers
 import linear_regression_link_prediction as lr
 import numpy as np
 import os
+import networkx as nx
 
 # print("Reading in 200 random Facebook ego networks...")
 #
@@ -26,22 +27,33 @@ print("Networks in!")
 # lp_helpers.plot_auroc_hist(lp_results)
 # lp_helpers.plot_pr_hist(lp_results)
 
+fb_graph = helpers.read_facebook_graph()
 
-# percent_aa = []
-# percent_dcaa = []
-# for i in range(len(ego_centric_networks)):
-#     aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i])
-#
-#     for m in aa:
-#         percent_aa.append(m)
-#
-#     for n in dcaa:
-#         percent_dcaa.append(n)
-#
-#     print('{0}'.format(i), end='\r')
-#
-# print("aa -> {0}".format(np.mean(percent_aa)))
-# print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
+orig_snapshots = []
+
+oldest_timestamp = 1157454929
+seconds_in_90_days = 7776000
+for i in range(10):
+    orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in fb_graph.edges(data=True)
+                                    if d['timestamp'] < (oldest_timestamp + seconds_in_90_days * i)]))
+orig_snapshots.append(fb_graph)
+fb_graph = None
+
+percent_aa = []
+percent_dcaa = []
+for i in range(len(ego_centric_networks)):
+    aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i], orig_snapshots)
+
+    for m in aa:
+        percent_aa.append(m)
+
+    for n in dcaa:
+        percent_dcaa.append(n)
+
+    print('{0}'.format(i), end='\r')
+
+print("aa -> {0}".format(np.mean(percent_aa)))
+print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
 
 # degree_formation = None
 # for i in range(len(ego_centric_networks)):
@@ -57,19 +69,19 @@ print("Networks in!")
 #
 # lp_helpers.plot_degree_scatter(degree_formation)
 
-index_comparison = None
-for i in range(len(ego_centric_networks)):
-    comparison = lp_helpers.run_adamic_adar_on_ego_net_ranking_plot(ego_centric_networks[i], ego_nodes[i])
-
-    if comparison is not None:
-        if index_comparison is None:
-            index_comparison = np.array(comparison)
-        else:
-            index_comparison = np.concatenate((index_comparison, np.array(comparison)))
-
-    print('{0}'.format(i), end='\r')
-
-lp_helpers.plot_degree_scatter(index_comparison)
+# index_comparison = None
+# for i in range(len(ego_centric_networks)):
+#     comparison = lp_helpers.run_adamic_adar_on_ego_net_ranking_plot(ego_centric_networks[i], ego_nodes[i])
+#
+#     if comparison is not None:
+#         if index_comparison is None:
+#             index_comparison = np.array(comparison)
+#         else:
+#             index_comparison = np.concatenate((index_comparison, np.array(comparison)))
+#
+#     print('{0}'.format(i), end='\r')
+#
+# lp_helpers.plot_degree_scatter(index_comparison)
 
 # aa_only_scores = []
 # both_scores = []
