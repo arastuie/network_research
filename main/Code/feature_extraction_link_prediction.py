@@ -15,7 +15,7 @@ def get_ego_net(ego_node, orig_snaps):
 
     total_edges_formed = 0
 
-    file = open('../Data/fb_lp_features_reciprocal/{0}.txt'.format(ego_node), 'w')
+    file = open('../Data/fb-lp-features-degree-vs-local-degree/{0}.txt'.format(ego_node), 'w')
 
     for s in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[s].neighbors(ego_node))
@@ -36,14 +36,15 @@ def get_ego_net(ego_node, orig_snaps):
                 first_hop_degrees.append(len(cn_neighbors.intersection(first_hop_nodes)))
                 total_degrees.append(len(cn_neighbors))
 
-            for ii in range(len(first_hop_degrees)):
-                if first_hop_degrees[ii] == 0:
-                    first_hop_degrees[ii] = 1.5
-                elif first_hop_degrees[ii] == 1:
-                    first_hop_degrees[ii] = 1.75
+            # for ii in range(len(first_hop_degrees)):
+            #     if first_hop_degrees[ii] == 0:
+            #         first_hop_degrees[ii] = 1.5
+            #     elif first_hop_degrees[ii] == 1:
+            #         first_hop_degrees[ii] = 1.75
+            #
+            # aa_index = sum(1 / math.log(d) for d in total_degrees)
+            # dc_aa_index = sum(1 / math.log(d) for d in first_hop_degrees)
 
-            aa_index = sum(1 / math.log(d) for d in total_degrees)
-            dc_aa_index = sum(1 / math.log(d) for d in first_hop_degrees)
             did_form = ego_snapshots[s + 1].has_edge(ego_node, n)
             file.write("{0},{1},{2},{3},{4},{5}\n".format(aa_index, dc_aa_index, density, average_num_edge, s,
                                                           int(did_form)))

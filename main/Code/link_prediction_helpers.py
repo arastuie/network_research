@@ -22,6 +22,14 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
             # 'recall': [],
             'auroc': [],
             'average_precision': []
+        },
+        'common_neighbors': {
+            'auroc': [],
+            'average_precision': []
+        },
+        'degree_corrected_common_neighbors': {
+            'auroc': [],
+            'average_precision': []
         }
     }
     
@@ -51,16 +59,30 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
             else:
                 y_true.append(0)
 
+        # Adamic Adar method
         y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
         y_scores_aa = np.array(y_scores_aa).astype(float).reshape(1, -1)
         y_scores_aa = list(preprocessing.normalize(y_scores_aa, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_aa, lp_result['adamic_adar'])
 
+        # DCAA method
         y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
         # y_scores_dcaa = shift_up(y_scores_dcaa)
         y_scores_dcaa = np.array(y_scores_dcaa).astype(float).reshape(1, -1)
         y_scores_dcaa = list(preprocessing.normalize(y_scores_dcaa, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_dcaa, lp_result['degree_corrected_adamic_adar'])
+
+        # common neighbors method
+        y_scores_cn = common_neighbors_index(ego_snapshots[i], non_edges)
+        y_scores_cn = np.array(y_scores_cn).astype(float).reshape(1, -1)
+        y_scores_cn = list(preprocessing.normalize(y_scores_cn, norm='max')[0])
+        evaluate_prediction_result(y_true, y_scores_cn, lp_result['common_neighbors'])
+
+        # DC common neighbors method
+        y_scores_dccn = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
+        y_scores_dccn = np.array(y_scores_dccn).astype(float).reshape(1, -1)
+        y_scores_dccn = list(preprocessing.normalize(y_scores_dccn, norm='max')[0])
+        evaluate_prediction_result(y_true, y_scores_dccn, lp_result['degree_corrected_common_neighbors'])
 
     if len(lp_result['adamic_adar']['auroc']) == 0:
         return
@@ -95,18 +117,35 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         first_hop_degrees = []
         # other_degrees = []
         common_neighbors = nx.common_neighbors(ego_net, u, v)
+        v_node_neighbors = set(nx.neighbors(ego_net, v))
 
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
-            x = len(cn_neighbors.intersection(first_hop_nodes))
-            y = len(cn_neighbors) - x
-            if x == 0:
-                x = 0.5
+            # x = len(cn_neighbors.intersection(first_hop_nodes))
 
-            if y == 0:
-                y = 0.5
+            # total degree
+            t = len(cn_neighbors)
+
+            # local degree
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+
+            # total degree - local degree
+            y = t - x
+
+            if x == 0:
+                x = 1
+
+            # if y == 0:
+            #     y = 0.5
+
+            # score = (x ** 3 + y ** 3) / (x * y)
+            # print(x, y, len(cn_neighbors))
+            # if score <= 1:
+            #     print(score)
+
             # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-            first_hop_degrees.append((x * x / y) + (y * y / x))
+
+            first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
             # other_degrees.append(len(cn_neighbors))
 
         # for i in range(len(first_hop_degrees)):
@@ -121,6 +160,101 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         scores.append(first_hop_degree_index)
 
     return scores
+
+
+def common_neighbors_index(ego_net, non_edges):
+    scores = []
+
+    for u, v in non_edges:
+        scores.append(len(list(nx.common_neighbors(ego_net, u, v))))
+
+    return scores
+
+
+def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    for u, v in non_edges:
+        first_hop_degrees = []
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        v_node_neighbors = set(nx.neighbors(ego_net, v))
+
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+
+            # # total degree
+            # t = len(cn_neighbors)
+
+            # local degree
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+
+            # second hop common degree
+            v_cn = len(cn_neighbors.intersection(v_node_neighbors))
+
+            tot = x + v_cn + 2
+
+            # # total degree - local degree
+            # y = t - x
+
+            first_hop_degrees.append(tot)
+
+        first_hop_degree_index = sum(math.log(d) for d in first_hop_degrees)
+
+        scores.append(first_hop_degree_index)
+
+    return scores
+
+
+# def degree_corrected_preferential_attachment(ego_net, non_edges, first_hop_nodes):
+#     scores = []
+#
+#     for u, v in non_edges:
+#         first_hop_degrees = []
+#         # other_degrees = []
+#         common_neighbors = nx.common_neighbors(ego_net, u, v)
+#         v_node_neighbors = set(nx.neighbors(ego_net, v))
+#
+#         for c in common_neighbors:
+#             cn_neighbors = set(nx.neighbors(ego_net, c))
+#             # x = len(cn_neighbors.intersection(first_hop_nodes))
+#
+#             # total degree
+#             t = len(cn_neighbors)
+#
+#             # local degree
+#             x = len(cn_neighbors.intersection(first_hop_nodes))
+#
+#             # total degree - local degree
+#             y = t - x
+#
+#             if x == 0:
+#                 x = 1
+#
+#             # if y == 0:
+#             #     y = 0.5
+#
+#             # score = (x ** 3 + y ** 3) / (x * y)
+#             # print(x, y, len(cn_neighbors))
+#             # if score <= 1:
+#             #     print(score)
+#
+#             # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
+#
+#             first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
+#             # other_degrees.append(len(cn_neighbors))
+#
+#         # for i in range(len(first_hop_degrees)):
+#         #     if first_hop_degrees[i] == 0:
+#         #         first_hop_degrees[i] = 1.33
+#         #     elif first_hop_degrees[i] == 1:
+#         #         first_hop_degrees[i] = 1.66
+#
+#         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
+#         first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
+#         # first_hop_degree_index = sum(first_hop_degrees)
+#         scores.append(first_hop_degree_index)
+#
+#     return scores
 
 
 def double_degree_adamic_adar_index(ego_net, non_edges, first_hop_nodes):

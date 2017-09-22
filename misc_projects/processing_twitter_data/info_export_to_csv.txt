@@ -1,0 +1,5 @@
+export_to_csv.py arguments:
+	python export_to_csv.py [path_to_input_file] [path_to_directory_of_output_file]
+
+The output has the following format:
+	tweeted_by, tweeted_to, timestamp, tweet_id, is_retweet

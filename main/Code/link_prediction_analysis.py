@@ -16,16 +16,16 @@ with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
 
 print("Networks in!")
 
-# lp_results = []
-# # for w in np.arange(10, 20, 2):
-# for i in range(len(ego_centric_networks)):
-#     scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
-#
-#     if scores is not None:
-#         lp_results.append(scores)
-#
-# lp_helpers.plot_auroc_hist(lp_results)
-# lp_helpers.plot_pr_hist(lp_results)
+lp_results = []
+# for w in np.arange(10, 20, 2):
+for i in range(len(ego_centric_networks)):
+    scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
+
+    if scores is not None:
+        lp_results.append(scores)
+
+lp_helpers.plot_auroc_hist(lp_results)
+lp_helpers.plot_pr_hist(lp_results)
 
 # fb_graph = helpers.read_facebook_graph()
 #
@@ -39,21 +39,21 @@ print("Networks in!")
 # orig_snapshots.append(fb_graph)
 # fb_graph = None
 
-percent_aa = []
-percent_dcaa = []
-for i in range(len(ego_centric_networks)):
-    aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i])
-
-    for m in aa:
-        percent_aa.append(m)
-
-    for n in dcaa:
-        percent_dcaa.append(n)
-
-    print('{0}'.format(i), end='\r')
-
-print("aa -> {0}".format(np.mean(percent_aa)))
-print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
+# percent_aa = []
+# percent_dcaa = []
+# for i in range(len(ego_centric_networks)):
+#     aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i])
+#
+#     for m in aa:
+#         percent_aa.append(m)
+#
+#     for n in dcaa:
+#         percent_dcaa.append(n)
+#
+#     print('{0}'.format(i), end='\r')
+#
+# print("aa -> {0}".format(np.mean(percent_aa)))
+# print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
 
 # degree_formation = None
 # for i in range(len(ego_centric_networks)):

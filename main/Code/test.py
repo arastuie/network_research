@@ -129,3 +129,7 @@ import os
 #                      '../Plots/hop_degree_based') for ego_net_file in os.listdir('../Data/gplus-ego'))
 #
 # print(len(overall_means['formed_in_degree_first_hop']))
+
+with open('../Data/gplus/gplus-nodes-list.pckl', 'rb') as f:
+    all_nodes = pickle.load(f)
+    print(len(all_nodes))
