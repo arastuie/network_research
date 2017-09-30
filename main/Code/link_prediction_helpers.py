@@ -1,7 +1,9 @@
 import math
+import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import directed_graphs_helpers as dh
 from sklearn import metrics, preprocessing
 
 
@@ -30,7 +32,15 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         'degree_corrected_common_neighbors': {
             'auroc': [],
             'average_precision': []
-        }
+        },
+        # 'jaccard_coefficient': {
+        #     'auroc': [],
+        #     'average_precision': []
+        # },
+        # 'degree_corrected_jaccard_coefficient': {
+        #     'auroc': [],
+        #     'average_precision': []
+        # }
     }
     
     for i in range(len(ego_snapshots) - 1):
@@ -83,6 +93,18 @@ def run_adamic_adar_on_ego_net(ego_snapshots, ego_node):
         y_scores_dccn = np.array(y_scores_dccn).astype(float).reshape(1, -1)
         y_scores_dccn = list(preprocessing.normalize(y_scores_dccn, norm='max')[0])
         evaluate_prediction_result(y_true, y_scores_dccn, lp_result['degree_corrected_common_neighbors'])
+
+        # # jaccard coefficient method
+        # y_scores_jc = [p for u, v, p in nx.jaccard_coefficient(ego_snapshots[i], non_edges)]
+        # y_scores_jc = np.array(y_scores_jc).astype(float).reshape(1, -1)
+        # y_scores_jc = list(preprocessing.normalize(y_scores_jc, norm='max')[0])
+        # evaluate_prediction_result(y_true, y_scores_jc, lp_result['jaccard_coefficient'])
+        #
+        # # DC jaccard coefficient method
+        # y_scores_dcjc = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
+        # y_scores_dcjc = np.array(y_scores_dcjc).astype(float).reshape(1, -1)
+        # y_scores_dcjc = list(preprocessing.normalize(y_scores_dcjc, norm='max')[0])
+        # evaluate_prediction_result(y_true, y_scores_dcjc, lp_result['degree_corrected_jaccard_coefficient'])
 
     if len(lp_result['adamic_adar']['auroc']) == 0:
         return
@@ -177,84 +199,56 @@ def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes)
     for u, v in non_edges:
         first_hop_degrees = []
         common_neighbors = nx.common_neighbors(ego_net, u, v)
-        v_node_neighbors = set(nx.neighbors(ego_net, v))
+        # v_node_neighbors = set(nx.neighbors(ego_net, v))
 
         for c in common_neighbors:
             cn_neighbors = set(nx.neighbors(ego_net, c))
 
-            # # total degree
+            # total degree
             # t = len(cn_neighbors)
 
             # local degree
-            x = len(cn_neighbors.intersection(first_hop_nodes))
-
-            # second hop common degree
-            v_cn = len(cn_neighbors.intersection(v_node_neighbors))
-
-            tot = x + v_cn + 2
+            x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
 
             # # total degree - local degree
             # y = t - x
 
-            first_hop_degrees.append(tot)
+            first_hop_degrees.append(math.log(x))
 
-        first_hop_degree_index = sum(math.log(d) for d in first_hop_degrees)
+        first_hop_degree_index = sum(first_hop_degrees)
 
         scores.append(first_hop_degree_index)
 
     return scores
 
 
-# def degree_corrected_preferential_attachment(ego_net, non_edges, first_hop_nodes):
-#     scores = []
-#
-#     for u, v in non_edges:
-#         first_hop_degrees = []
-#         # other_degrees = []
-#         common_neighbors = nx.common_neighbors(ego_net, u, v)
-#         v_node_neighbors = set(nx.neighbors(ego_net, v))
-#
-#         for c in common_neighbors:
-#             cn_neighbors = set(nx.neighbors(ego_net, c))
-#             # x = len(cn_neighbors.intersection(first_hop_nodes))
-#
-#             # total degree
-#             t = len(cn_neighbors)
-#
-#             # local degree
-#             x = len(cn_neighbors.intersection(first_hop_nodes))
-#
-#             # total degree - local degree
-#             y = t - x
-#
-#             if x == 0:
-#                 x = 1
-#
-#             # if y == 0:
-#             #     y = 0.5
-#
-#             # score = (x ** 3 + y ** 3) / (x * y)
-#             # print(x, y, len(cn_neighbors))
-#             # if score <= 1:
-#             #     print(score)
-#
-#             # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-#
-#             first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
-#             # other_degrees.append(len(cn_neighbors))
-#
-#         # for i in range(len(first_hop_degrees)):
-#         #     if first_hop_degrees[i] == 0:
-#         #         first_hop_degrees[i] = 1.33
-#         #     elif first_hop_degrees[i] == 1:
-#         #         first_hop_degrees[i] = 1.66
-#
-#         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
-#         first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
-#         # first_hop_degree_index = sum(first_hop_degrees)
-#         scores.append(first_hop_degree_index)
-#
-#     return scores
+def degree_corrected_jaccard_coefficient_index(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    for u, v in non_edges:
+        first_hop_degrees = []
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        v_node_neighbors = set(nx.neighbors(ego_net, v))
+
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+
+            # total degree
+            # t = len(cn_neighbors)
+
+            # local degree
+            x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+
+            # # total degree - local degree
+            # y = t - x
+
+            first_hop_degrees.append(math.log(x))
+
+        first_hop_degree_index = sum(first_hop_degrees) / (len(v_node_neighbors.union(first_hop_nodes)))
+
+        scores.append(first_hop_degree_index)
+
+    return scores
 
 
 def double_degree_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
@@ -366,9 +360,15 @@ def shift_up(arr):
     return arr
 
 
-def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
-    percent_aa = []
-    percent_dcaa = []
+def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values):
+
+    percent_aa = {}
+    percent_dcaa = {}
+
+    for k in top_k_values:
+        percent_aa[k] = []
+        percent_dcaa[k] = []
+
     for i in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
 
@@ -395,9 +395,11 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
             else:
                 y_true.append(0)
 
-        y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+        # y_scores_aa = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+        y_scores_aa = common_neighbors_index(ego_snapshots[i], non_edges)
 
-        y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+        # y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+        y_scores_dcaa = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
 
         combo_scores = np.concatenate((np.array(y_scores_aa).astype(float).reshape(-1, 1),
                                        np.array(y_scores_dcaa).astype(float).reshape(-1, 1),
@@ -405,23 +407,24 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node):
 
         combo_scores_aa_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
         combo_scores_dcaa_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
-        ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
-        ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
-        ones_aa = combo_scores_aa_sorted[ones_index_aa]
-        ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
+        # ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
+        # ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
+        # ones_aa = combo_scores_aa_sorted[ones_index_aa]
+        # ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
 
         # top_n = math.ceil(len(y_true) * 0.03)
-        # percent_aa.append(sum(combo_scores_aa_sorted[:top_n, 2]) / top_n)
-        # percent_dcaa.append(sum(combo_scores_dcaa_sorted[:top_n, 2]) / top_n)
+        for k in percent_aa.keys():
+            percent_aa[k].append(sum(combo_scores_aa_sorted[:k, -1]) / k)
+            percent_dcaa[k].append(sum(combo_scores_dcaa_sorted[:k, -1]) / k)
 
-        ones_index_aa = ones_index_aa / len(y_true)
-        ones_index_dcaa = ones_index_dcaa / len(y_true)
-
-        for m in ones_index_aa:
-            percent_aa.append(m)
-
-        for m in ones_index_dcaa:
-            percent_dcaa.append(m)
+        # ones_index_aa = ones_index_aa / len(y_true)
+        # ones_index_dcaa = ones_index_dcaa / len(y_true)
+        #
+        # for m in ones_index_aa:
+        #     percent_aa.append(m)
+        #
+        # for m in ones_index_dcaa:
+        #     percent_dcaa.append(m)
 
     return percent_aa, percent_dcaa
 
@@ -503,3 +506,115 @@ def run_adamic_adar_on_ego_net_ranking_plot(ego_snapshots, ego_node):
             index_comparison = np.concatenate((index_comparison, np.array(combo_scores)))
 
     return index_comparison
+
+
+##################### Directed Graphs Helpers ########################
+def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type):
+    triangle_type_func = {
+        'T01': dh.get_t01_type_nodes,
+        'T02': dh.get_t02_type_nodes,
+        'T03': dh.get_t03_type_nodes,
+        'T04': dh.get_t04_type_nodes,
+        'T05': dh.get_t05_type_nodes,
+        'T06': dh.get_t06_type_nodes,
+        'T07': dh.get_t07_type_nodes,
+        'T08': dh.get_t08_type_nodes,
+        'T09': dh.get_t09_type_nodes,
+    }
+
+    with open(ego_net_file, 'rb') as f:
+        ego_node, ego_net = pickle.load(f)
+
+    tot_num_v_nodes = 0
+
+    # return if the network has less than 30 nodes
+    if nx.number_of_nodes(ego_net) < 30:
+        return
+
+    ego_net_snapshots = []
+
+    # find out what snapshot the ego node first appeared in
+    first_snapshot = 3
+    for u, v, d in ego_net.out_edges(ego_node, data=True):
+        if d['snapshot'] < first_snapshot:
+            first_snapshot = d['snapshot']
+            if first_snapshot == 0:
+                break
+    if first_snapshot != 0:
+        for u, v, d in ego_net.in_edges(ego_node, data=True):
+            if d['snapshot'] < first_snapshot:
+                first_snapshot = d['snapshot']
+                if first_snapshot == 0:
+                    break
+
+    if first_snapshot > 2:
+        return
+
+    for r in range(first_snapshot, 4):
+        temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+        ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
+
+        # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
+        has_any_formed = False
+        has_any_not_formed = False
+        for v in v_nodes:
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                has_any_formed = True
+            else:
+                has_any_not_formed = True
+
+            if has_any_formed and has_any_not_formed:
+                break
+
+        if not has_any_formed or not has_any_not_formed:
+            continue
+
+        tot_num_v_nodes += len(v_nodes)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        # ANALYSIS
+        formed_z_in_degree_first_hop = []
+        formed_z_out_degree_first_hop = []
+
+        not_formed_z_in_degree_first_hop = []
+        not_formed_z_out_degree_first_hop = []
+
+        for v in v_nodes_list:
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        for v in v_nodes:
+            temp_in_degree_first_hop = []
+            temp_out_degree_first_hop = []
+            temp_in_degree_second_hop = []
+            temp_out_degree_second_hop = []
+
+            for z in v_nodes[v]:
+                z_preds = set(ego_net_snapshots[i].predecessors(z))
+                z_succs = set(ego_net_snapshots[i].successors(z))
+
+                z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
+                z_local_out_degree = len(z_preds.intersection(second_hop_nodes))
+
+
+                temp_in_degree_first_hop.append()
+                temp_in_degree_second_hop.append()
+                temp_out_degree_first_hop.append(len(z_succs.intersection(first_hop_nodes)))
+                temp_out_degree_second_hop.append(len(z_succs.intersection(second_hop_nodes)))
+
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
+                formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+
+            else:
+                not_formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
+                not_formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+

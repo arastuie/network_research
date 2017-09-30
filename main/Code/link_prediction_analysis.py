@@ -16,16 +16,16 @@ with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
 
 print("Networks in!")
 
-lp_results = []
-# for w in np.arange(10, 20, 2):
-for i in range(len(ego_centric_networks)):
-    scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
-
-    if scores is not None:
-        lp_results.append(scores)
-
-lp_helpers.plot_auroc_hist(lp_results)
-lp_helpers.plot_pr_hist(lp_results)
+# lp_results = []
+# # for w in np.arange(10, 20, 2):
+# for i in range(len(ego_centric_networks)):
+#     scores = lp_helpers.run_adamic_adar_on_ego_net(ego_centric_networks[i], ego_nodes[i])
+#
+#     if scores is not None:
+#         lp_results.append(scores)
+#
+# lp_helpers.plot_auroc_hist(lp_results)
+# lp_helpers.plot_pr_hist(lp_results)
 
 # fb_graph = helpers.read_facebook_graph()
 #
@@ -39,21 +39,31 @@ lp_helpers.plot_pr_hist(lp_results)
 # orig_snapshots.append(fb_graph)
 # fb_graph = None
 
-# percent_aa = []
-# percent_dcaa = []
-# for i in range(len(ego_centric_networks)):
-#     aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i])
-#
-#     for m in aa:
-#         percent_aa.append(m)
-#
-#     for n in dcaa:
-#         percent_dcaa.append(n)
-#
-#     print('{0}'.format(i), end='\r')
-#
-# print("aa -> {0}".format(np.mean(percent_aa)))
-# print("dcaa -> {0}\n".format(np.mean(percent_dcaa)))
+percent_aa = {}
+percent_dcaa = {}
+
+top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+for k in top_k_values:
+    percent_aa[k] = []
+    percent_dcaa[k] = []
+
+for i in range(len(ego_centric_networks)):
+    aa, dcaa = lp_helpers.run_adamic_adar_on_ego_net_ranking(ego_centric_networks[i], ego_nodes[i], top_k_values)
+
+    for k in top_k_values:
+        for m in aa[k]:
+            percent_aa[k].append(m)
+
+    for k in top_k_values:
+        for n in dcaa[k]:
+            percent_dcaa[k].append(n)
+
+    print('{0}'.format(i), end='\r')
+
+for k in top_k_values:
+    print("For top {0}:".format(k))
+    print("\taa -> {0}".format(np.mean(percent_aa[k])))
+    print("\tdcaa -> {0}\n".format(np.mean(percent_dcaa[k])))
 
 # degree_formation = None
 # for i in range(len(ego_centric_networks)):

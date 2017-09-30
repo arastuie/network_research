@@ -29,8 +29,14 @@ import os
 #     print(type(key))
 
 # graph = h.read_gplus_graph()
-# ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_gplus(graph, 200, "random_200_gplus_ego_nets.pckl",
+# ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_gplus(graph, 400, "random_400_gplus_ego_nets.pckl",
 #                                                                       search_type='random', hop=2, center=True)
+
+
+graph = h.read_facebook_graph()
+ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(graph, 500, 'random_500_ego_nets.pckl',
+                                                                   search_type='random', hop=2, center=True)
+
 
 # ego_centric_networks = h.read_gplus_ego_graph(200)
 
@@ -130,6 +136,6 @@ import os
 #
 # print(len(overall_means['formed_in_degree_first_hop']))
 
-with open('../Data/gplus/gplus-nodes-list.pckl', 'rb') as f:
-    all_nodes = pickle.load(f)
-    print(len(all_nodes))
+# with open('../Data/gplus/gplus-nodes-list.pckl', 'rb') as f:
+#     all_nodes = pickle.load(f)
+#     print(len(all_nodes))
