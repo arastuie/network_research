@@ -509,7 +509,8 @@ def run_adamic_adar_on_ego_net_ranking_plot(ego_snapshots, ego_node):
 
 
 ##################### Directed Graphs Helpers ########################
-def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type):
+def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type, top_k_values):
+
     triangle_type_func = {
         'T01': dh.get_t01_type_nodes,
         'T02': dh.get_t02_type_nodes,
@@ -522,13 +523,27 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
         'T09': dh.get_t09_type_nodes,
     }
 
+    percent_scores = {
+        'cn': {},
+        'dccn_i': {},
+        'dccn_o': {},
+        'aa_i': {},
+        'aa_o': {},
+        'dcaa_i': {},
+        'dcaa_o': {}
+    }
+
+    for k in top_k_values:
+        for ps in percent_scores.keys():
+            percent_scores[ps][k] = []
+
     with open(ego_net_file, 'rb') as f:
         ego_node, ego_net = pickle.load(f)
 
     tot_num_v_nodes = 0
 
     # return if the network has less than 30 nodes
-    if nx.number_of_nodes(ego_net) < 30:
+    if nx.number_of_nodes(ego_net) < 30 or nx.number_of_nodes(ego_net) > 300000:
         return
 
     ego_net_snapshots = []
@@ -558,6 +573,9 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
     for i in range(len(ego_net_snapshots) - 1):
         first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
 
+        if len(v_nodes) > 30000 or len(v_nodes) < 30:
+            continue
+
         # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
         has_any_formed = False
         has_any_not_formed = False
@@ -578,43 +596,144 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
         v_nodes_list = list(v_nodes.keys())
         y_true = []
 
-        # ANALYSIS
-        formed_z_in_degree_first_hop = []
-        formed_z_out_degree_first_hop = []
-
-        not_formed_z_in_degree_first_hop = []
-        not_formed_z_out_degree_first_hop = []
-
-        for v in v_nodes_list:
-            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
                 y_true.append(1)
             else:
                 y_true.append(0)
 
-        for v in v_nodes:
-            temp_in_degree_first_hop = []
-            temp_out_degree_first_hop = []
-            temp_in_degree_second_hop = []
-            temp_out_degree_second_hop = []
+        y_scores_cn = directed_common_neighbors_index(v_nodes_list, v_nodes)
+        y_scores_cn = np.array(y_scores_cn).astype(float).reshape(1, -1)
+        y_scores_cn = list(preprocessing.normalize(y_scores_cn, norm='max')[0])
 
-            for z in v_nodes[v]:
-                z_preds = set(ego_net_snapshots[i].predecessors(z))
-                z_succs = set(ego_net_snapshots[i].successors(z))
+        y_scores_dccn_i = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
+                                                                           first_hop_nodes, True)
+        y_scores_dccn_i = np.array(y_scores_dccn_i).astype(float).reshape(1, -1)
+        y_scores_dccn_i = list(preprocessing.normalize(y_scores_dccn_i, norm='max')[0])
 
-                z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
-                z_local_out_degree = len(z_preds.intersection(second_hop_nodes))
+        y_scores_dccn_o = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
+                                                                           first_hop_nodes, False)
+        y_scores_dccn_o = np.array(y_scores_dccn_o).astype(float).reshape(1, -1)
+        y_scores_dccn_o = list(preprocessing.normalize(y_scores_dccn_o, norm='max')[0])
+
+        y_scores_aa_i = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, True)
+        y_scores_aa_i = np.array(y_scores_aa_i).astype(float).reshape(1, -1)
+        y_scores_aa_i = list(preprocessing.normalize(y_scores_aa_i, norm='max')[0])
+
+        y_scores_aa_o = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, False)
+        y_scores_aa_o = np.array(y_scores_aa_o).astype(float).reshape(1, -1)
+        y_scores_aa_o = list(preprocessing.normalize(y_scores_aa_o, norm='max')[0])
+
+        y_scores_dcaa_i = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
+                                                                      True)
+        y_scores_dcaa_i = np.array(y_scores_dcaa_i).astype(float).reshape(1, -1)
+        y_scores_dcaa_i = list(preprocessing.normalize(y_scores_dcaa_i, norm='max')[0])
+
+        y_scores_dcaa_o = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
+                                                                      True)
+        y_scores_dcaa_o = np.array(y_scores_dcaa_o).astype(float).reshape(1, -1)
+        y_scores_dcaa_o = list(preprocessing.normalize(y_scores_dcaa_o, norm='max')[0])
+
+        combo_scores = np.concatenate((np.array(y_scores_cn).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dccn_i).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dccn_o).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_aa_i).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_aa_o).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dcaa_i).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_dcaa_o).astype(float).reshape(-1, 1),
+                                       np.array(y_true).reshape(-1, 1)), axis=1)
+
+        combo_scores_cn_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+        combo_scores_dccn_i_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
+        combo_scores_dccn_o_sorted = combo_scores[combo_scores[:, 2].argsort()[::-1]]
+        combo_scores_aa_i_sorted = combo_scores[combo_scores[:, 3].argsort()[::-1]]
+        combo_scores_aa_o_sorted = combo_scores[combo_scores[:, 4].argsort()[::-1]]
+        combo_scores_dcaa_i_sorted = combo_scores[combo_scores[:, 5].argsort()[::-1]]
+        combo_scores_dcaa_o_sorted = combo_scores[combo_scores[:, 6].argsort()[::-1]]
+
+        for k in top_k_values:
+            percent_scores['cn'][k].append(sum(combo_scores_cn_sorted[:k, -1]) / k)
+            percent_scores['dccn_i'][k].append(sum(combo_scores_dccn_i_sorted[:k, -1]) / k)
+            percent_scores['dccn_o'][k].append(sum(combo_scores_dccn_o_sorted[:k, -1]) / k)
+            percent_scores['aa_i'][k].append(sum(combo_scores_aa_i_sorted[:k, -1]) / k)
+            percent_scores['aa_o'][k].append(sum(combo_scores_aa_o_sorted[:k, -1]) / k)
+            percent_scores['dcaa_i'][k].append(sum(combo_scores_dcaa_i_sorted[:k, -1]) / k)
+            percent_scores['dcaa_o'][k].append(sum(combo_scores_dcaa_o_sorted[:k, -1]) / k)
+
+    return percent_scores
 
 
-                temp_in_degree_first_hop.append()
-                temp_in_degree_second_hop.append()
-                temp_out_degree_first_hop.append(len(z_succs.intersection(first_hop_nodes)))
-                temp_out_degree_second_hop.append(len(z_succs.intersection(second_hop_nodes)))
+def directed_common_neighbors_index(v_nodes_list, v_nodes_z):
+    scores = []
 
-            if ego_net_snapshots[i + 1].has_edge(ego_node, v):
-                formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
-                formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+    for v_i in range(0, len(v_nodes_list)):
+        scores.append(len(v_nodes_z[v_nodes_list[v_i]]))
 
+    return scores
+
+
+def directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes, in_degree=True):
+    scores = []
+
+    for v_i in range(0, len(v_nodes_list)):
+        temp_score = 0
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            d = 0
+            if in_degree:
+                d = len(set(ego_net.predecessors(z)).intersection(first_hop_nodes))
             else:
-                not_formed_z_in_degree_first_hop.append(np.mean(temp_in_degree_first_hop))
-                not_formed_z_out_degree_first_hop.append(np.mean(temp_out_degree_first_hop))
+                d = len(set(ego_net.successors(z)).intersection(first_hop_nodes))
 
+            temp_score += math.log(d + 2)
+
+        scores.append(temp_score)
+    return scores
+
+
+def directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes_z, in_degree=True):
+    scores = []
+
+    for v_i in range(0, len(v_nodes_list)):
+        temp_score = 0
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            d = 0
+            if in_degree:
+                d = len(set(ego_net.predecessors(z)))
+            else:
+                d = len(set(ego_net.successors(z)))
+
+            if d > 2:
+                temp_score += (1 / math.log(d))
+
+        scores.append(temp_score)
+    return scores
+
+
+def directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes, in_degree=True):
+    scores = []
+
+    for v_i in range(0, len(v_nodes_list)):
+        temp_score = 0
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+
+            if in_degree:
+                z_ps = set(ego_net.predecessors(z))
+            else:
+                z_ps = set(ego_net.successors(z))
+
+            # total degree
+            t = len(z_ps)
+
+            # local degree
+            x = len(z_ps.intersection(first_hop_nodes))
+
+            # total degree - local degree
+            y = t - x
+
+            if x == 0 or t == 0:
+                continue
+
+            temp_score += (1 / math.log((x * (1 - x / t)) + (y * (t / x))))
+
+        scores.append(temp_score)
+    return scores
