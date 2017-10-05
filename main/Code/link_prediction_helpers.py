@@ -369,7 +369,8 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values):
         percent_aa[k] = []
         percent_dcaa[k] = []
 
-    for i in range(len(ego_snapshots) - 1):
+    # for i in range(len(ego_snapshots) - 1):
+    for i in range(6, len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
 
         if len(first_hop_nodes) < 30:
@@ -543,7 +544,7 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
     tot_num_v_nodes = 0
 
     # return if the network has less than 30 nodes
-    if nx.number_of_nodes(ego_net) < 30 or nx.number_of_nodes(ego_net) > 300000:
+    if nx.number_of_nodes(ego_net) < 30 or nx.number_of_nodes(ego_net) > 500000:
         return
 
     ego_net_snapshots = []
@@ -573,7 +574,7 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
     for i in range(len(ego_net_snapshots) - 1):
         first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
 
-        if len(v_nodes) > 30000 or len(v_nodes) < 30:
+        if len(v_nodes) > 50000 or len(v_nodes) < 30:
             continue
 
         # Checks whether or not any edge were formed and not formed, if not skips to next snapshot

@@ -12,6 +12,8 @@ import percent_of_cn_belonging_to_same_cluster as a5
 import hop_degree_analysis as a6
 #import gplus_hop_degree_directed_analysis_t06 as a7
 import gplus_hop_degree_directed_analysis as a7
+import adamic_adar_analysis as a8
+import matplotlib.pyplot as plt
 
 
 # # reading FB graph
@@ -21,12 +23,41 @@ import gplus_hop_degree_directed_analysis as a7
 # ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(original_graph, 50, "random_50_ego_nets.pckl",
 #                                                                    search_type='random', hop=2, center=True)
 #
-# print("Loading Facebook random 200 ego centric networks...")
-#
-# with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
-#     ego_centric_networks, ego_nodes = pickle.load(f)
 
+print("Loading Facebook random 200 ego centric networks...")
+
+with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
+    ego_centric_networks, ego_nodes = pickle.load(f)
+
+mfems = []
+mnfems = []
 print("Analysing ego centric networks...")
+for o in range(len(ego_centric_networks)):
+    # mfem, mnfem = a6.run_hop_local_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/local_degree')
+    mfem, mnfem = a8.run_hop_global_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/global_degree')
+
+    if mfem != 0:
+        mfems.append(mfem)
+        mnfems.append(mnfem)
+
+print("mfem -> {0}".format(np.mean(mfems)))
+print("mnfem -> {0}".format(np.mean(mnfems)))
+
+
+plt.hist(mfems, color='r', alpha=0.8, weights=np.zeros_like(mfems) + 1. / len(mfems),
+        label="MFEM: {0:.2f}".format(np.mean(mfems)))
+
+plt.hist(mnfems, color='b', alpha=0.5, weights=np.zeros_like(mnfems) + 1. / len(mnfems),
+         label="MNFEM: {0:.2f}".format(np.mean(mnfems)))
+
+plt.legend(loc='upper right')
+plt.ylabel('Relative Frequency')
+plt.xlabel('Mean Normalized Global Degree of Common Neighbors')
+
+current_fig = plt.gcf()
+current_fig.savefig('../Plots/global_degree/overall-mean-normal.eps', format='eps', dpi=1000)
+current_fig.savefig('../Plots/global_degree/overall-mean-normal-png.png')
+
 
 # num_cluster = 8
 
@@ -59,44 +90,44 @@ print("Analysing ego centric networks...")
 # Parallel(n_jobs=20)(delayed(a7.gplus_run_hop_degree_directed_analysis)
 #                     (ego_node_file, True, '../Plots/gplus_hop_degree_based')
 #                     for ego_node_file in os.listdir('../Data/gplus-ego/first-hop-nodes'))
-
-triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
-
-
-def test_directed_triangle(triangle_type):
-    overall_means = {
-        'formed_in_degree_first_hop': [],
-        'not_formed_in_degree_first_hop': [],
-        'formed_in_degree_second_hop': [],
-        'not_formed_in_degree_second_hop': [],
-        'formed_out_degree_first_hop': [],
-        'not_formed_out_degree_first_hop': [],
-        'formed_out_degree_second_hop': [],
-        'not_formed_out_degree_second_hop': [],
-    }
-
-    for ego_net_file in os.listdir('../Data/gplus-ego/first-hop-nodes'):
-        a7.gplus_run_hop_degree_directed_analysis('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, triangle_type,
-                                                  overall_means, True, '../Plots/hop_degree_based')
-
-    with open('../Plots/hop_degree_based/{0}/overall.txt'.format(triangle_type), 'w') as info_file:
-        info_file.write("OVERALL SCORES:\n")
-        info_file.write("In-degree First Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
-                        .format(np.mean(overall_means['formed_in_degree_first_hop']),
-                                np.mean(overall_means['not_formed_in_degree_first_hop'])))
-
-        info_file.write("In-degree Second Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
-                        .format(np.mean(overall_means['formed_in_degree_second_hop']),
-                                np.mean(overall_means['not_formed_in_degree_second_hop'])))
-
-        info_file.write("Out-degree First Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
-                        .format(np.mean(overall_means['formed_out_degree_first_hop']),
-                                np.mean(overall_means['not_formed_out_degree_first_hop'])))
-
-        info_file.write("Out-degree Second Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
-                        .format(np.mean(overall_means['formed_out_degree_second_hop']),
-                                np.mean(overall_means['not_formed_out_degree_second_hop'])))
-
-    print("Done with {0} triangle type".format(triangle_type))
-
-Parallel(n_jobs=9)(delayed(test_directed_triangle)(tri_type) for tri_type in triangle_types)
+#
+# triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+#
+#
+# def test_directed_triangle(triangle_type):
+#     overall_means = {
+#         'formed_in_degree_first_hop': [],
+#         'not_formed_in_degree_first_hop': [],
+#         'formed_in_degree_second_hop': [],
+#         'not_formed_in_degree_second_hop': [],
+#         'formed_out_degree_first_hop': [],
+#         'not_formed_out_degree_first_hop': [],
+#         'formed_out_degree_second_hop': [],
+#         'not_formed_out_degree_second_hop': [],
+#     }
+#
+#     for ego_net_file in os.listdir('../Data/gplus-ego/first-hop-nodes'):
+#         a7.gplus_run_hop_degree_directed_analysis('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, triangle_type,
+#                                                   overall_means, True, '../Plots/hop_degree_based')
+#
+#     with open('../Plots/hop_degree_based/{0}/overall.txt'.format(triangle_type), 'w') as info_file:
+#         info_file.write("OVERALL SCORES:\n")
+#         info_file.write("In-degree First Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
+#                         .format(np.mean(overall_means['formed_in_degree_first_hop']),
+#                                 np.mean(overall_means['not_formed_in_degree_first_hop'])))
+#
+#         info_file.write("In-degree Second Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
+#                         .format(np.mean(overall_means['formed_in_degree_second_hop']),
+#                                 np.mean(overall_means['not_formed_in_degree_second_hop'])))
+#
+#         info_file.write("Out-degree First Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
+#                         .format(np.mean(overall_means['formed_out_degree_first_hop']),
+#                                 np.mean(overall_means['not_formed_out_degree_first_hop'])))
+#
+#         info_file.write("Out-degree Second Hop:\n\tFEM:{0:.3f} \t NFEM:{1:.3f}\n\n"
+#                         .format(np.mean(overall_means['formed_out_degree_second_hop']),
+#                                 np.mean(overall_means['not_formed_out_degree_second_hop'])))
+#
+#     print("Done with {0} triangle type".format(triangle_type))
+#
+# Parallel(n_jobs=9)(delayed(test_directed_triangle)(tri_type) for tri_type in triangle_types)

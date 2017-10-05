@@ -33,9 +33,9 @@ import os
 #                                                                       search_type='random', hop=2, center=True)
 
 
-graph = h.read_facebook_graph()
-ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(graph, 500, 'random_500_ego_nets.pckl',
-                                                                   search_type='random', hop=2, center=True)
+# graph = h.read_facebook_graph()
+# ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(graph, 500, 'random_500_ego_nets.pckl',
+#                                                                    search_type='random', hop=2, center=True)
 
 
 # ego_centric_networks = h.read_gplus_ego_graph(200)
@@ -139,3 +139,17 @@ ego_centric_networks, ego_nodes = h.get_ego_centric_networks_in_fb(graph, 500, '
 # with open('../Data/gplus/gplus-nodes-list.pckl', 'rb') as f:
 #     all_nodes = pickle.load(f)
 #     print(len(all_nodes))
+
+
+fb_graph = h.read_facebook_graph()
+new = 0
+old = 1000000000000
+for u, v, t in fb_graph.edges_iter(data='timestamp', default=-1):
+    if new < t:
+        new = t
+
+    if old > t and t != -1:
+        old = t
+
+print(new)
+print(old)

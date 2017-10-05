@@ -157,6 +157,55 @@ def plot_formed_vs_not(plot_type, formed, not_formed, plot_number, save_plot=Fal
     plt.close(fig)
 
 
+def plot_formed_vs_not_local_degree(formed, not_formed, num_first_hop_nodes, plot_number, save_plot=False, save_path=''):
+    fig = None
+
+    if save_plot:
+        fig = plt.figure(figsize=(15, 8), dpi=100)
+    else:
+        fig = plt.figure()
+
+    n_row = math.ceil(len(formed) / 5)
+    n_col = math.ceil(len(not_formed) / n_row)
+
+    formed_means = []
+    not_formed_means = []
+    for i in range(len(formed)):
+        formed_mean = np.mean(formed[i])
+        # normalize over the number of nodes in the first hop
+        formed_means.append(formed_mean / num_first_hop_nodes[i])
+
+        not_formed_mean = np.mean(not_formed[i])
+        # normalize over the number of nodes in the first hop
+        not_formed_means.append(not_formed_mean / num_first_hop_nodes[i])
+
+        p = fig.add_subplot(n_row, n_col, i + 1)
+
+        p.hist(formed[i], color='r', alpha=0.8, weights=np.zeros_like(formed[i]) + 1. / len(formed[i]),
+               label="FEM: {0:.4f}".format(formed_mean))
+
+        p.hist(not_formed[i], color='b', alpha=0.5, weights=np.zeros_like(not_formed[i]) + 1. / len(not_formed[i]),
+               label="NFEM: {0:.4f}".format(not_formed_mean))
+
+        p.legend(loc='upper right')
+        plt.ylabel('Relative Frequency')
+        plt.xlabel('Global Degree of Common Neighbors')
+        plt.suptitle('Global Degree of Common Neighbors \n Ego Centric Network of Node %d' % plot_number)
+
+    if not save_plot:
+        plt.show()
+    else:
+        current_fig = plt.gcf()
+        current_fig.savefig(save_path)
+
+    plt.close(fig)
+
+    mfem = np.mean(formed_means)
+    mnfem = np.mean(not_formed_means)
+
+    return mfem, mnfem
+
+
 def plot_formed_vs_not_dic(formed, not_formed, plot_number, n_edges, n_nodes, save_plot=False, save_path=''):
     fig = plt.figure()
 
