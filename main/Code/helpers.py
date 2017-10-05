@@ -70,6 +70,7 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
 
     orig_snapshots.append(original_graph)
 
+
     ego_centric_networks = []
     ego_nodes = []
 
@@ -96,6 +97,7 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
     for node in ego_nodes:
         ego_centric_network_snapshots = []
         for i in range(len(orig_snapshots)):
+
             ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=hop, center=center))
 
         ego_centric_networks.append(ego_centric_network_snapshots)

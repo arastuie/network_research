@@ -9,7 +9,7 @@ import num_cluster_per_cn_analysis as a2
 import tot_num_cluster_of_all_cn_analysis as a3
 import tot_num_cluster_based_num_cn_analysis as a4
 import percent_of_cn_belonging_to_same_cluster as a5
-import hop_degree_analysis as a6
+import hop_degree_analysis_temp as a6
 #import gplus_hop_degree_directed_analysis_t06 as a7
 import gplus_hop_degree_directed_analysis as a7
 import adamic_adar_analysis as a8
@@ -24,39 +24,49 @@ import matplotlib.pyplot as plt
 #                                                                    search_type='random', hop=2, center=True)
 #
 
-print("Loading Facebook random 200 ego centric networks...")
-
-with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
-    ego_centric_networks, ego_nodes = pickle.load(f)
-
-mfems = []
-mnfems = []
-print("Analysing ego centric networks...")
-for o in range(len(ego_centric_networks)):
-    # mfem, mnfem = a6.run_hop_local_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/local_degree')
-    mfem, mnfem = a8.run_hop_global_degree_analysis(ego_centric_networks[o], ego_nodes[o], o, True, '../Plots/global_degree')
-
-    if mfem != 0:
-        mfems.append(mfem)
-        mnfems.append(mnfem)
-
-print("mfem -> {0}".format(np.mean(mfems)))
-print("mnfem -> {0}".format(np.mean(mnfems)))
+# print("Loading Facebook random 200 ego centric networks...")
 
 
-plt.hist(mfems, color='r', alpha=0.8, weights=np.zeros_like(mfems) + 1. / len(mfems),
-        label="MFEM: {0:.2f}".format(np.mean(mfems)))
+def run_analysis(index):
+    mfems = []
+    mnfems = []
+    print("Analysing ego centric networks...")
 
-plt.hist(mnfems, color='b', alpha=0.5, weights=np.zeros_like(mnfems) + 1. / len(mnfems),
-         label="MNFEM: {0:.2f}".format(np.mean(mnfems)))
+    for ego_net_file in os.listdir('../Data/fb-egonets/{0}'.format(index)):
+        with open('../Data/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
+            egonet_snapshots, ego_node = pickle.load(f)
 
-plt.legend(loc='upper right')
-plt.ylabel('Relative Frequency')
-plt.xlabel('Mean Normalized Global Degree of Common Neighbors')
+        mfem, mnfem = a6.run_hop_local_degree_analysis(egonet_snapshots, ego_node)
+        # mfem, mnfem = a8.run_hop_global_degree_analysis(egonet_snapshots, ego_node, 0, False, '../Plots/global_degree')
 
-current_fig = plt.gcf()
-current_fig.savefig('../Plots/global_degree/overall-mean-normal.eps', format='eps', dpi=1000)
-current_fig.savefig('../Plots/global_degree/overall-mean-normal-png.png')
+        if mfem != 0:
+            mfems.append(mfem)
+            mnfems.append(mnfem)
+
+    print("mfem -> {0}".format(np.mean(mfems)))
+    print("mnfem -> {0}".format(np.mean(mnfems)))
+
+    with open('../Results/fb-empirical-global-local-results/local/lower-6/temp/{0}-egonodes-result.pckl'.format(index), 'wb') as f:
+        pickle.dump([np.array(mfems), np.array(mnfems)], f, protocol=-1)
+
+
+Parallel(n_jobs=28)(delayed(run_analysis)(i) for i in range(0, 28))
+
+
+#
+# plt.hist(mfems, color='r', alpha=0.8, weights=np.zeros_like(mfems) + 1. / len(mfems),
+#         label="MFEM: {0:.2f}".format(np.mean(mfems)))
+#
+# plt.hist(mnfems, color='b', alpha=0.5, weights=np.zeros_like(mnfems) + 1. / len(mnfems),
+#          label="MNFEM: {0:.2f}".format(np.mean(mnfems)))
+#
+# plt.legend(loc='upper right')
+# plt.ylabel('Relative Frequency')
+# plt.xlabel('Mean Normalized Global Degree of Common Neighbors')
+#
+# current_fig = plt.gcf()
+# current_fig.savefig('../Plots/global_degree/overall-mean-normal.eps', format='eps', dpi=1000)
+# current_fig.savefig('../Plots/global_degree/overall-mean-normal-png.png')
 
 
 # num_cluster = 8
