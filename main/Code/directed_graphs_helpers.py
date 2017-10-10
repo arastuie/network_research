@@ -1,4 +1,5 @@
 import re
+import os
 import sys
 import math
 import pickle
@@ -51,10 +52,14 @@ def read_gplus_ego_graph(n):
 
     print("Selected {0} random nodes...".format(n))
 
-    Parallel(n_jobs=15)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
+    Parallel(n_jobs=20)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
 
 
 def read_ego_gplus_graph(ego_node):
+    # check if the egonet file already exists
+    if os.path.isfile('../Data/gplus-ego/first-hop-nodes/{0}.pckle'.format(ego_node)):
+        return
+
     ego_net = nx.DiGraph()
 
     with open(raw_gplus_path) as infile:

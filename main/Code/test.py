@@ -7,6 +7,7 @@ import gplus_hop_degree_directed_analysis as directed_analysis
 from joblib import Parallel, delayed
 import os
 import sys
+import directed_graphs_helpers as dh
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -154,34 +155,36 @@ import sys
 #
 # print(new)
 # print(old)
+#
+# def get_ego_centric_networks_in_fb(original_graph):
+#     orig_snapshots = []
+#
+#     oldest_timestamp = 1157454929
+#     seconds_in_90_days = 7776000
+#     for i in range(10):
+#         orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in original_graph.edges(data=True)
+#                                         if d['timestamp'] < (oldest_timestamp + seconds_in_90_days * i)]))
+#
+#     orig_snapshots.append(original_graph)
+#     orig_nodes = nx.nodes(orig_snapshots[0])
+#
+#     ego_nodes_split = np.array_split(np.array(orig_nodes), 28)
+#     Parallel(n_jobs=28)(delayed(save_fb_egonet)(orig_snapshots, ego_nodes_split[i], i) for i in range(0, 28))
+#
+#     return
+#
+#
+# def save_fb_egonet(orig_snapshots, ego_nodes, index):
+#     for node in ego_nodes:
+#         ego_centric_network_snapshots = []
+#         for i in range(len(orig_snapshots)):
+#             ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=2, center=True))
+#
+#         with open('../Data/fb-egonets/{0}/{1}.pckl'.format(index, node), 'wb') as f:
+#             pickle.dump([ego_centric_network_snapshots, node], f, protocol=-1)
+#
+#
+# graph = h.read_facebook_graph()
+# get_ego_centric_networks_in_fb(graph)
 
-def get_ego_centric_networks_in_fb(original_graph):
-    orig_snapshots = []
-
-    oldest_timestamp = 1157454929
-    seconds_in_90_days = 7776000
-    for i in range(10):
-        orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in original_graph.edges(data=True)
-                                        if d['timestamp'] < (oldest_timestamp + seconds_in_90_days * i)]))
-
-    orig_snapshots.append(original_graph)
-    orig_nodes = nx.nodes(orig_snapshots[0])
-
-    ego_nodes_split = np.array_split(np.array(orig_nodes), 28)
-    Parallel(n_jobs=28)(delayed(save_fb_egonet)(orig_snapshots, ego_nodes_split[i], i) for i in range(0, 28))
-
-    return
-
-
-def save_fb_egonet(orig_snapshots, ego_nodes, index):
-    for node in ego_nodes:
-        ego_centric_network_snapshots = []
-        for i in range(len(orig_snapshots)):
-            ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=2, center=True))
-
-        with open('../Data/fb-egonets/{0}/{1}.pckl'.format(index, node), 'wb') as f:
-            pickle.dump([ego_centric_network_snapshots, node], f, protocol=-1)
-
-
-graph = h.read_facebook_graph()
-get_ego_centric_networks_in_fb(graph)
+dh.read_gplus_ego_graph(100000)

@@ -4,7 +4,22 @@ import networkx as nx
 import numpy as np
 
 
-def run_hop_local_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=False, plot_save_path=''):
+def get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(current_snapshot, next_snapshot, ego_node):
+    current_snap_first_hop_nodes = set(current_snapshot.neighbors(ego_node))
+
+    current_snap_second_hop_nodes = set(current_snapshot.nodes()) - current_snap_first_hop_nodes
+    current_snap_second_hop_nodes.remove(ego_node)
+
+    next_snap_first_hop_nodes = set(next_snapshot.neighbors(ego_node))
+
+    formed_edges_nodes_with_second_hop = next_snap_first_hop_nodes.intersection(current_snap_second_hop_nodes)
+
+    not_formed_edges_nodes_with_second_hop = current_snap_second_hop_nodes - formed_edges_nodes_with_second_hop
+
+    return formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop, current_snap_first_hop_nodes
+
+
+def run_hop_local_degree_analysis(ego_net_snapshots, ego_node, snap_range, ego_net_num, save_plot=False, plot_save_path=''):
 
     """
     Degree based analysis (with the second hop):
@@ -30,15 +45,10 @@ def run_hop_local_degree_analysis(ego_net_snapshots, ego_node, ego_net_num, save
     degree_not_formed_in_snapshots = []
     num_first_hop_nodes_in_snapshots = []
 
-    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
-    # for i in range(len(ego_net_snapshots) - 1):
-    for i in range(6, len(ego_net_snapshots) - 1):
-    # for i in range(0, 5):
-
+    for i in snap_range:
         formed_edges_nodes_with_second_hop, not_formed_edges_nodes_with_second_hop, current_snap_first_hop_nodes = \
-            h.get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(ego_net_snapshots[i],
-                                                                                  ego_net_snapshots[i + 1],
-                                                                                  ego_node, True)
+            get_nodes_of_formed_and_non_formed_edges_between_ego_and_second_hop(ego_net_snapshots[i],
+                                                                                ego_net_snapshots[i + 1], ego_node)
 
         num_first_hop_nodes = nx.degree(ego_net_snapshots[i], ego_node)
 
