@@ -52,7 +52,7 @@ def read_gplus_ego_graph(n):
 
     print("Selected {0} random nodes...".format(n))
 
-    Parallel(n_jobs=20)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
+    Parallel(n_jobs=9)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
 
 
 def read_ego_gplus_graph(ego_node):
