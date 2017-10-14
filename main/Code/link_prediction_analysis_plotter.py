@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = '../Results/fb-lp-results'
+path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 paths = ['lower-6', 'after-6']
@@ -110,7 +110,7 @@ plt.clf()
 # import numpy as np
 # import matplotlib.pyplot as plt
 #
-# path = '../Results/fb-lp-results'
+# path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files'
 # top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 #
 # paths = ['lower-6', 'after-6']

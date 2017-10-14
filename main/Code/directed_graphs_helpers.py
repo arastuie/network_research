@@ -35,7 +35,7 @@ def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
 
     print('\nNumber of nodes in snapshot {0}: {1}'.format(snapshot, len(node_list)))
 
-    with open('../Data/gplus/gplus-nodes-snap-{0}-list.pckl'.format(snapshot), 'wb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-{0}-list.pckl'.format(snapshot), 'wb') as f:
         pickle.dump(node_list, f, protocol=-1)
 
     return node_list
@@ -44,7 +44,7 @@ def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
 def read_gplus_ego_graph(n):
     print("Reading in Google+ data...")
 
-    with open('../Data/gplus/gplus-nodes-snap-0-list.pckl', 'rb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
         all_nodes = pickle.load(f)
 
     ego_nodes = random.sample(all_nodes, n)
@@ -57,7 +57,7 @@ def read_gplus_ego_graph(n):
 
 def read_ego_gplus_graph(ego_node):
     # check if the egonet file already exists
-    if os.path.isfile('../Data/gplus-ego/first-hop-nodes/{0}.pckle'.format(ego_node)):
+    if os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node)):
         return
 
     ego_net = nx.DiGraph()
@@ -82,7 +82,7 @@ def read_ego_gplus_graph(ego_node):
             if nums[0] in neighbors or nums[1] in neighbors:
                 ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
-    with open('../Data/gplus-ego/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
         pickle.dump([ego_node, ego_net], f, protocol=-1)
 
     print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
@@ -95,7 +95,7 @@ def read_ego_gplus_pickle(ego_node):
     ego_net = nx.DiGraph()
 
     for i in range(4):
-        with open('../Data/%s' % pickle_files[i], 'rb') as f:
+        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/%s' % pickle_files[i], 'rb') as f:
             snapshot_edges = pickle.load(f)
 
         for u, v, attr in snapshot_edges:
@@ -108,7 +108,7 @@ def read_ego_gplus_pickle(ego_node):
             if u in neighbors or v in neighbors:
                 ego_net.add_edge(u, v, attr)
 
-    with open('../Data/gplus-ego/{0}.pckle'.format(ego_node), 'wb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/{0}.pckle'.format(ego_node), 'wb') as f:
         pickle.dump([ego_node, ego_net], f, protocol=-1)
 
 

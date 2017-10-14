@@ -180,7 +180,7 @@ import directed_graphs_helpers as dh
 #         for i in range(len(orig_snapshots)):
 #             ego_centric_network_snapshots.append(nx.ego_graph(orig_snapshots[i], node, radius=2, center=True))
 #
-#         with open('../Data/fb-egonets/{0}/{1}.pckl'.format(index, node), 'wb') as f:
+#         with open('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}.pckl'.format(index, node), 'wb') as f:
 #             pickle.dump([ego_centric_network_snapshots, node], f, protocol=-1)
 #
 #

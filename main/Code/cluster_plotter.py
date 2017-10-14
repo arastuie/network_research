@@ -87,7 +87,7 @@ def get_cluster_info(ego_network, ego_node, clusters, node_list, first_hop_nodes
 
 print("Loading Facebook 200 ego centric networks...")
 
-with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
+with open('/shared/DataSets/FacebookViswanath2009/egocentric/random_200_ego_nets.pckl', 'rb') as f:
     ego_centric_networks, ego_nodes = pickle.load(f)
 
 print("Analysing ego centric networks...")

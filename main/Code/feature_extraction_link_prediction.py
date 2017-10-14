@@ -15,7 +15,7 @@ def get_ego_net(ego_node, orig_snaps):
 
     total_edges_formed = 0
 
-    file = open('../Data/fb-lp-features-degree-vs-local-degree/{0}.txt'.format(ego_node), 'w')
+    file = open('/shared/Results/EgocentricLinkPrediction/fb-lp-feature-extraction/fb-lp-features-degree-vs-local-degree/{0}.txt'.format(ego_node), 'w')
 
     for s in range(len(ego_snapshots) - 1):
         first_hop_nodes = set(ego_snapshots[s].neighbors(ego_node))
@@ -55,7 +55,7 @@ def get_ego_net(ego_node, orig_snaps):
     file.close()
 
     if total_edges_formed < 10:
-        os.remove('../Data/fb_lp_features_reciprocal/{0}.txt'.format(ego_node))
+        os.remove('/shared/Results/EgocentricLinkPrediction/fb-lp-feature-extraction/fb_lp_features_reciprocal/{0}.txt'.format(ego_node))
     else:
         print("Network in.")
 

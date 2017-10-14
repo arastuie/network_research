@@ -45,7 +45,7 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_
                 'not_formed_out_degree_first_hop': [], 'formed_out_degree_second_hop': [],
                 'not_formed_out_degree_second_hop': [], to hold the overall scores.
     :param save_plot: If true, saves the plot, also a path should be passed as the next argument.
-    :param plot_save_base_path: Base path to save the plot. ex: '../Plots/degree_based'
+    :param plot_save_base_path: Base path to save the plot. ex: '/shared/Results/EgocentricLinkPrediction/old-plots/all-plots-in-old-plots-folder/degree_based'
                 Make sure all four different folders are in the given path. 'in_degree_first_hop, in_degree_second_hop,
                 out_degree_first_hop, out_degree_second_hop'
     """

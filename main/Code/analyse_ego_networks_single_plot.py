@@ -9,7 +9,7 @@ import adamic_adar_analysis as a8
 import matplotlib.pyplot as plt
 
 print("Analysing ego centric networks...")
-path = '../Results/fb-empirical-global-local-results/local/lower-6/temp'
+path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/local/lower-6/temp'
 
 
 def run_analysis(index):
@@ -18,8 +18,8 @@ def run_analysis(index):
 
     cnt = 0
 
-    for ego_net_file in os.listdir('../Data/fb-egonets/{0}'.format(index)):
-        with open('../Data/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
+    for ego_net_file in os.listdir('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}'.format(index)):
+        with open('./shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
             egonet_snapshots, ego_node = pickle.load(f)
 
         mfem, mnfem = a6.run_hop_local_degree_analysis(egonet_snapshots, ego_node, range(0, 5))

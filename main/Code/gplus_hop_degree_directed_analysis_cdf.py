@@ -7,8 +7,8 @@ import directed_graphs_helpers as dh
 
 
 def gplus_run_hop_degree_directed_analysis(ego_net_file):
-    data_file_base_path = '../Data/gplus-ego/first-hop-nodes/'
-    result_file_base_path = '../Results/gplus/empirical/pickle-files/'
+    data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
 
     # return if the egonet is on the analyzed list
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):

@@ -675,6 +675,126 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
     return percent_scores
 
 
+def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top_k_values):
+
+    triangle_type_func = {
+        'T01': dh.get_t01_type_nodes,
+        'T02': dh.get_t02_type_nodes,
+        'T03': dh.get_t03_type_nodes,
+        'T04': dh.get_t04_type_nodes,
+        'T05': dh.get_t05_type_nodes,
+        'T06': dh.get_t06_type_nodes,
+        'T07': dh.get_t07_type_nodes,
+        'T08': dh.get_t08_type_nodes,
+        'T09': dh.get_t09_type_nodes,
+    }
+
+    for triangle_type in triangle_type_func.keys():
+
+        percent_scores = {
+            'cn': {},
+            'dccn_i': {},
+            'dccn_o': {},
+            'aa_i': {},
+            'aa_o': {},
+            'dcaa_i': {},
+            'dcaa_o': {}
+        }
+
+        for k in top_k_values:
+            for ps in percent_scores.keys():
+                percent_scores[ps][k] = []
+
+        with open(ego_net_file, 'rb') as f:
+            ego_node, ego_net = pickle.load(f)
+
+        ego_net_snapshots = []
+
+        for r in range(0, 4):
+            temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+            ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+        # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+        for i in range(len(ego_net_snapshots) - 1):
+            first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
+
+            if first_hop_nodes < 10:
+                continue
+
+            v_nodes_list = list(v_nodes.keys())
+            y_true = []
+
+            for v_i in range(0, len(v_nodes_list)):
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                    y_true.append(1)
+                else:
+                    y_true.append(0)
+
+            # continue of no edge was formed
+            if np.sum(y_true) == 0:
+                continue
+
+            y_scores_cn = directed_common_neighbors_index(v_nodes_list, v_nodes)
+            y_scores_cn = np.array(y_scores_cn).astype(float).reshape(1, -1)
+            y_scores_cn = list(preprocessing.normalize(y_scores_cn, norm='max')[0])
+
+            y_scores_dccn_i = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
+                                                                               first_hop_nodes, True)
+            y_scores_dccn_i = np.array(y_scores_dccn_i).astype(float).reshape(1, -1)
+            y_scores_dccn_i = list(preprocessing.normalize(y_scores_dccn_i, norm='max')[0])
+
+            y_scores_dccn_o = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
+                                                                               first_hop_nodes, False)
+            y_scores_dccn_o = np.array(y_scores_dccn_o).astype(float).reshape(1, -1)
+            y_scores_dccn_o = list(preprocessing.normalize(y_scores_dccn_o, norm='max')[0])
+
+            y_scores_aa_i = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, True)
+            y_scores_aa_i = np.array(y_scores_aa_i).astype(float).reshape(1, -1)
+            y_scores_aa_i = list(preprocessing.normalize(y_scores_aa_i, norm='max')[0])
+
+            y_scores_aa_o = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, False)
+            y_scores_aa_o = np.array(y_scores_aa_o).astype(float).reshape(1, -1)
+            y_scores_aa_o = list(preprocessing.normalize(y_scores_aa_o, norm='max')[0])
+
+            y_scores_dcaa_i = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
+                                                                          True)
+            y_scores_dcaa_i = np.array(y_scores_dcaa_i).astype(float).reshape(1, -1)
+            y_scores_dcaa_i = list(preprocessing.normalize(y_scores_dcaa_i, norm='max')[0])
+
+            y_scores_dcaa_o = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
+                                                                          True)
+            y_scores_dcaa_o = np.array(y_scores_dcaa_o).astype(float).reshape(1, -1)
+            y_scores_dcaa_o = list(preprocessing.normalize(y_scores_dcaa_o, norm='max')[0])
+
+            combo_scores = np.concatenate((np.array(y_scores_cn).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_dccn_i).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_dccn_o).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_aa_i).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_aa_o).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_dcaa_i).astype(float).reshape(-1, 1),
+                                           np.array(y_scores_dcaa_o).astype(float).reshape(-1, 1),
+                                           np.array(y_true).reshape(-1, 1)), axis=1)
+
+            combo_scores_cn_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+            combo_scores_dccn_i_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
+            combo_scores_dccn_o_sorted = combo_scores[combo_scores[:, 2].argsort()[::-1]]
+            combo_scores_aa_i_sorted = combo_scores[combo_scores[:, 3].argsort()[::-1]]
+            combo_scores_aa_o_sorted = combo_scores[combo_scores[:, 4].argsort()[::-1]]
+            combo_scores_dcaa_i_sorted = combo_scores[combo_scores[:, 5].argsort()[::-1]]
+            combo_scores_dcaa_o_sorted = combo_scores[combo_scores[:, 6].argsort()[::-1]]
+
+            for k in top_k_values:
+                percent_scores['cn'][k].append(sum(combo_scores_cn_sorted[:k, -1]) / k)
+                percent_scores['dccn_i'][k].append(sum(combo_scores_dccn_i_sorted[:k, -1]) / k)
+                percent_scores['dccn_o'][k].append(sum(combo_scores_dccn_o_sorted[:k, -1]) / k)
+                percent_scores['aa_i'][k].append(sum(combo_scores_aa_i_sorted[:k, -1]) / k)
+                percent_scores['aa_o'][k].append(sum(combo_scores_aa_o_sorted[:k, -1]) / k)
+                percent_scores['dcaa_i'][k].append(sum(combo_scores_dcaa_i_sorted[:k, -1]) / k)
+                percent_scores['dcaa_o'][k].append(sum(combo_scores_dcaa_o_sorted[:k, -1]) / k)
+
+        return percent_scores
+
+
 def directed_common_neighbors_index(v_nodes_list, v_nodes_z):
     scores = []
 

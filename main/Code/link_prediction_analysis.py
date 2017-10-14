@@ -9,10 +9,10 @@ from joblib import Parallel, delayed
 
 # print("Reading in 200 random Facebook ego networks...")
 #
-# with open('../Data/random_200_ego_nets.pckl', 'rb') as f:
+# with open('/shared/DataSets/FacebookViswanath2009/egocentric/random_200_ego_nets.pckl', 'rb') as f:
 #     ego_centric_networks, ego_nodes = pickle.load(f)
 
-# with open('../Data/first_50_ego.pckl', 'rb') as f:
+# with open('/shared/DataSets/FacebookViswanath2009/egocentric/first_50_ego.pckl', 'rb') as f:
 #     ego_centric_networks, ego_nodes = pickle.load(f)
 
 # print("Networks in!")
@@ -56,8 +56,8 @@ def run_link_prediction(index):
         percent_cn[k] = []
         percent_dccn[k] = []
 
-    for ego_net_file in os.listdir('../Data/fb-egonets/{0}'.format(index)):
-        with open('../Data/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
+    for ego_net_file in os.listdir('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}'.format(index)):
+        with open('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
             egonet_snapshots, ego_node = pickle.load(f)
 
         aa, dcaa, cn, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking(egonet_snapshots, ego_node, top_k_values, range(0, 5))
@@ -142,8 +142,8 @@ for k in top_k_values:
 #         for ps in percent_scores.keys():
 #             percent_scores[ps][k] = []
 #     i = 0
-#     for ego_net_file in os.listdir('../Data/gplus-ego/first-hop-nodes'):
-#         percent_score_results = lp_helpers.run_link_prediction_comparison_on_directed_graph('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, triangle_type, top_k_values)
+#     for ego_net_file in os.listdir('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes'):
+#         percent_score_results = lp_helpers.run_link_prediction_comparison_on_directed_graph('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/%s' % ego_net_file, triangle_type, top_k_values)
 #
 #         if percent_score_results is None:
 #             continue
@@ -203,9 +203,9 @@ for k in top_k_values:
 # aa_only_scores = []
 # both_scores = []
 # cnt = 1
-# for path in os.listdir('../Data/fb_lp_features_reciprocal'):
-#     aa_only_scores.append(list(lr.run_linear_regression('../Data/fb_lp_features_reciprocal/{0}'.format(path), True)))
-#     both_scores.append(list(lr.run_linear_regression('../Data/fb_lp_features_reciprocal/{0}'.format(path), False)))
+# for path in os.listdir('/shared/Results/EgocentricLinkPrediction/fb-lp-feature-extraction/fb_lp_features_reciprocal'):
+#     aa_only_scores.append(list(lr.run_linear_regression('/shared/Results/EgocentricLinkPrediction/fb-lp-feature-extraction/fb_lp_features_reciprocal/{0}'.format(path), True)))
+#     both_scores.append(list(lr.run_linear_regression('/shared/Results/EgocentricLinkPrediction/fb-lp-feature-extraction/fb_lp_features_reciprocal/{0}'.format(path), False)))
 #     print(cnt, end='\r')
 #     cnt += 1
 #

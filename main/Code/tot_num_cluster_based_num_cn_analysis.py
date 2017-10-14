@@ -25,7 +25,7 @@ def run_tot_num_cluster_based_num_cn_analysis(ego_net_snapshots, ego_node, num_c
     :param ego_net_num: The number of the ego network, only used for the plot title
     :param num_cluster: Number of clusters to be found in the second hop of the network
     :param save_plot: If true, saves the plot, also a path should be passed as the next argument.
-    :param plot_save_path: Path to save the plot. ex: '../Plots/total_cluster_overall'
+    :param plot_save_path: Path to save the plot. ex: '/shared/Results/EgocentricLinkPrediction/old-plots/all-plots-in-old-plots-folder/total_cluster_overall'
     """
 
     # Exit if plot should be saved, put there is no path

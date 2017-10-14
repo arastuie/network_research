@@ -33,7 +33,7 @@ def run_hop_local_degree_analysis(ego_net_snapshots, ego_node, snap_range, ego_n
     :param ego_node: The ego node
     :param ego_net_num: The number of the ego network, only used for the plot title
     :param save_plot: If true, saves the plot, also a path should be passed as the next argument.
-    :param plot_save_path: Path to save the plot. ex: '../Plots/degree_based'
+    :param plot_save_path: Path to save the plot. ex: '/shared/Results/EgocentricLinkPrediction/old-plots/all-plots-in-old-plots-folder/degree_based'
     """
 
     # Exit if plot should be saved, put there is no path

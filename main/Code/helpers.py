@@ -11,7 +11,7 @@ from joblib import Parallel, delayed
 
 # Reading facebook data
 def read_facebook_graph():
-    file = open("../Data/facebook-links.txt", 'r')
+    file = open("/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt", 'r')
 
     print("Reading the original graph...")
 
@@ -44,7 +44,7 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
     
     :param original_graph: The original graph containing all nodes and edges
     :param n: Number of graphs ego centric networks wanted
-    :param pickle_file_name: name of the pickle file to save the result. It will be saved at '../Data/pickle_file_name'.
+    :param pickle_file_name: name of the pickle file to save the result. It will be saved at '/shared/DataSets/FacebookViswanath2009/egocentric/pickle_file_name'.
     :param search_type: if 'random' will select n totally random nodes as the ego nodes
                  if 'absolute_biggest' will select the nodes with the biggest number of neighbors
                  if 'relative_biggest' will select the nodes with the biggest number of neighbors out of the first 
@@ -102,7 +102,7 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
 
         ego_centric_networks.append(ego_centric_network_snapshots)
 
-    with open('../Data/%s' % pickle_file_name, 'wb') as f:
+    with open('/shared/DataSets/FacebookViswanath2009/egocentric/%s' % pickle_file_name, 'wb') as f:
         pickle.dump([ego_centric_networks, ego_nodes], f, protocol=-1)
 
     return ego_centric_networks, ego_nodes

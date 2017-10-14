@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 print("Analysing ego centric networks...")
-path = '../Results/fb-empirical-global-local-results'
+path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/'
 
 paths = {
     'Global': ['global/lower-6', 'global/after-6'],
@@ -16,7 +16,7 @@ for ps in paths:
         with open('{0}/{1}/temp/total-result.pckl'.format(path, paths[ps][i]), 'rb') as f:
             mfems, mnfems = pickle.load(f)
 
-        plot_path = '../Results/fb-empirical-global-local-results/local/lower-6'
+        plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files//local/lower-6'
 
         plt.rc('legend', fontsize=16)
         plt.rc('xtick', labelsize=12)
@@ -49,7 +49,7 @@ print("Done")
 ## On top of eachother
 
 # print("Analysing ego centric networks...")
-# path = '../Results/fb-empirical-global-local-results'
+# path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/'
 #
 # paths = {
 #     'Global': ['global/lower-6', 'global/after-6'],
@@ -64,7 +64,7 @@ print("Done")
 #     with open('{0}/{1}/temp/total-result.pckl'.format(path, paths[ps][1]), 'rb') as f:
 #         amfems, amnfems = pickle.load(f)
 #
-#     plot_path = '../Results/fb-empirical-global-local-results/local/lower-6'
+#     plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/local/lower-6'
 #
 #     plt.hist(lmfems, 1000, normed=True, cumulative=True, histtype='step', alpha=0.9, color='r',
 #              label='Before PYMK Formed Edges: {0:.4f}'.format(np.mean(lmfems)))

@@ -27,7 +27,7 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
         print(sys.stderr, "Please provide the path to which plots should be saved.")
         sys.exit(1)
 
-    with open('../Data/gplus-ego/first-hop-nodes/%s' % ego_net_file, 'rb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/%s' % ego_net_file, 'rb') as f:
         ego_node, ego_net = pickle.load(f)
 
     # return if the network has less than 30 nodes
