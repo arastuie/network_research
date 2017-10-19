@@ -1,9 +1,9 @@
 import pickle
 import numpy as np
+import helpers as h
 import matplotlib.pyplot as plt
 
-print("Analysing ego centric networks...")
-path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/'
+path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb'
 
 paths = {
     'Global': ['global/lower-6', 'global/after-6'],
@@ -13,33 +13,31 @@ paths = {
 names = ['lower-6', 'after-6']
 for ps in paths:
     for i in range(len(paths[ps])):
-        with open('{0}/{1}/temp/total-result.pckl'.format(path, paths[ps][i]), 'rb') as f:
+        with open('{0}/pickle-files/{1}/temp/total-result.pckl'.format(path, paths[ps][i]), 'rb') as f:
             mfems, mnfems = pickle.load(f)
 
-        plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files//local/lower-6'
+        plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/local/lower-6'
 
         plt.rc('legend', fontsize=16)
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=12)
 
-        plt.step(np.sort(mfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='r',
-                 label='Formed Edges: {0:.4f}'.format(np.mean(mfems)), lw=3)
+        # plt.step(np.sort(mfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='r',
+        #          label='Formed Edges: {0:.4f}'.format(np.mean(mfems)), lw=3)
 
-        # plt.hist(mfems, color='r', alpha=0.8, weights=np.zeros_like(mfems) + 1. / len(mfems),
-        #          label="Formed Edges: {0:.2f}".format(np.mean(mfems)))
+        h.add_ecdf_with_bond_plot(mfems, 'Formed Edges', 'r')
 
-        plt.step(np.sort(mnfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='b',
-                 label='Not Formed Edges: {0:.4f}'.format(np.mean(mnfems)), lw=3)
+        # plt.step(np.sort(mnfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='b',
+        #          label='Not Formed Edges: {0:.4f}'.format(np.mean(mnfems)), lw=3)
 
-        # plt.hist(mnfems, color='b', alpha=0.5, weights=np.zeros_like(mnfems) + 1. / len(mnfems),
-        #          label="Not Formed Edges: {0:.4f}".format(np.mean(mnfems)))
+        h.add_ecdf_with_bond_plot(mnfems, 'Not Formed Edges', 'b')
 
         plt.ylabel('Empirical CDF', fontsize=17)
         plt.xlabel('Mean Normalized {0} Degree'.format(ps), fontsize=17)
         plt.legend(loc='lower right')
         current_fig = plt.gcf()
-        current_fig.savefig('{0}/plots/{1}-{2}-overall-mean-normal.eps'.format(path, ps, names[i]), format='eps')
-        # current_fig.savefig('{0}/plots/{1}-{2}-overall-mean-normal-png.png'.format(path, ps, names[i]))
+        current_fig.savefig('{0}/cdf/{1}-{2}-overall-mean-normal.pdf'.format(path, ps, names[i]), format='pdf')
+        current_fig.savefig('{0}/cdf/{1}-{2}-overall-mean-normal-png.png'.format(path, ps, names[i]))
         plt.clf()
         print("Number of egonets analyzed for {0} {1}: {2}".format(ps, names[i], len(mfems)))
 

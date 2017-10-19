@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files'
+path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 paths = ['lower-6', 'after-6']
@@ -38,7 +38,7 @@ paths = ['lower-6', 'after-6']
 #     with open('{0}/{1}/temp/total-result-percent-imp.pckl'.format(path, p), 'wb') as f:
 #         pickle.dump([percent_imp_aa, percent_imp_cn], f, protocol=-1)
 
-with open('{0}/lower-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
+with open('{0}/pickle-files/lower-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
     lower_percent_imp_aa, lower_percent_imp_cn = pickle.load(f)
 lower_imp_aa = []
 lower_imp_aa_err = []
@@ -51,7 +51,7 @@ for k in top_k_values:
     lower_imp_cn_err.append(np.std(lower_percent_imp_cn[k]) / np.sqrt(len(lower_percent_imp_cn[k])) * 100)
 
 
-with open('{0}/after-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
+with open('{0}/pickle-files/after-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
     after_percent_imp_aa, after_percent_imp_cn = pickle.load(f)
 after_imp_aa = []
 after_imp_aa_err = []
@@ -82,7 +82,7 @@ plt.ylabel('DCAA vs AA Percent Improvement', fontsize=17)
 plt.xlabel('Top K Value', fontsize=17)
 plt.legend(loc='lower right')
 current_fig = plt.gcf()
-current_fig.savefig('{0}/plots/dcaa-aa.eps'.format(path), format='eps')
+current_fig.savefig('{0}/plots/dcaa-aa.pdf'.format(path), format='pdf')
 plt.clf()
 
 plt.figure()
@@ -100,7 +100,7 @@ plt.legend(loc='lower right')
 
 
 current_fig = plt.gcf()
-current_fig.savefig('{0}/plots/dccn-cn.eps'.format(path), format='eps')
+current_fig.savefig('{0}/plots/dccn-cn.pdf'.format(path), format='pdf')
 plt.clf()
 
 

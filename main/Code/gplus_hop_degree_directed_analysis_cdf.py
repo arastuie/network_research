@@ -14,6 +14,10 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
+    # return if the egonet is on the skipped list
+    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
     triangle_type_func = {
         'T01': dh.get_t01_type_nodes,
         'T02': dh.get_t02_type_nodes,
@@ -30,6 +34,13 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
         ego_node, ego_net = pickle.load(f)
 
     ego_net_snapshots = []
+
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if nx.number_of_nodes(ego_net) > 300000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+
+        return
 
     for r in range(0, 4):
         temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])

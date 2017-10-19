@@ -187,4 +187,5 @@ import directed_graphs_helpers as dh
 # graph = h.read_facebook_graph()
 # get_ego_centric_networks_in_fb(graph)
 
-dh.read_gplus_ego_graph(100000)
+# dh.read_gplus_ego_graph(100000)
+dh.create_gplus_multiple_egonets(10000, 55)

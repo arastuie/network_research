@@ -1,6 +1,8 @@
 import os
+import math
 import pickle
 import numpy as np
+import helpers as h
 import matplotlib.pyplot as plt
 
 # Results pickle files are in the following order
@@ -31,30 +33,23 @@ for triangle_type in triangle_types:
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=12)
 
-        plt.step(np.sort(results[:, i]), np.arange(1, len(results[:, i]) + 1) / np.float(len(results[:, i])), alpha=0.9,
-                 color='r', label='Indegree Formed Edges: {0:.4f}'.format(np.mean(results[:, i])), lw=2)
+        h.add_ecdf_with_bond_plot(results[:, i], 'Indegree Formed Edges', 'r')
+        h.add_ecdf_with_bond_plot(results[:, i + 4], 'Indegree Not Formed Edges', 'b')
 
-        plt.step(np.sort(results[:, i + 4]), np.arange(1, len(results[:, i + 4]) + 1) / np.float(len(results[:, i + 4]))
-                 , alpha=0.9, color='b',
-                 label='Indegree Not Formed Edges: {0:.4f}'.format(np.mean(results[:, i + 4])), lw=2)
-
-        plt.step(np.sort(results[:, i + 2]), np.arange(1, len(results[:, i + 2]) + 1) / np.float(len(results[:, i + 2]))
-                 , alpha=0.9, color='y',
-                 label='Outdegree Formed Edges: {0:.4f}'.format(np.mean(results[:, i + 2])), lw=2)
-
-        plt.step(np.sort(results[:, i + 6]), np.arange(1, len(results[:, i + 6]) + 1) / np.float(len(results[:, i + 6]))
-                 , alpha=0.9, color='g',
-                 label='Outdegree Not Formed Edges: {0:.4f}'.format(np.mean(results[:, i + 6])), lw=2)
+        h.add_ecdf_with_bond_plot(results[:, i + 2], 'Outdegree Formed Edges', 'y')
+        h.add_ecdf_with_bond_plot(results[:, i + 6], 'Outdegree Not Formed Edges', 'g')
 
         plt.ylabel('Empirical CDF', fontsize=14)
         plt.xlabel('Mean Normalized {0} Degree'.format(gl_labels[i]), fontsize=14)
         plt.legend(loc='lower right')
         plt.suptitle('Number of egonets analyzed: {0}'.format(len(results)))
         current_fig = plt.gcf()
-        # current_fig.savefig('{0}/{1}-{2}-cdf.eps'.format(plot_save_path, triangle_type, gl_labels[i]), format='eps')
+        # current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
         current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
         plt.clf()
 
     print(triangle_type + ": Done")
 
 print("Done!")
+
+
