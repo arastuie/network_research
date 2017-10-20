@@ -805,25 +805,25 @@ def all_directed_lp_indices(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
             z_succ = set(ego_net.successors(z))
 
             # shift up all degrees by 2 so if it 1 or less we will not encounter an error
-            z_global_indegree = len(z_pred) + 2
-            z_global_outdegree = len(z_succ) + 2
+            z_global_indegree = len(z_pred) + 1
+            z_global_outdegree = len(z_succ) + 1
 
-            z_local_indegree = len(z_pred.intersection(first_hop_nodes)) + 2
-            z_local_outdegree = len(z_succ.intersection(first_hop_nodes)) + 2
+            z_local_indegree = len(z_pred.intersection(first_hop_nodes)) + 1
+            z_local_outdegree = len(z_succ.intersection(first_hop_nodes)) + 1
 
             y_indegree = z_global_indegree - z_local_indegree
             y_outdegree = z_global_outdegree - z_local_outdegree
 
-            temp_dccn_i_score += math.log(z_local_indegree)
-            temp_dccn_o_score += math.log(z_local_outdegree)
+            temp_dccn_i_score += math.log(z_local_indegree + 1)
+            temp_dccn_o_score += math.log(z_local_outdegree + 1)
 
-            temp_aa_i_score += 1 / math.log(z_global_indegree)
-            temp_aa_o_score += 1 / math.log(z_global_outdegree)
+            temp_aa_i_score += 1 / math.log(z_global_indegree + 1)
+            temp_aa_o_score += 1 / math.log(z_global_outdegree + 1)
 
             temp_dcaa_i_score += 1 / math.log((z_local_indegree * (1 - (z_local_indegree / z_global_indegree))) +
-                                              (y_indegree * (z_global_indegree / z_local_indegree)))
+                                              (y_indegree * (z_global_indegree / z_local_indegree)) + 2)
             temp_dcaa_i_score += 1 / math.log((z_local_outdegree * (1 - (z_local_outdegree / z_global_outdegree))) +
-                                              (y_outdegree * (z_global_outdegree / z_local_outdegree)))
+                                              (y_outdegree * (z_global_outdegree / z_local_outdegree)) + 2)
 
         # dccn_i score
         scores[v_i, 1] = temp_dccn_i_score
