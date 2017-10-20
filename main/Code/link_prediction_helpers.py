@@ -1,3 +1,4 @@
+import os
 import math
 import pickle
 import numpy as np
@@ -676,6 +677,16 @@ def run_link_prediction_comparison_on_directed_graph(ego_net_file, triangle_type
 
 
 def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top_k_values):
+    data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/'
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
     triangle_type_func = {
         'T01': dh.get_t01_type_nodes,
@@ -688,6 +699,8 @@ def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top
         'T08': dh.get_t08_type_nodes,
         'T09': dh.get_t09_type_nodes,
     }
+
+    score_list = ['cn', 'dccn_i', 'dccn_o', 'aa_i', 'aa_o', 'dcaa_i', 'dcaa_o']
 
     for triangle_type in triangle_type_func.keys():
 
@@ -705,10 +718,15 @@ def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top
             for ps in percent_scores.keys():
                 percent_scores[ps][k] = []
 
-        with open(ego_net_file, 'rb') as f:
+        with open(data_file_base_path + ego_net_file, 'rb') as f:
             ego_node, ego_net = pickle.load(f)
 
         ego_net_snapshots = []
+
+        # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+        if nx.number_of_nodes(ego_net) > 50000:
+            with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+                pickle.dump(0, f, protocol=-1)
 
         for r in range(0, 4):
             temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
@@ -718,7 +736,7 @@ def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top
         for i in range(len(ego_net_snapshots) - 1):
             first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
 
-            if first_hop_nodes < 10:
+            if len(first_hop_nodes) < 10:
                 continue
 
             v_nodes_list = list(v_nodes.keys())
@@ -734,65 +752,93 @@ def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top
             if np.sum(y_true) == 0:
                 continue
 
-            y_scores_cn = directed_common_neighbors_index(v_nodes_list, v_nodes)
-            y_scores_cn = np.array(y_scores_cn).astype(float).reshape(1, -1)
-            y_scores_cn = list(preprocessing.normalize(y_scores_cn, norm='max')[0])
+            lp_scores = all_directed_lp_indices(ego_net, v_nodes_list, v_nodes, first_hop_nodes)
 
-            y_scores_dccn_i = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
-                                                                               first_hop_nodes, True)
-            y_scores_dccn_i = np.array(y_scores_dccn_i).astype(float).reshape(1, -1)
-            y_scores_dccn_i = list(preprocessing.normalize(y_scores_dccn_i, norm='max')[0])
+            lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
 
-            y_scores_dccn_o = directed_degree_corrected_common_neighbors_index(ego_net, v_nodes_list, v_nodes,
-                                                                               first_hop_nodes, False)
-            y_scores_dccn_o = np.array(y_scores_dccn_o).astype(float).reshape(1, -1)
-            y_scores_dccn_o = list(preprocessing.normalize(y_scores_dccn_o, norm='max')[0])
+            for si in range(len(score_list)):
+                lp_score_sorted = lp_scores[lp_scores[:, si].argsort()[::-1]]
+                for k in top_k_values:
+                    percent_scores[score_list[si]][k].append(sum(lp_score_sorted[:k, -1]) / k)
 
-            y_scores_aa_i = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, True)
-            y_scores_aa_i = np.array(y_scores_aa_i).astype(float).reshape(1, -1)
-            y_scores_aa_i = list(preprocessing.normalize(y_scores_aa_i, norm='max')[0])
+        # skip if no snapshot returned a score
+        if len(percent_scores[score_list[0]][top_k_values[0]]) == 0:
+            continue
 
-            y_scores_aa_o = directed_adamic_adar_index(ego_net, v_nodes_list, v_nodes, False)
-            y_scores_aa_o = np.array(y_scores_aa_o).astype(float).reshape(1, -1)
-            y_scores_aa_o = list(preprocessing.normalize(y_scores_aa_o, norm='max')[0])
-
-            y_scores_dcaa_i = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
-                                                                          True)
-            y_scores_dcaa_i = np.array(y_scores_dcaa_i).astype(float).reshape(1, -1)
-            y_scores_dcaa_i = list(preprocessing.normalize(y_scores_dcaa_i, norm='max')[0])
-
-            y_scores_dcaa_o = directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes, first_hop_nodes,
-                                                                          True)
-            y_scores_dcaa_o = np.array(y_scores_dcaa_o).astype(float).reshape(1, -1)
-            y_scores_dcaa_o = list(preprocessing.normalize(y_scores_dcaa_o, norm='max')[0])
-
-            combo_scores = np.concatenate((np.array(y_scores_cn).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_dccn_i).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_dccn_o).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_aa_i).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_aa_o).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_dcaa_i).astype(float).reshape(-1, 1),
-                                           np.array(y_scores_dcaa_o).astype(float).reshape(-1, 1),
-                                           np.array(y_true).reshape(-1, 1)), axis=1)
-
-            combo_scores_cn_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
-            combo_scores_dccn_i_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
-            combo_scores_dccn_o_sorted = combo_scores[combo_scores[:, 2].argsort()[::-1]]
-            combo_scores_aa_i_sorted = combo_scores[combo_scores[:, 3].argsort()[::-1]]
-            combo_scores_aa_o_sorted = combo_scores[combo_scores[:, 4].argsort()[::-1]]
-            combo_scores_dcaa_i_sorted = combo_scores[combo_scores[:, 5].argsort()[::-1]]
-            combo_scores_dcaa_o_sorted = combo_scores[combo_scores[:, 6].argsort()[::-1]]
-
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
             for k in top_k_values:
-                percent_scores['cn'][k].append(sum(combo_scores_cn_sorted[:k, -1]) / k)
-                percent_scores['dccn_i'][k].append(sum(combo_scores_dccn_i_sorted[:k, -1]) / k)
-                percent_scores['dccn_o'][k].append(sum(combo_scores_dccn_o_sorted[:k, -1]) / k)
-                percent_scores['aa_i'][k].append(sum(combo_scores_aa_i_sorted[:k, -1]) / k)
-                percent_scores['aa_o'][k].append(sum(combo_scores_aa_o_sorted[:k, -1]) / k)
-                percent_scores['dcaa_i'][k].append(sum(combo_scores_dcaa_i_sorted[:k, -1]) / k)
-                percent_scores['dcaa_o'][k].append(sum(combo_scores_dcaa_o_sorted[:k, -1]) / k)
+                percent_scores[s][k] = np.mean(percent_scores[s][k])
 
-        return percent_scores
+        with open(result_file_base_path + triangle_type + '/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    print("Analyzed ego net: " + ego_net_file)
+
+
+def all_directed_lp_indices(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # every row is a v node, and every column is a score in the following order:
+    # cn, dccn_i, dccn_o, aa_i, aa_o, dcaa_i, dcaa_o
+
+    scores = np.zeros((len(v_nodes_list), 7))
+
+    for v_i in range(0, len(v_nodes_list)):
+        # cn score
+        scores[v_i, 0] = len(v_nodes_z[v_nodes_list[v_i]])
+
+        temp_dccn_i_score = 0
+        temp_dccn_o_score = 0
+
+        temp_aa_i_score = 0
+        temp_aa_o_score = 0
+
+        temp_dcaa_i_score = 0
+        temp_dcaa_o_score = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+
+            z_pred = set(ego_net.predecessors(z))
+            z_succ = set(ego_net.successors(z))
+
+            # shift up all degrees by 2 so if it 1 or less we will not encounter an error
+            z_global_indegree = len(z_pred) + 2
+            z_global_outdegree = len(z_succ) + 2
+
+            z_local_indegree = len(z_pred.intersection(first_hop_nodes)) + 2
+            z_local_outdegree = len(z_succ.intersection(first_hop_nodes)) + 2
+
+            y_indegree = z_global_indegree - z_local_indegree
+            y_outdegree = z_global_outdegree - z_local_outdegree
+
+            temp_dccn_i_score += math.log(z_local_indegree)
+            temp_dccn_o_score += math.log(z_local_outdegree)
+
+            temp_aa_i_score += 1 / math.log(z_global_indegree)
+            temp_aa_o_score += 1 / math.log(z_global_outdegree)
+
+            temp_dcaa_i_score += 1 / math.log((z_local_indegree * (1 - (z_local_indegree / z_global_indegree))) +
+                                              (y_indegree * (z_global_indegree / z_local_indegree)))
+            temp_dcaa_i_score += 1 / math.log((z_local_outdegree * (1 - (z_local_outdegree / z_global_outdegree))) +
+                                              (y_outdegree * (z_global_outdegree / z_local_outdegree)))
+
+        # dccn_i score
+        scores[v_i, 1] = temp_dccn_i_score
+        # dccn_o degree
+        scores[v_i, 2] = temp_dccn_o_score
+        # aa_i score
+        scores[v_i, 3] = temp_aa_i_score
+        # aa_o degree
+        scores[v_i, 4] = temp_aa_o_score
+        # dcaa_i score
+        scores[v_i, 5] = temp_dcaa_i_score
+        # dcaa_o degree
+        scores[v_i, 6] = temp_dcaa_o_score
+
+    return scores
 
 
 def directed_common_neighbors_index(v_nodes_list, v_nodes_z):
