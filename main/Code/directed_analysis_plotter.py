@@ -15,41 +15,52 @@ plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/
 
 gl_labels = ['Local', 'Global']
 
+# # grabbing all scores
+# for triangle_type in triangle_types:
+#     results = []
+#
+#     # loading result data
+#     for result_file in os.listdir(result_file_base_path + triangle_type):
+#         with open(result_file_base_path + triangle_type + '/' + result_file, 'rb') as f:
+#             egonet_result = pickle.load(f)
+#
+#         results.append(egonet_result)
+#
+#     results = np.array(results)
+#
+#     with open(result_file_base_path + 'all-scores/' + triangle_type + '.pckle', 'wb') as f:
+#         pickle.dump(results, f, protocol=-1)
+#
+#     print(triangle_type + ": Done")
+#
+# print("Done!")
+
+
+# plotting
 for triangle_type in triangle_types:
-    results = []
+    with open(result_file_base_path + 'all-scores/' + triangle_type + '.pckle', 'rb') as f:
+        res = pickle.load(f)
 
-    # loading result data
-    for result_file in os.listdir(result_file_base_path + triangle_type):
-        with open(result_file_base_path + triangle_type + '/' + result_file, 'rb') as f:
-            egonet_result = pickle.load(f)
-
-        results.append(egonet_result)
-
-    results = np.array(results)
-
-    # plotting
     for i in range(0, 2):
         plt.rc('legend', fontsize=12)
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=12)
 
-        h.add_ecdf_with_bond_plot(results[:, i], 'Indegree Formed Edges', 'r')
-        h.add_ecdf_with_bond_plot(results[:, i + 4], 'Indegree Not Formed Edges', 'b')
+        h.add_ecdf_with_bond_plot(res[:, i], 'Indegree Formed Edges', 'r')
+        h.add_ecdf_with_bond_plot(res[:, i + 4], 'Indegree Not Formed Edges', 'b')
 
-        h.add_ecdf_with_bond_plot(results[:, i + 2], 'Outdegree Formed Edges', 'y')
-        h.add_ecdf_with_bond_plot(results[:, i + 6], 'Outdegree Not Formed Edges', 'g')
+        h.add_ecdf_with_bond_plot(res[:, i + 2], 'Outdegree Formed Edges', 'y')
+        h.add_ecdf_with_bond_plot(res[:, i + 6], 'Outdegree Not Formed Edges', 'g')
 
         plt.ylabel('Empirical CDF', fontsize=14)
         plt.xlabel('Mean Normalized {0} Degree'.format(gl_labels[i]), fontsize=14)
         plt.legend(loc='lower right')
-        plt.suptitle('Number of egonets analyzed: {0}'.format(len(results)))
+        plt.suptitle('Number of egonets analyzed: {0}'.format(len(res)))
         current_fig = plt.gcf()
-        # current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
+        current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
         current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
         plt.clf()
 
     print(triangle_type + ": Done")
 
 print("Done!")
-
-

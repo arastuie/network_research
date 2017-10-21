@@ -780,6 +780,107 @@ def run_link_prediction_comparison_on_directed_graph_all_types(ego_net_file, top
     print("Analyzed ego net: " + ego_net_file)
 
 
+def run_link_prediction_comparison_on_directed_graph_all_types_based_on_empirical(ego_net_file, top_k_values):
+    data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/'
+    empirical_analyzed_egonets_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
+
+    triangle_type_func = {
+        'T01': dh.get_t01_type_nodes,
+        'T02': dh.get_t02_type_nodes,
+        'T03': dh.get_t03_type_nodes,
+        'T04': dh.get_t04_type_nodes,
+        'T05': dh.get_t05_type_nodes,
+        'T06': dh.get_t06_type_nodes,
+        'T07': dh.get_t07_type_nodes,
+        'T08': dh.get_t08_type_nodes,
+        'T09': dh.get_t09_type_nodes,
+    }
+
+    triangle_types_to_analyze = []
+    for tt in triangle_type_func:
+        if not os.path.isfile(result_file_base_path + tt + '/' + ego_net_file) and \
+               os.path.isfile(empirical_analyzed_egonets_path + tt + '/' + ego_net_file):
+            triangle_types_to_analyze.append(tt)
+
+    if len(triangle_types_to_analyze) == 0:
+        return
+
+    score_list = ['cn', 'dccn_i', 'dccn_o', 'aa_i', 'aa_o', 'dcaa_i', 'dcaa_o']
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net = pickle.load(f)
+
+    ego_net_snapshots = []
+
+    for r in range(0, 4):
+        temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+        ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+    for triangle_type in triangle_types_to_analyze:
+
+        percent_scores = {
+            'cn': {},
+            'dccn_i': {},
+            'dccn_o': {},
+            'aa_i': {},
+            'aa_o': {},
+            'dcaa_i': {},
+            'dcaa_o': {}
+        }
+
+        for k in top_k_values:
+            for ps in percent_scores.keys():
+                percent_scores[ps][k] = []
+
+        # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+        for i in range(len(ego_net_snapshots) - 1):
+            first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i],
+                                                                                           ego_node)
+
+            if len(first_hop_nodes) < 10:
+                continue
+
+            v_nodes_list = list(v_nodes.keys())
+            y_true = []
+
+            for v_i in range(0, len(v_nodes_list)):
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                    y_true.append(1)
+                else:
+                    y_true.append(0)
+
+            # continue of no edge was formed
+            if np.sum(y_true) == 0:
+                continue
+
+            lp_scores = all_directed_lp_indices(ego_net, v_nodes_list, v_nodes, first_hop_nodes)
+
+            lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
+
+            for si in range(len(score_list)):
+                lp_score_sorted = lp_scores[lp_scores[:, si].argsort()[::-1]]
+                for k in top_k_values:
+                    percent_scores[score_list[si]][k].append(sum(lp_score_sorted[:k, -1]) / k)
+
+        # skip if no snapshot returned a score
+        if len(percent_scores[score_list[0]][top_k_values[0]]) == 0:
+            continue
+
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
+            for k in top_k_values:
+                percent_scores[s][k] = np.mean(percent_scores[s][k])
+
+        with open(result_file_base_path + triangle_type + '/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    print("Analyzed ego net: " + ego_net_file)
+
 def all_directed_lp_indices(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     # every row is a v node, and every column is a score in the following order:
     # cn, dccn_i, dccn_o, aa_i, aa_o, dcaa_i, dcaa_o

@@ -188,4 +188,12 @@ import directed_graphs_helpers as dh
 # get_ego_centric_networks_in_fb(graph)
 
 # dh.read_gplus_ego_graph(100000)
-dh.create_gplus_multiple_egonets(10000, 55)
+# dh.create_gplus_multiple_egonets(10000, 55)
+
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/'
+empirical_analyzed_egonets_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
+for tt in ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']:
+    p = len(os.listdir(result_file_base_path + tt)) / len(os.listdir(empirical_analyzed_egonets_path + tt))
+    print("{0} is {1:.1f}% complete!".format(tt, p * 100))
+
+
