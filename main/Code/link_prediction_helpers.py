@@ -881,6 +881,7 @@ def run_link_prediction_comparison_on_directed_graph_all_types_based_on_empirica
 
     print("Analyzed ego net: " + ego_net_file)
 
+
 def all_directed_lp_indices(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     # every row is a v node, and every column is a score in the following order:
     # cn, dccn_i, dccn_o, aa_i, aa_o, dcaa_i, dcaa_o
@@ -923,7 +924,7 @@ def all_directed_lp_indices(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
 
             temp_dcaa_i_score += 1 / math.log((z_local_indegree * (1 - (z_local_indegree / z_global_indegree))) +
                                               (y_indegree * (z_global_indegree / z_local_indegree)) + 2)
-            temp_dcaa_i_score += 1 / math.log((z_local_outdegree * (1 - (z_local_outdegree / z_global_outdegree))) +
+            temp_dcaa_o_score += 1 / math.log((z_local_outdegree * (1 - (z_local_outdegree / z_global_outdegree))) +
                                               (y_outdegree * (z_global_outdegree / z_local_outdegree)) + 2)
 
         # dccn_i score

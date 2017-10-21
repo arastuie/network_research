@@ -73,9 +73,9 @@ plt.figure()
 plt.rc('legend', fontsize=17)
 plt.rc('xtick', labelsize=12)
 plt.rc('ytick', labelsize=12)
-plt.errorbar(top_k_values, lower_imp_aa, yerr=lower_imp_aa_err, marker='o', ecolor='b', elinewidth=3,
+plt.errorbar(top_k_values, lower_imp_aa, yerr=lower_imp_aa_err, marker='o', color='b', ecolor='r', elinewidth=2,
              label="Before PYMK")
-plt.errorbar(top_k_values, after_imp_aa, yerr=after_imp_aa_err, marker='^', ecolor='r', elinewidth=3,
+plt.errorbar(top_k_values, after_imp_aa, yerr=after_imp_aa_err, marker='^', color='g', ecolor='y', elinewidth=2,
              label="After PYMK")
 
 plt.ylabel('DCAA vs AA Percent Improvement', fontsize=17)
@@ -89,9 +89,9 @@ plt.figure()
 plt.rc('legend', fontsize=17)
 plt.rc('xtick', labelsize=12)
 plt.rc('ytick', labelsize=12)
-plt.errorbar(top_k_values, lower_imp_cn, yerr=lower_imp_cn_err, marker='o', ecolor='b', elinewidth=3,
+plt.errorbar(top_k_values, lower_imp_cn, yerr=lower_imp_cn_err, marker='o', color='b', ecolor='r', elinewidth=2,
              label="Before PYMK")
-plt.errorbar(top_k_values, after_imp_cn, yerr=after_imp_cn_err, marker='^', ecolor='r', elinewidth=3,
+plt.errorbar(top_k_values, after_imp_cn, yerr=after_imp_cn_err, marker='^', color='g', ecolor='y', elinewidth=2,
              label="After PYMK")
 
 plt.ylabel('DCCN vs CN Percent Improvement', fontsize=17)
