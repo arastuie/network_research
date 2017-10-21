@@ -395,6 +395,8 @@ def get_avg_num_cluster_per_node(network, clusters, cluster_node_list, nodes=[])
 
 # ECDF plotting
 def get_ecdf_bands(data, alpha):
+    data = np.sort(data)
+
     n = len(data)
     if n == 0:
         return
@@ -414,13 +416,11 @@ def get_ecdf_bands(data, alpha):
     return lower_bond, upper_bond
 
 
-def add_ecdf_with_bond_plot(data, label, color):
+def add_ecdf_with_bond_plot(data, lb, ub, label, color):
     data = np.sort(data)
 
     plt.step(data, np.arange(1, len(data) + 1) / np.float(len(data)), alpha=0.9, color=color,
              label='{0}: {1:.4f}'.format(label, np.mean(data)), lw=2)
-
-    lb, ub = get_ecdf_bands(data, 0.05)
 
     plt.plot(data, lb, '--', color=color, alpha=0.4)
     plt.plot(data, ub, '--', color=color, alpha=0.4)
