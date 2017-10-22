@@ -63,12 +63,6 @@ for k in top_k_values:
     after_imp_cn.append(np.mean(after_percent_imp_cn[k]) * 100)
     after_imp_cn_err.append(np.std(after_percent_imp_cn[k]) / np.sqrt(len(after_percent_imp_cn[k])) * 100)
 
-print("lower imp aa -> {0}".format(np.mean(lower_imp_aa)))
-print("after imp aa -> {0}".format(np.mean(after_imp_aa)))
-print("lower imp cn -> {0}".format(np.mean(lower_imp_cn)))
-print("after imp cn -> {0}".format(np.mean(after_imp_cn)))
-print("overall -> {0}".format(np.mean([np.mean(lower_imp_aa), np.mean(after_imp_aa), np.mean(lower_imp_cn), np.mean(after_imp_cn) ])))
-
 plt.figure()
 plt.rc('legend', fontsize=17)
 plt.rc('xtick', labelsize=12)
@@ -102,6 +96,8 @@ plt.legend(loc='lower right')
 current_fig = plt.gcf()
 current_fig.savefig('{0}/plots/dccn-cn.pdf'.format(path), format='pdf')
 plt.clf()
+
+print("Done!")
 
 
 

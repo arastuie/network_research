@@ -47,6 +47,7 @@ for triangle_type in triangle_types:
     with open(result_file_base_path + 'all-scores/' + triangle_type + '.pckle', 'rb') as f:
         res, lbs, ubs = pickle.load(f)
 
+
     for i in range(0, 2):
         plt.rc('legend', fontsize=12)
         plt.rc('xtick', labelsize=12)
@@ -61,7 +62,7 @@ for triangle_type in triangle_types:
         plt.ylabel('Empirical CDF', fontsize=14)
         plt.xlabel('Mean Normalized {0} Degree'.format(gl_labels[i]), fontsize=14)
         plt.legend(loc='lower right')
-        plt.suptitle('Number of egonets analyzed: {0}'.format(len(res)))
+        plt.suptitle('Number of {0} egonets analyzed: {1}'.format(triangle_type, len(res)))
         current_fig = plt.gcf()
         current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
         # current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))

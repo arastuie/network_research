@@ -13,7 +13,7 @@ def calc_percent_imp(percent_imp_list, results, base_score, improved_score, ki):
         percent_imp_list[ki].append(results[improved_score][ki])
 
 
-def plot_lp_errorbar(score_1, err_1, label_1, score_2, err_2, label_2, top_k, plot_label, plot_path):
+def plot_lp_errorbar(score_1, err_1, label_1, score_2, err_2, label_2, top_k, trig_type, plot_label, plot_path):
     plt.figure()
     plt.rc('legend', fontsize=17)
     plt.rc('xtick', labelsize=12)
@@ -21,8 +21,9 @@ def plot_lp_errorbar(score_1, err_1, label_1, score_2, err_2, label_2, top_k, pl
     plt.errorbar(top_k, score_1, yerr=err_1, marker='o', color='b', ecolor='r', elinewidth=2, label=label_1)
     plt.errorbar(top_k, score_2, yerr=err_2, marker='^', color='g', ecolor='y', elinewidth=2, label=label_2)
 
-    plt.ylabel(plot_label, fontsize=17)
-    plt.xlabel('Top K Value', fontsize=17)
+    plt.title(trig_type, fontsize=17)
+    plt.ylabel(plot_label, fontsize=15)
+    plt.xlabel('Top K Value', fontsize=15)
     plt.legend(loc='lower right')
     current_fig = plt.gcf()
     current_fig.savefig(plot_path, format='pdf')
@@ -100,11 +101,11 @@ for triangle_type in triangle_types:
         imp_mse = pickle.load(f)
 
     plot_lp_errorbar(imp_mse['imp_cn_i'], imp_mse['imp_cn_i_err'], 'Indgree',
-                     imp_mse['imp_cn_o'],  imp_mse['imp_cn_o_err'], 'Outdegree', top_k_values,
+                     imp_mse['imp_cn_o'],  imp_mse['imp_cn_o_err'], 'Outdegree', top_k_values, triangle_type,
                      'DCCN vs CN Percent Improvement', '{0}/{1}-dccn-cn.pdf'.format(plot_save_path, triangle_type))
 
     plot_lp_errorbar(imp_mse['imp_aa_i'], imp_mse['imp_aa_i_err'], 'Indgree',
-                     imp_mse['imp_aa_o'],  imp_mse['imp_aa_o_err'], 'Outdegree', top_k_values,
+                     imp_mse['imp_aa_o'],  imp_mse['imp_aa_o_err'], 'Outdegree', top_k_values, triangle_type,
                      'DCAA vs AA Percent Improvement', '{0}/{1}-dcaa-aa.pdf'.format(plot_save_path, triangle_type))
 
     print(triangle_type + ": Done")

@@ -25,12 +25,12 @@ for ps in paths:
         # plt.step(np.sort(mfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='r',
         #          label='Formed Edges: {0:.4f}'.format(np.mean(mfems)), lw=3)
 
-        h.add_ecdf_with_bond_plot(mfems, 'Formed Edges', 'r')
+        h.add_ecdf_with_band_plot_undirected(mfems, 'Formed Edges', 'r')
 
         # plt.step(np.sort(mnfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='b',
         #          label='Not Formed Edges: {0:.4f}'.format(np.mean(mnfems)), lw=3)
 
-        h.add_ecdf_with_bond_plot(mnfems, 'Not Formed Edges', 'b')
+        h.add_ecdf_with_band_plot_undirected(mnfems, 'Not Formed Edges', 'b')
 
         plt.ylabel('Empirical CDF', fontsize=17)
         plt.xlabel('Mean Normalized {0} Degree'.format(ps), fontsize=17)

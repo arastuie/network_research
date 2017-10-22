@@ -407,21 +407,54 @@ def get_ecdf_bands(data, alpha):
     for i in range(0, n):
         edf[i] = sum(np.where(data <= data[i], 1, 0)) / n
 
-    lower_bond = edf - epsilon
-    lower_bond[np.where(lower_bond < 0)[0]] = 0
+    lower_band = edf - epsilon
+    lower_band[np.where(lower_band < 0)[0]] = 0
 
-    upper_bond = edf + epsilon
-    upper_bond[np.where(upper_bond > 1)[0]] = 1
+    upper_band = edf + epsilon
+    upper_band[np.where(upper_band > 1)[0]] = 1
 
-    return lower_bond, upper_bond
+    return lower_band, upper_band
 
 
-def add_ecdf_with_bond_plot(data, lb, ub, label, color):
+def add_ecdf_with_band_plot(data, lb, ub, label, color):
     data = np.sort(data)
 
     plt.step(data, np.arange(1, len(data) + 1) / np.float(len(data)), alpha=0.9, color=color,
              label='{0}: {1:.4f}'.format(label, np.mean(data)), lw=2)
 
+    plt.plot(data, lb, '--', color=color, alpha=0.4)
+    plt.plot(data, ub, '--', color=color, alpha=0.4)
+    plt.fill_between(data, lb, ub, facecolor=color, alpha=0.2)
+
+
+# ECDF plotting
+def get_ecdf_bands_undirected(data, alpha):
+    n = len(data)
+    if n == 0:
+        return
+
+    epsilon = math.sqrt((math.log(2 / alpha)) / (2 * n))
+
+    edf = np.zeros(np.shape(data))
+    for i in range(0, n):
+        edf[i] = sum(np.where(data <= data[i], 1, 0)) / n
+
+    lower_band = edf - epsilon
+    lower_band[np.where(lower_band < 0)[0]] = 0
+
+    upper_band = edf + epsilon
+    upper_band[np.where(upper_band > 1)[0]] = 1
+
+    return lower_band, upper_band
+
+
+def add_ecdf_with_band_plot_undirected(data, label, color):
+    data = np.sort(data)
+
+    plt.step(data, np.arange(1, len(data) + 1) / np.float(len(data)), alpha=0.9, color=color,
+             label='{0}: {1:.4f}'.format(label, np.mean(data)), lw=2)
+
+    lb, ub = get_ecdf_bands_undirected(data, 0.05)
     plt.plot(data, lb, '--', color=color, alpha=0.4)
     plt.plot(data, ub, '--', color=color, alpha=0.4)
     plt.fill_between(data, lb, ub, facecolor=color, alpha=0.2)
