@@ -4,6 +4,10 @@ import numpy as np
 import helpers as h
 import matplotlib.pyplot as plt
 
+
+def get_mean_ci(res, z_value):
+    return z_value * np.std(res) / np.sqrt(len(res))
+
 # Results pickle files are in the following order
 #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
 #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree, global-not-formed-out-degree
@@ -11,18 +15,51 @@ import matplotlib.pyplot as plt
 triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
 result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
 plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/cdf-plots'
-empirical_temp_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/temp'
+
 gl_labels = ['Local', 'Global']
 in_out_label = ['In-degree', 'Out-degree']
-alpha = 0.05
+z = 1.96
+
+
+pos = list(range(len(triangle_types)))
+bar_width = 0.20
+opacity = 0.6
+error_config = {'ecolor': '0.3'}
+bar_legends = ['Global Formed', 'Global Not Formed', 'Local Formed', 'Local Not Formed']
+dif_results = ['global-formed', 'global-not-formed', 'local-formed', 'local-not-formed']
+bar_color = ['r', 'b', 'g', 'y']
+
+
+all_results = {
+    'In-degree': {
+        'global-formed': [],
+        'global-not-formed': [],
+        'local-formed': [],
+        'local-not-formed': [],
+        'global-formed-err': [],
+        'global-not-formed-err': [],
+        'local-formed-err': [],
+        'local-not-formed-err': []
+    },
+    'Out-degree': {
+        'global-formed': [],
+        'global-not-formed': [],
+        'local-formed': [],
+        'local-not-formed': [],
+        'global-formed-err': [],
+        'global-not-formed-err': [],
+        'local-formed-err': [],
+        'local-not-formed-err': []
+    }
+}
 
 # grabbing all scores
-for triangle_type in triangle_types:
+for t in range(len(triangle_types)):
     results = []
 
     # loading result data
-    for result_file in os.listdir(result_file_base_path + triangle_type):
-        with open(result_file_base_path + triangle_type + '/' + result_file, 'rb') as f:
+    for result_file in os.listdir(result_file_base_path + triangle_types[t]):
+        with open(result_file_base_path + triangle_types[t] + '/' + result_file, 'rb') as f:
             egonet_result = pickle.load(f)
 
         results.append(egonet_result)
@@ -93,14 +130,46 @@ for triangle_type in triangle_types:
         # # current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
         # plt.clf()
 
-    bar_color = ['r', 'b', 'g', 'y']
     for i in range(2):
-        # divided into in- & out- degree. With the following order:
-        # global-formed, global-not-formed, local-formed, local-not-formed
-        rep_values = [np.mean(results[:, i * 2 + 1]), np.mean(results[:, i * 2 + 5]), np.mean(results[:, i * 2]), np.mean(results[:, i * 2 + 4])]
-        plt.figure(i + 1)
-        plt.bar()
+        # computing mean
+        all_results[in_out_label[i]]['global-formed'].append(np.mean(results[:, i * 2 + 1]))
+        all_results[in_out_label[i]]['global-not-formed'].append(np.mean(results[:, i * 2 + 5]))
+        all_results[in_out_label[i]]['local-formed'].append(np.mean(results[:, i * 2]))
+        all_results[in_out_label[i]]['local-not-formed'].append(np.mean(results[:, i * 2 + 4]))
 
-    print(triangle_type + ": Done")
+        # computing 95% confidence interval
+        all_results[in_out_label[i]]['global-formed-err'].append(get_mean_ci(results[:, i * 2 + 1], z))
+        all_results[in_out_label[i]]['global-not-formed-err'].append(get_mean_ci(results[:, i * 2 + 5], z))
+        all_results[in_out_label[i]]['local-formed-err'].append(get_mean_ci(results[:, i * 2], z))
+        all_results[in_out_label[i]]['local-not-formed-err'].append(get_mean_ci(results[:, i * 2 + 4], z))
 
-print("Done!")
+    print(triangle_types[t] + ": Done")
+
+# plotting
+for i_degree in range(2):
+    fig, ax = plt.subplots()
+
+    for i_bar in range(len(dif_results)):
+        plt.bar(np.arange(len(triangle_types)) + bar_width * i_bar,
+                all_results[in_out_label[i_degree]][dif_results[i_bar]],
+                bar_width,
+                alpha=opacity,
+                color=bar_color[i_bar],
+                yerr=all_results[in_out_label[i_degree]][dif_results[i_bar] + '-err'],
+                error_kw=error_config,
+                label=bar_legends[i_bar])
+
+    plt.xlabel('Triangle Types')
+    plt.ylabel('Mean Normalized {0} of Common Neighbors'.format(in_out_label[i_degree]))
+    plt.xticks(np.arange(len(triangle_types)) + bar_width * 1.5, triangle_types)
+
+    if i_degree == 1:
+        plt.ylim(ymax=0.4)
+        plt.legend(loc='upper center')
+    else:
+        plt.legend(loc='upper left')
+
+    plt.tight_layout()
+    plt.grid()
+    plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, in_out_label[i_degree]), format='pdf')
+    plt.clf()
