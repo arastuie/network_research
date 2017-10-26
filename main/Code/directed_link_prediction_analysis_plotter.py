@@ -41,59 +41,59 @@ plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 # # Computing percent improvements and standard errors over all the ego nets analyzed
-# for triangle_type in triangle_types:
-#     percent_imp_cn_i = {}
-#     percent_imp_cn_o = {}
-#     percent_imp_aa_i = {}
-#     percent_imp_aa_o = {}
-#
-#     for k in top_k_values:
-#         percent_imp_cn_i[k] = []
-#         percent_imp_cn_o[k] = []
-#         percent_imp_aa_i[k] = []
-#         percent_imp_aa_o[k] = []
-#
-#     # loading result data
-#     for result_file in os.listdir(result_file_base_path + triangle_type):
-#         with open(result_file_base_path + triangle_type + '/' + result_file, 'rb') as f:
-#             egonet_lp_results = pickle.load(f)
-#
-#         for k in top_k_values:
-#             calc_percent_imp(percent_imp_cn_i, egonet_lp_results, 'cn', 'dccn_i', k)
-#             calc_percent_imp(percent_imp_cn_o, egonet_lp_results, 'cn', 'dccn_o', k)
-#             calc_percent_imp(percent_imp_aa_i, egonet_lp_results, 'aa_i', 'dcaa_i', k)
-#             calc_percent_imp(percent_imp_aa_o, egonet_lp_results, 'aa_o', 'dcaa_o', k)
-#
-#     imp_mse = {
-#         'imp_cn_i': [],
-#         'imp_cn_i_err': [],
-#         'imp_cn_o': [],
-#         'imp_cn_o_err': [],
-#         'imp_aa_i': [],
-#         'imp_aa_i_err': [],
-#         'imp_aa_o': [],
-#         'imp_aa_o_err': []
-#     }
-#
-#     for k in top_k_values:
-#         imp_mse['imp_cn_i'].append(np.mean(percent_imp_cn_i[k]) * 100)
-#         imp_mse['imp_cn_i_err'].append(np.std(percent_imp_cn_i[k]) / np.sqrt(len(percent_imp_cn_i[k])) * 100)
-#
-#         imp_mse['imp_cn_o'].append(np.mean(percent_imp_cn_o[k]) * 100)
-#         imp_mse['imp_cn_o_err'].append(np.std(percent_imp_cn_o[k]) / np.sqrt(len(percent_imp_cn_o[k])) * 100)
-#
-#         imp_mse['imp_aa_i'].append(np.mean(percent_imp_aa_i[k]) * 100)
-#         imp_mse['imp_aa_i_err'].append(np.std(percent_imp_aa_i[k]) / np.sqrt(len(percent_imp_aa_i[k])) * 100)
-#
-#         imp_mse['imp_aa_o'].append(np.mean(percent_imp_aa_o[k]) * 100)
-#         imp_mse['imp_aa_o_err'].append(np.std(percent_imp_aa_o[k]) / np.sqrt(len(percent_imp_aa_o[k])) * 100)
-#
-#     with open(result_file_base_path + 'plot_ready_data/' + triangle_type + '.pckle', 'wb') as f:
-#         pickle.dump(imp_mse, f, protocol=-1)
-#
-#     print(triangle_type + ": Done")
-#
-# print("Percent improvement calculation Done!")
+for triangle_type in triangle_types:
+    percent_imp_cn_i = {}
+    percent_imp_cn_o = {}
+    percent_imp_aa_i = {}
+    percent_imp_aa_o = {}
+
+    for k in top_k_values:
+        percent_imp_cn_i[k] = []
+        percent_imp_cn_o[k] = []
+        percent_imp_aa_i[k] = []
+        percent_imp_aa_o[k] = []
+
+    # loading result data
+    for result_file in os.listdir(result_file_base_path + triangle_type):
+        with open(result_file_base_path + triangle_type + '/' + result_file, 'rb') as f:
+            egonet_lp_results = pickle.load(f)
+
+        for k in top_k_values:
+            calc_percent_imp(percent_imp_cn_i, egonet_lp_results, 'cn', 'dccn_i', k)
+            calc_percent_imp(percent_imp_cn_o, egonet_lp_results, 'cn', 'dccn_o', k)
+            calc_percent_imp(percent_imp_aa_i, egonet_lp_results, 'aa_i', 'dcaa_i', k)
+            calc_percent_imp(percent_imp_aa_o, egonet_lp_results, 'aa_o', 'dcaa_o', k)
+
+    imp_mse = {
+        'imp_cn_i': [],
+        'imp_cn_i_err': [],
+        'imp_cn_o': [],
+        'imp_cn_o_err': [],
+        'imp_aa_i': [],
+        'imp_aa_i_err': [],
+        'imp_aa_o': [],
+        'imp_aa_o_err': []
+    }
+
+    for k in top_k_values:
+        imp_mse['imp_cn_i'].append(np.mean(percent_imp_cn_i[k]) * 100)
+        imp_mse['imp_cn_i_err'].append(np.std(percent_imp_cn_i[k]) / np.sqrt(len(percent_imp_cn_i[k])) * 100)
+
+        imp_mse['imp_cn_o'].append(np.mean(percent_imp_cn_o[k]) * 100)
+        imp_mse['imp_cn_o_err'].append(np.std(percent_imp_cn_o[k]) / np.sqrt(len(percent_imp_cn_o[k])) * 100)
+
+        imp_mse['imp_aa_i'].append(np.mean(percent_imp_aa_i[k]) * 100)
+        imp_mse['imp_aa_i_err'].append(np.std(percent_imp_aa_i[k]) / np.sqrt(len(percent_imp_aa_i[k])) * 100)
+
+        imp_mse['imp_aa_o'].append(np.mean(percent_imp_aa_o[k]) * 100)
+        imp_mse['imp_aa_o_err'].append(np.std(percent_imp_aa_o[k]) / np.sqrt(len(percent_imp_aa_o[k])) * 100)
+
+    with open(result_file_base_path + 'plot_ready_data/' + triangle_type + '.pckle', 'wb') as f:
+        pickle.dump(imp_mse, f, protocol=-1)
+
+    print(triangle_type + ": Done")
+
+print("Percent improvement calculation Done!")
 
 # plotting
 for triangle_type in triangle_types:
