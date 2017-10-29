@@ -123,10 +123,14 @@ for ps in paths:
             all_results[dif_res[ps][ii] + '-err'].append(get_mean_ci(res[ii], z))
 
 
-plt.rcParams["figure.figsize"] = (5, 7)
+plt.rcParams["figure.figsize"] = (8, 10)
 
 # plotting
 for i_degree in range(2):
+    plt.rc('legend', fontsize=25)
+    plt.rc('xtick', labelsize=28)
+    plt.rc('ytick', labelsize=14)
+
     fig, ax = plt.subplots()
 
     for i_bar in range(len(dif_results_for_plotting)):
@@ -139,9 +143,12 @@ for i_degree in range(2):
                 error_kw=error_config,
                 label=bar_legends[i_bar])
 
-    plt.ylabel('Mean Normalized {0} Degree of Common Neighbors'.format(gl_labels_plotting[i_degree]))
+    plt.ylabel('Mean Normalized {0} Degree of Common Neighbors'.format(gl_labels_plotting[i_degree]), fontsize=25)
     plt.xticks(np.arange(len(names)) + bar_width / 2, names)
     plt.legend(loc='upper left')
     # plt.tight_layout()
+    if i_degree == 1:
+        plt.ylim(ymax=0.1)
+
     plt.savefig('{0}/overall-{1}.pdf'.format(plot_path, gl_labels[i_degree]), format='pdf')
     plt.clf()

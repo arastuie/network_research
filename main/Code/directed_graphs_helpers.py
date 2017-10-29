@@ -449,3 +449,27 @@ def get_t09_type_nodes(ego_net, ego_node):
         second_hop_nodes.remove(ego_node)
 
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
+def get_combined_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).union(ego_net.predecessors(z)) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if v == ego_node:
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
