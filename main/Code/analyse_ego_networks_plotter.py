@@ -18,26 +18,27 @@ for ps in paths:
 
         plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/local/lower-6'
 
-        plt.rc('legend', fontsize=16)
-        plt.rc('xtick', labelsize=12)
-        plt.rc('ytick', labelsize=12)
+        plt.rc('legend', fontsize=20)
+        plt.rc('xtick', labelsize=15)
+        plt.rc('ytick', labelsize=15)
 
         # plt.step(np.sort(mfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='r',
         #          label='Formed Edges: {0:.4f}'.format(np.mean(mfems)), lw=3)
 
-        h.add_ecdf_with_band_plot_undirected(mfems, 'Formed Edges', 'r')
+        h.add_ecdf_with_band_plot_undirected(mfems, 'Formed', 'r')
 
         # plt.step(np.sort(mnfems), np.arange(1, len(mfems) + 1) / np.float(len(mfems)), alpha=0.9, color='b',
         #          label='Not Formed Edges: {0:.4f}'.format(np.mean(mnfems)), lw=3)
 
-        h.add_ecdf_with_band_plot_undirected(mnfems, 'Not Formed Edges', 'b')
+        h.add_ecdf_with_band_plot_undirected(mnfems, 'Not Formed', 'b')
 
-        plt.ylabel('Empirical CDF', fontsize=17)
-        plt.xlabel('Mean Normalized {0} Degree'.format(ps), fontsize=17)
+        plt.ylabel('Empirical CDF', fontsize=20)
+        plt.xlabel('Mean Normalized {0} Degree'.format(ps), fontsize=20)
         plt.legend(loc='lower right')
+        plt.tight_layout()
         current_fig = plt.gcf()
         current_fig.savefig('{0}/cdf/{1}-{2}-overall-mean-normal.pdf'.format(path, ps, names[i]), format='pdf')
-        current_fig.savefig('{0}/cdf/{1}-{2}-overall-mean-normal-png.png'.format(path, ps, names[i]))
+        # current_fig.savefig('{0}/cdf/{1}-{2}-overall-mean-normal-png.png'.format(path, ps, names[i]))
         plt.clf()
         print("Number of egonets analyzed for {0} {1}: {2}".format(ps, names[i], len(mfems)))
 

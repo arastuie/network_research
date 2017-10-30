@@ -97,7 +97,7 @@ z = 1.96
 pos = list(range(len(names)))
 bar_width = 0.40
 opacity = 0.6
-error_config = {'ecolor': '0.3'}
+error_config = {'ecolor': '0.3', 'capsize': 4, 'lw': 3, 'capthick': 2}
 bar_legends = ['Formed', 'Not Formed']
 dif_results_for_plotting = ['formed', 'not-formed']
 bar_color = ['r', 'b', 'g', 'y']
@@ -143,7 +143,7 @@ for i_degree in range(2):
                 error_kw=error_config,
                 label=bar_legends[i_bar])
 
-    plt.ylabel('Mean Normalized {0} Degree of Common Neighbors'.format(gl_labels_plotting[i_degree]), fontsize=25)
+    plt.ylabel('Mean Normalized {0} Degree'.format(gl_labels_plotting[i_degree]), fontsize=25)
     plt.xticks(np.arange(len(names)) + bar_width / 2, names)
     plt.legend(loc='upper left')
     # plt.tight_layout()

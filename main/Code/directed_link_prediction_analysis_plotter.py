@@ -27,9 +27,9 @@ def plot_lp_errorbar(score_1, err_1, label_1, score_2, err_2, label_2, top_k, tr
     plt.ylabel(plot_label, fontsize=15)
     plt.xlabel('Top K Value', fontsize=15)
     plt.legend(loc='lower right')
-    # plt.show()
-    current_fig = plt.gcf()
-    current_fig.savefig(plot_path, format='pdf')
+    plt.show()
+    # current_fig = plt.gcf()
+    # current_fig.savefig(plot_path, format='pdf')
     plt.clf()
 
 
