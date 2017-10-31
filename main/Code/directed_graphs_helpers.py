@@ -458,11 +458,11 @@ def get_combined_type_nodes(ego_net, ego_node):
     v_nodes = {}
 
     for z in first_hop_nodes:
-        temp_v_nodes = set(ego_net.successors(z)).union(ego_net.predecessors(z)) - first_hop_nodes
+        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         for v in temp_v_nodes:
-            if v == ego_node:
+            if v == ego_node or ego_net.has_edge(ego_node, v):
                 continue
             if v not in v_nodes:
                 v_nodes[v] = [z]

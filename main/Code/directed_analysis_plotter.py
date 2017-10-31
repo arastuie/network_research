@@ -43,28 +43,70 @@ alpha = 0.05
 
 
 # # plotting
-for triangle_type in triangle_types:
+# for triangle_type in triangle_types:
+#     with open(result_file_base_path + 'all-scores/' + triangle_type + '.pckle', 'rb') as f:
+#         res, lbs, ubs = pickle.load(f)
+#
+#     for i in range(0, 2):
+#         plt.rc('legend', fontsize=14.5)
+#         plt.rc('xtick', labelsize=15)
+#         plt.rc('ytick', labelsize=15)
+#
+#         h.add_ecdf_with_band_plot(res[:, i], lbs[i], ubs[i], 'In-degree Formed', 'r')
+#         h.add_ecdf_with_band_plot(res[:, i + 4], lbs[i + 4], ubs[i + 4], 'In-degree Not Formed', 'b')
+#
+#         h.add_ecdf_with_band_plot(res[:, i + 2], lbs[i + 2], ubs[i + 2], 'Out-degree Formed', 'y')
+#         h.add_ecdf_with_band_plot(res[:, i + 6], lbs[i + 6], ubs[i + 6], 'Out-degree Not Formed', 'g')
+#
+#         plt.ylabel('Empirical CDF', fontsize=20)
+#         plt.xlabel('Mean Normalized {0} Degree'.format(gl_labels[i]), fontsize=20)
+#         plt.legend(loc='lower right')
+#         # plt.suptitle('Number of {0} egonets analyzed: {1}'.format(triangle_type, len(res)))
+#         plt.tight_layout()
+#         current_fig = plt.gcf()
+#         current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
+#         # current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
+#         plt.clf()
+#
+#     print(triangle_type + ": Done")
+#
+# print("Done!")
+
+for triangle_type in ['T02']:
     with open(result_file_base_path + 'all-scores/' + triangle_type + '.pckle', 'rb') as f:
         res, lbs, ubs = pickle.load(f)
 
-
     for i in range(0, 2):
-        plt.rc('legend', fontsize=12)
-        plt.rc('xtick', labelsize=12)
-        plt.rc('ytick', labelsize=12)
+        plt.rc('legend', fontsize=20)
+        plt.rc('xtick', labelsize=15)
+        plt.rc('ytick', labelsize=15)
 
-        h.add_ecdf_with_bond_plot(res[:, i], lbs[i], ubs[i], 'Indegree Formed Edges', 'r')
-        h.add_ecdf_with_bond_plot(res[:, i + 4], lbs[i + 4], ubs[i + 4], 'Indegree Not Formed Edges', 'b')
+        h.add_ecdf_with_band_plot(res[:, i], lbs[i], ubs[i], 'Formed', 'r')
+        h.add_ecdf_with_band_plot(res[:, i + 4], lbs[i + 4], ubs[i + 4], 'Not Formed', 'b')
 
-        h.add_ecdf_with_bond_plot(res[:, i + 2], lbs[i + 2], ubs[i + 2], 'Outdegree Formed Edges', 'y')
-        h.add_ecdf_with_bond_plot(res[:, i + 6], lbs[i + 6], ubs[i + 6], 'Outdegree Not Formed Edges', 'g')
-
-        plt.ylabel('Empirical CDF', fontsize=14)
-        plt.xlabel('Mean Normalized {0} Degree'.format(gl_labels[i]), fontsize=14)
+        plt.ylabel('Empirical CDF', fontsize=20)
+        plt.xlabel('Mean Normalized {0} In-degree'.format(gl_labels[i]), fontsize=20)
         plt.legend(loc='lower right')
-        plt.suptitle('Number of {0} egonets analyzed: {1}'.format(triangle_type, len(res)))
+        plt.tight_layout()
         current_fig = plt.gcf()
-        current_fig.savefig('{0}/{1}-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
+        current_fig.savefig('{0}/{1}-indegree-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
+        # current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
+        plt.clf()
+
+
+        plt.rc('legend', fontsize=20)
+        plt.rc('xtick', labelsize=15)
+        plt.rc('ytick', labelsize=15)
+
+        h.add_ecdf_with_band_plot(res[:, i + 2], lbs[i + 2], ubs[i + 2], 'Formed', 'r')
+        h.add_ecdf_with_band_plot(res[:, i + 6], lbs[i + 6], ubs[i + 6], 'Not Formed', 'b')
+
+        plt.ylabel('Empirical CDF', fontsize=20)
+        plt.xlabel('Mean Normalized {0} Out-degree'.format(gl_labels[i]), fontsize=20)
+        plt.legend(loc='lower right')
+        plt.tight_layout()
+        current_fig = plt.gcf()
+        current_fig.savefig('{0}/{1}-outdegree-{2}-cdf.pdf'.format(plot_save_path, triangle_type, gl_labels[i]), format='pdf')
         # current_fig.savefig('{0}/{1}-{2}-cdf.png'.format(plot_save_path, triangle_type, gl_labels[i]))
         plt.clf()
 

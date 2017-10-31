@@ -415,7 +415,6 @@ def get_ecdf_bands(data, alpha):
 
     return lower_band, upper_band
 
-
 def add_ecdf_with_band_plot(data, lb, ub, label, color):
     data = np.sort(data)
 

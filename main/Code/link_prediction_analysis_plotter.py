@@ -7,38 +7,34 @@ top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 paths = ['lower-6', 'after-6']
 
-# for p in paths:
-#     percent_imp_aa = {}
-#     percent_imp_cn = {}
-#
-#     for k in top_k_values:
-#         percent_imp_aa[k] = []
-#         percent_imp_cn[k] = []
-#
-#     with open('{0}/{1}/temp/total-result.pckl'.format(path, p), 'rb') as f:
-#         percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
-#
-#         print(len(percent_aa[1]))
-#         print(len(percent_dcaa[1]))
-#         print(len(percent_cn[1]))
-#         print(len(percent_dccn[1]))
-#
-#         for k in top_k_values:
-#             for i in range(len(percent_aa[k])):
-#                 if percent_aa[k][i] != 0:
-#                     percent_imp_aa[k].append((percent_dcaa[k][i] - percent_aa[k][i]) / percent_aa[k][i])
-#                 else:
-#                     percent_imp_aa[k].append(percent_dcaa[k][i])
-#
-#                 if percent_cn[k][i] != 0:
-#                     percent_imp_cn[k].append((percent_dccn[k][i] - percent_cn[k][i]) / percent_cn[k][i])
-#                 else:
-#                     percent_imp_cn[k].append(percent_dccn[k][i])
-#
-#     with open('{0}/{1}/temp/total-result-percent-imp.pckl'.format(path, p), 'wb') as f:
-#         pickle.dump([percent_imp_aa, percent_imp_cn], f, protocol=-1)
+for p in paths:
+    percent_imp_aa = {}
+    percent_imp_cn = {}
 
-with open('{0}/pickle-files/lower-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
+    for k in top_k_values:
+        percent_imp_aa[k] = []
+        percent_imp_cn[k] = []
+
+    with open('{0}/pickle-files/{1}/temp-2/total-result.pckl'.format(path, p), 'rb') as f:
+        percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
+
+        for k in top_k_values:
+            for i in range(len(percent_aa[k])):
+                if percent_aa[k][i] != 0:
+                    percent_imp_aa[k].append((percent_dcaa[k][i] - percent_aa[k][i]) / percent_aa[k][i])
+                else:
+                    percent_imp_aa[k].append(percent_dcaa[k][i])
+
+                if percent_cn[k][i] != 0:
+                    percent_imp_cn[k].append((percent_dccn[k][i] - percent_cn[k][i]) / percent_cn[k][i])
+                else:
+                    percent_imp_cn[k].append(percent_dccn[k][i])
+
+    with open('{0}/pickle-files/{1}/temp-2/total-result-percent-imp.pckl'.format(path, p), 'wb') as f:
+        pickle.dump([percent_imp_aa, percent_imp_cn], f, protocol=-1)
+
+
+with open('{0}/pickle-files/lower-6/temp-2/total-result-percent-imp.pckl'.format(path), 'rb') as f:
     lower_percent_imp_aa, lower_percent_imp_cn = pickle.load(f)
 lower_imp_aa = []
 lower_imp_aa_err = []
@@ -51,7 +47,7 @@ for k in top_k_values:
     lower_imp_cn_err.append(np.std(lower_percent_imp_cn[k]) / np.sqrt(len(lower_percent_imp_cn[k])) * 100)
 
 
-with open('{0}/pickle-files/after-6/temp/total-result-percent-imp.pckl'.format(path), 'rb') as f:
+with open('{0}/pickle-files/after-6/temp-2/total-result-percent-imp.pckl'.format(path), 'rb') as f:
     after_percent_imp_aa, after_percent_imp_cn = pickle.load(f)
 after_imp_aa = []
 after_imp_aa_err = []
@@ -64,35 +60,35 @@ for k in top_k_values:
     after_imp_cn_err.append(np.std(after_percent_imp_cn[k]) / np.sqrt(len(after_percent_imp_cn[k])) * 100)
 
 plt.figure()
-plt.rc('legend', fontsize=17)
-plt.rc('xtick', labelsize=12)
-plt.rc('ytick', labelsize=12)
+plt.rc('legend', fontsize=20)
+plt.rc('xtick', labelsize=14)
+plt.rc('ytick', labelsize=14)
 plt.errorbar(top_k_values, lower_imp_aa, yerr=lower_imp_aa_err, marker='o', color='b', ecolor='r', elinewidth=2,
              label="Before PYMK")
 plt.errorbar(top_k_values, after_imp_aa, yerr=after_imp_aa_err, marker='^', color='g', ecolor='y', elinewidth=2,
              label="After PYMK")
 
-plt.ylabel('DCAA vs AA Percent Improvement', fontsize=17)
+plt.ylabel('Percent Improvement', fontsize=20)
 plt.xlabel('Top K Value', fontsize=17)
 plt.legend(loc='lower right')
+plt.tight_layout()
 current_fig = plt.gcf()
 current_fig.savefig('{0}/plots/dcaa-aa.pdf'.format(path), format='pdf')
 plt.clf()
 
 plt.figure()
-plt.rc('legend', fontsize=17)
-plt.rc('xtick', labelsize=12)
-plt.rc('ytick', labelsize=12)
+plt.rc('legend', fontsize=20)
+plt.rc('xtick', labelsize=14)
+plt.rc('ytick', labelsize=14)
 plt.errorbar(top_k_values, lower_imp_cn, yerr=lower_imp_cn_err, marker='o', color='b', ecolor='r', elinewidth=2,
              label="Before PYMK")
 plt.errorbar(top_k_values, after_imp_cn, yerr=after_imp_cn_err, marker='^', color='g', ecolor='y', elinewidth=2,
              label="After PYMK")
 
-plt.ylabel('DCCN vs CN Percent Improvement', fontsize=17)
+plt.ylabel('Percent Improvement', fontsize=20)
 plt.xlabel('Top K Value', fontsize=17)
 plt.legend(loc='lower right')
-
-
+plt.tight_layout()
 current_fig = plt.gcf()
 current_fig.savefig('{0}/plots/dccn-cn.pdf'.format(path), format='pdf')
 plt.clf()

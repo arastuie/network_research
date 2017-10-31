@@ -25,5 +25,8 @@ temp_skipped_files = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pic
 # Parallel(n_jobs=16)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types_based_on_empirical)
 #                     (ego_net_file, top_k_values) for ego_net_file in os.listdir(data_file_base_path))
 
-Parallel(n_jobs=10)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
-                   (ego_net_file, top_k_values) for ego_net_file in os.listdir(temp_skipped_files))
+# Parallel(n_jobs=10)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
+#                    (ego_net_file, top_k_values) for ego_net_file in os.listdir(temp_skipped_files))
+
+Parallel(n_jobs=16)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
+                   (ego_net_file, top_k_values) for ego_net_file in os.listdir(data_file_base_path))

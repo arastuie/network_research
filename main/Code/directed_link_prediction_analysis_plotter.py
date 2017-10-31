@@ -121,7 +121,8 @@ def plot_lp_errorbar(score_1, err_1, label_1, score_2, err_2, label_2, top_k, tr
 # LP results pickle files are in the following order
 #   cn, dccn, aa, dcaa
 
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/'
 plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
@@ -156,17 +157,17 @@ for k in top_k_values:
     imp_mse['imp_aa'].append(np.mean(percent_imp_aa[k]) * 100)
     imp_mse['imp_aa_err'].append(np.std(percent_imp_aa[k]) / np.sqrt(len(percent_imp_aa[k])) * 100)
 
-with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'wb') as f:
-    pickle.dump(imp_mse, f, protocol=-1)
+# with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'wb') as f:
+#     pickle.dump(imp_mse, f, protocol=-1)
 
-print("Result collection and calculation: Done")
-
-# plotting
-with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'rb') as f:
-    imp_mse = pickle.load(f)
+# print("Result collection and calculation: Done")
+#
+# # plotting
+# with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'rb') as f:
+#     imp_mse = pickle.load(f)
 
 plot_lp_errorbar(imp_mse['imp_cn'], imp_mse['imp_cn_err'], 'DCCN VS CN',
                  imp_mse['imp_aa'],  imp_mse['imp_aa_err'], 'DCAA VS AA', top_k_values, '',
-                 'Degree Corrected Percent Improvement', '{0}/gplus-lp-combined.pdf'.format(plot_save_path))
+                 'Degree Corrected Percent Improvement', '{0}/gplus-lp-combined-test-2.pdf'.format(plot_save_path))
 
 print("Plotting is Done!")

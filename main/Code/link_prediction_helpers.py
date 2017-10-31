@@ -378,7 +378,7 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values, sn
     for i in snap_range:
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
 
-        if len(first_hop_nodes) < 30:
+        if len(first_hop_nodes) < 10:
             continue
 
         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
@@ -1023,7 +1023,8 @@ def directed_degree_corrected_adamic_adar_index(ego_net, v_nodes_list, v_nodes_z
 ###### Directed LP on combined triads #######
 def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file, top_k_values):
     data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
-    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
+    # result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/'
 
     startTime = datetime.now()
 
@@ -1054,7 +1055,7 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
     ego_net_snapshots = []
     total_y_true = 0
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net) > 200000:
+    if nx.number_of_nodes(ego_net) > 50000:
         with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
         return
@@ -1135,7 +1136,8 @@ def all_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z, first_hop
 
             y = z_global_degree - z_local_degree
 
-            temp_dccn += math.log(z_local_degree + 2)
+            # temp_dccn += math.log(z_local_degree + 2)
+            temp_dccn += (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
 
             temp_aa += 1 / math.log(z_global_degree)
 
