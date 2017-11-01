@@ -127,12 +127,106 @@ plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 # # Computing percent improvements and standard errors over all the ego nets analyzed
+# percent_imp_cn = {}
+# percent_imp_aa = {}
+#
+# for k in top_k_values:
+#     percent_imp_cn[k] = []
+#     percent_imp_aa[k] = []
+#
+# # loading result data
+# for result_file in os.listdir(result_file_base_path + 'results'):
+#     with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+#         egonet_lp_results = pickle.load(f)
+#
+#     for k in top_k_values:
+#         calc_percent_imp(percent_imp_cn, egonet_lp_results, 'cn', 'dccn', k)
+#         calc_percent_imp(percent_imp_aa, egonet_lp_results, 'aa', 'dcaa', k)
+#
+# imp_mse = {
+#     'imp_cn': [],
+#     'imp_cn_err': [],
+#     'imp_aa': [],
+#     'imp_aa_err': [],
+# }
+#
+# for k in top_k_values:
+#     imp_mse['imp_cn'].append(np.mean(percent_imp_cn[k]) * 100)
+#     imp_mse['imp_cn_err'].append(np.std(percent_imp_cn[k]) / np.sqrt(len(percent_imp_cn[k])) * 100)
+#
+#     imp_mse['imp_aa'].append(np.mean(percent_imp_aa[k]) * 100)
+#     imp_mse['imp_aa_err'].append(np.std(percent_imp_aa[k]) / np.sqrt(len(percent_imp_aa[k])) * 100)
+#
+# # with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'wb') as f:
+# #     pickle.dump(imp_mse, f, protocol=-1)
+#
+# # print("Result collection and calculation: Done")
+# #
+# # # plotting
+# # with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'rb') as f:
+# #     imp_mse = pickle.load(f)
+#
+# plt.figure()
+# plt.rc('xtick', labelsize=17)
+# plt.rc('ytick', labelsize=17)
+# plt.errorbar(top_k_values, imp_mse['imp_cn'], yerr=imp_mse['imp_cn_err'], marker='o', color='b', ecolor='r', elinewidth=2)
+#
+# plt.ylabel('Percent Improvement', fontsize=22)
+# plt.xlabel('Top K Value', fontsize=22)
+# plt.tight_layout()
+# current_fig = plt.gcf()
+# current_fig.savefig('{0}/gplus-lp-combined-dccn-cn.pdf'.format(plot_save_path), format='pdf')
+# plt.clf()
+#
+#
+# plt.figure()
+# plt.rc('xtick', labelsize=17)
+# plt.rc('ytick', labelsize=17)
+# plt.errorbar(top_k_values, imp_mse['imp_aa'], yerr=imp_mse['imp_aa_err'], marker='o', color='b', ecolor='r', elinewidth=2)
+#
+# plt.ylabel('Percent Improvement', fontsize=22)
+# plt.xlabel('Top K Value', fontsize=22)
+# plt.tight_layout()
+# current_fig = plt.gcf()
+# current_fig.savefig('{0}/gplus-lp-combined-dcaa-aa.pdf'.format(plot_save_path), format='pdf')
+# plt.clf()
+#
+# print("Plotting is Done!")
+
+
+def eval_percent_imp(list, base_score, imp_score, ki):
+    base_mean = np.mean(base_score[ki])
+    if base_mean != 0:
+        list[ki] = (np.mean(imp_score[ki]) - base_mean) / base_mean
+    else:
+        list[ki] = np.mean(imp_score[ki])
+
+
+def eval_2_std(base_score, imp_score, ki):
+    base_std = 2 * np.std(base_score[ki]) / np.sqrt(len(base_score[ki]))
+    imp_std = 2 * np.std(imp_score[ki]) / np.sqrt(len(imp_score[ki]))
+
+    if base_std != 0:
+        return ((imp_std - base_std) / base_std) * 100
+    else:
+        return imp_std * 100
+
+
 percent_imp_cn = {}
 percent_imp_aa = {}
 
+aa = {}
+dcaa = {}
+cn = {}
+dccn = {}
+
 for k in top_k_values:
-    percent_imp_cn[k] = []
-    percent_imp_aa[k] = []
+    percent_imp_cn[k] = 0
+    percent_imp_aa[k] = 0
+    aa[k] = []
+    dcaa[k] = []
+    cn[k] = []
+    dccn[k] = []
 
 # loading result data
 for result_file in os.listdir(result_file_base_path + 'results'):
@@ -140,8 +234,14 @@ for result_file in os.listdir(result_file_base_path + 'results'):
         egonet_lp_results = pickle.load(f)
 
     for k in top_k_values:
-        calc_percent_imp(percent_imp_cn, egonet_lp_results, 'cn', 'dccn', k)
-        calc_percent_imp(percent_imp_aa, egonet_lp_results, 'aa', 'dcaa', k)
+        aa[k].append(egonet_lp_results['aa'][k])
+        dcaa[k].append(egonet_lp_results['dcaa'][k])
+        cn[k].append(egonet_lp_results['cn'][k])
+        dccn[k].append(egonet_lp_results['dccn'][k])
+
+for k in top_k_values:
+    eval_percent_imp(percent_imp_cn, cn, dccn, k)
+    eval_percent_imp(percent_imp_aa, aa, dcaa, k)
 
 imp_mse = {
     'imp_cn': [],
@@ -151,23 +251,36 @@ imp_mse = {
 }
 
 for k in top_k_values:
-    imp_mse['imp_cn'].append(np.mean(percent_imp_cn[k]) * 100)
-    imp_mse['imp_cn_err'].append(np.std(percent_imp_cn[k]) / np.sqrt(len(percent_imp_cn[k])) * 100)
+    imp_mse['imp_cn'].append(percent_imp_cn[k] * 100)
+    # imp_mse['imp_cn_err'].append(eval_2_std(cn, dccn, k))
 
-    imp_mse['imp_aa'].append(np.mean(percent_imp_aa[k]) * 100)
-    imp_mse['imp_aa_err'].append(np.std(percent_imp_aa[k]) / np.sqrt(len(percent_imp_aa[k])) * 100)
+    imp_mse['imp_aa'].append(percent_imp_aa[k] * 100)
+    # imp_mse['imp_aa_err'].append(eval_2_std(aa, dcaa, k))
 
-# with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'wb') as f:
-#     pickle.dump(imp_mse, f, protocol=-1)
 
-# print("Result collection and calculation: Done")
-#
-# # plotting
-# with open(result_file_base_path + 'plot_ready_data/all-results.pckle', 'rb') as f:
-#     imp_mse = pickle.load(f)
+plt.figure()
+plt.rc('xtick', labelsize=17)
+plt.rc('ytick', labelsize=17)
+plt.errorbar(top_k_values, imp_mse['imp_cn'], marker='o', color='b', ecolor='r', elinewidth=2)
 
-plot_lp_errorbar(imp_mse['imp_cn'], imp_mse['imp_cn_err'], 'DCCN VS CN',
-                 imp_mse['imp_aa'],  imp_mse['imp_aa_err'], 'DCAA VS AA', top_k_values, '',
-                 'Degree Corrected Percent Improvement', '{0}/gplus-lp-combined-test-2.pdf'.format(plot_save_path))
+plt.ylabel('Percent Improvement', fontsize=22)
+plt.xlabel('Top K Value', fontsize=22)
+plt.tight_layout()
+current_fig = plt.gcf()
+current_fig.savefig('{0}/gplus-lp-combined-dccn-cn-2.pdf'.format(plot_save_path), format='pdf')
+plt.clf()
+
+
+plt.figure()
+plt.rc('xtick', labelsize=17)
+plt.rc('ytick', labelsize=17)
+plt.errorbar(top_k_values, imp_mse['imp_aa'], marker='o', color='b', ecolor='r', elinewidth=2)
+
+plt.ylabel('Percent Improvement', fontsize=22)
+plt.xlabel('Top K Value', fontsize=22)
+plt.tight_layout()
+current_fig = plt.gcf()
+current_fig.savefig('{0}/gplus-lp-combined-dcaa-aa-2.pdf'.format(plot_save_path), format='pdf')
+plt.clf()
 
 print("Plotting is Done!")

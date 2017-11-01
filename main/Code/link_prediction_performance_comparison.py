@@ -3,6 +3,17 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+
+def get_conf(list):
+    m = np.mean(list) * 100
+    # err = np.std(list) / np.sqrt(len(list)) * 200
+    #
+    # up = round(m + err, 2)
+    # down = round(m - err, 2)
+    # return "({0}, {1})".format(down, up)
+    return "{0}".format(round(m, 2))
+
+
 # path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb'
 # top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 #
@@ -18,7 +29,7 @@ import matplotlib.pyplot as plt
 #     for k in top_k_values:
 #         percent_imp[k] = []
 #
-#     with open('{0}/pickle-files/{1}/temp/total-result.pckl'.format(path, p), 'rb') as f:
+#     with open('{0}/pickle-files/{1}/temp-2/total-result.pckl'.format(path, p), 'rb') as f:
 #         percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
 #
 #         for k in top_k_values:
@@ -34,26 +45,27 @@ import matplotlib.pyplot as plt
 #             lower_imp_err.append(np.std(percent_imp[k]) / np.sqrt(len(percent_imp[k])) * 100)
 #
 #         print("Before PYMK:")
-#         print("K:\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 #
-#         print("CN: ", end='\t')
+#         print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+#
+#         print("CN: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_cn[k]), end=', \t')
+#             print(get_conf(percent_cn[k]), end='& ')
 #         print("")
 #
-#         print("DCCN: ", end='\t')
+#         print("DCCN: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_dccn[k]), end=', \t')
+#             print(get_conf(percent_dccn[k]), end='& ')
 #         print("")
 #
-#         print("AA: ", end='\t')
+#         print("AA: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_aa[k]), end=', \t')
+#             print(get_conf(percent_aa[k]), end='& ')
 #         print("")
 #
-#         print("DCAA: ", end='\t')
+#         print("DCAA: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_dcaa[k]), end=', \t')
+#             print(get_conf(percent_dcaa[k]), end='& ')
 #         print("")
 #
 #
@@ -62,28 +74,28 @@ import matplotlib.pyplot as plt
 #             after_imp.append(np.mean(percent_imp[k]) * 100)
 #             after_imp_err.append(np.std(percent_imp[k]) / np.sqrt(len(percent_imp[k])) * 100)
 #
-#
 #         print("After PYMK:")
-#         print("K:\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 #
-#         print("CN: ", end='\t')
+#         print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+#
+#         print("CN: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_cn[k]), end=', \t')
+#             print(get_conf(percent_cn[k]), end='& ')
 #         print("")
 #
-#         print("DCCN: ", end='\t')
+#         print("DCCN: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_dccn[k]), end=', \t')
+#             print(get_conf(percent_dccn[k]), end='& ')
 #         print("")
 #
-#         print("AA: ", end='\t')
+#         print("AA: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_aa[k]), end=', \t')
+#             print(get_conf(percent_aa[k]), end='& ')
 #         print("")
 #
-#         print("DCAA: ", end='\t')
+#         print("DCAA: ", end=', \t')
 #         for k in top_k_values:
-#             print(np.mean(percent_dcaa[k]), end=', \t')
+#             print(get_conf(percent_dcaa[k]), end='& ')
 #         print("")
 #
 #
@@ -147,51 +159,52 @@ for result_file in os.listdir(result_file_base_path + 'results'):
         cn[k].append(egonet_lp_results['cn'][k])
         dccn[k].append(egonet_lp_results['dccn'][k])
 
-imp_mse = {
-    'imp': [],
-    'imp_err': [],
-}
+# imp_mse = {
+#     'imp': [],
+#     'imp_err': [],
+# }
+#
+# for k in top_k_values:
+#     imp_mse['imp'].append(np.mean(percent_imp[k]) * 100)
+#     imp_mse['imp_err'].append(np.std(percent_imp[k]) / np.sqrt(len(percent_imp[k])) * 100)
 
-for k in top_k_values:
-    imp_mse['imp'].append(np.mean(percent_imp[k]) * 100)
-    imp_mse['imp_err'].append(np.std(percent_imp[k]) / np.sqrt(len(percent_imp[k])) * 100)
-
-plt.figure()
-plt.rc('legend', fontsize=17)
-plt.rc('xtick', labelsize=12)
-plt.rc('ytick', labelsize=12)
-
-plt.errorbar(top_k_values, imp_mse['imp'], yerr=imp_mse['imp_err'], marker='o', color='b', ecolor='r', elinewidth=2,
-             label="AA VS CN")
-
-plt.ylabel("Percent Improvement", fontsize=15)
-plt.xlabel('Top K Value', fontsize=15)
-plt.legend(loc='lower right')
-current_fig = plt.gcf()
-current_fig.savefig('{0}/gplus-lp-combined-aa-cn.pdf'.format(plot_save_path), format='pdf')
-plt.clf()
-
-print("Plotting is Done!")
+# plt.figure()
+# plt.rc('legend', fontsize=17)
+# plt.rc('xtick', labelsize=12)
+# plt.rc('ytick', labelsize=12)
+#
+# plt.errorbar(top_k_values, imp_mse['imp'], yerr=imp_mse['imp_err'], marker='o', color='b', ecolor='r', elinewidth=2,
+#              label="AA VS CN")
+#
+# plt.ylabel("Percent Improvement", fontsize=15)
+# plt.xlabel('Top K Value', fontsize=15)
+# plt.legend(loc='lower right')
+#
+# current_fig = plt.gcf()
+# current_fig.savefig('{0}/gplus-lp-combined-aa-cn.pdf'.format(plot_save_path), format='pdf')
+# plt.clf()
+#
+# print("Plotting is Done!")
 
 
 print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 
 print("CN: ", end=', \t')
 for k in top_k_values:
-    print(np.mean(cn[k]), end=', \t')
+    print(get_conf(cn[k]), end='& ')
 print("")
 
 print("DCCN: ", end=', \t')
 for k in top_k_values:
-    print(np.mean(dccn[k]), end=', \t')
+    print(get_conf(dccn[k]), end='& ')
 print("")
 
 print("AA: ", end=', \t')
 for k in top_k_values:
-    print(np.mean(aa[k]), end=', \t')
+    print(get_conf(aa[k]), end='& ')
 print("")
 
 print("DCAA: ", end=', \t')
 for k in top_k_values:
-    print(np.mean(dcaa[k]), end=', \t')
+    print(get_conf(dcaa[k]), end='& ')
 print("")
