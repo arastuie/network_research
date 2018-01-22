@@ -41,8 +41,8 @@ from joblib import Parallel, delayed
 # fb_graph = None
 
 # path = '/home/marastu2/ego_network_research/main/Results/fb-lp-results/lower-6/temp'
-# path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/lower-6/temp-2'
-path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/after-6/temp-2'
+# path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/lower-6/temp-3'
+path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/after-6/temp-3'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 
@@ -62,7 +62,11 @@ def run_link_prediction(index):
         with open('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
             egonet_snapshots, ego_node = pickle.load(f)
 
-        aa, dcaa, cn, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking(egonet_snapshots, ego_node, top_k_values, range(5, len(egonet_snapshots) - 1))
+        # aa, dcaa, cn, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking(egonet_snapshots, ego_node, top_k_values,
+        #                                                                    range(5))
+
+        aa, dcaa, cn, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking(egonet_snapshots, ego_node, top_k_values,
+                                                                           range(5, len(egonet_snapshots) - 1))
 
         for k in top_k_values:
             if len(aa[k]) > 0:
@@ -78,7 +82,7 @@ def run_link_prediction(index):
         print("No analysis in index {0}".format(index))
 
 
-Parallel(n_jobs=28)(delayed(run_link_prediction)(i) for i in range(0, 28))
+Parallel(n_jobs=6)(delayed(run_link_prediction)(i) for i in range(0, 28))
 
 print("Merging all files...")
 

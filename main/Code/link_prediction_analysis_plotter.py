@@ -249,7 +249,7 @@ for p in paths:
         percent_imp_aa[k] = []
         percent_imp_cn[k] = []
 
-    with open('{0}/pickle-files/{1}/temp-2/total-result.pckl'.format(path, p), 'rb') as f:
+    with open('{0}/pickle-files/{1}/temp-3/total-result.pckl'.format(path, p), 'rb') as f:
         percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
 
     for k in top_k_values:
@@ -265,16 +265,16 @@ for p in paths:
 
 
 plot_it(top_k_values, both_res['lower-6']['imp_aa'], both_res['lower-6']['imp_aa_err'],
-        '{0}/plots/dcaa-aa-before-2.pdf'.format(path))
+        '{0}/plots/dcaa-aa-before-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['after-6']['imp_aa'], both_res['after-6']['imp_aa_err'],
-        '{0}/plots/dcaa-aa-after-2.pdf'.format(path))
+        '{0}/plots/dcaa-aa-after-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['lower-6']['imp_cn'], both_res['lower-6']['imp_cn_err'],
-        '{0}/plots/dccn-cn-before-2.pdf'.format(path))
+        '{0}/plots/dccn-cn-before-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['after-6']['imp_cn'], both_res['after-6']['imp_cn_err'],
-        '{0}/plots/dccn-cn-after-2.pdf'.format(path))
+        '{0}/plots/dccn-cn-after-3.pdf'.format(path))
 
 # plt.figure()
 # plt.rc('legend', fontsize=25)

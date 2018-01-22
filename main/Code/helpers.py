@@ -70,7 +70,6 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
 
     orig_snapshots.append(original_graph)
 
-
     ego_centric_networks = []
     ego_nodes = []
 
@@ -414,6 +413,7 @@ def get_ecdf_bands(data, alpha):
     upper_band[np.where(upper_band > 1)[0]] = 1
 
     return lower_band, upper_band
+
 
 def add_ecdf_with_band_plot(data, lb, ub, label, color):
     data = np.sort(data)

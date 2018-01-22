@@ -378,7 +378,7 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values, sn
     for i in snap_range:
         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
 
-        if len(first_hop_nodes) < 10:
+        if len(first_hop_nodes) == 0:
             continue
 
         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
@@ -386,7 +386,7 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values, sn
 
         formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
 
-        if len(formed_nodes) == 0 or len(second_hop_nodes) == 0:
+        if len(formed_nodes) == 0:
             continue
 
         non_edges = []

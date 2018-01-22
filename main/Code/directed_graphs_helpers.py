@@ -13,6 +13,107 @@ from joblib import Parallel, delayed
 raw_gplus_path = "/shared/DataSets/GooglePlus_Gong2012/raw/imc12/direct_social_structure.txt"
 
 
+def read_entire_gplus_network():
+    gplus_net = nx.DiGraph()
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            gplus_net.add_edge(int(nums[0]), int(nums[1]), snapshot=int(nums[2][0]))
+
+    input("G+ network in...")
+
+    return gplus_net
+
+
+def get_gplus_ego_from_graph():
+    gnet = nx.DiGraph()
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            gnet.add_edge(int(nums[0]), int(nums[1]), snapshot=int(nums[2][0]))
+
+    input("G+ network in...")
+
+    print("here")
+
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
+        snap_0_nodes = pickle.load(f)
+
+    ego_nodes = snap_0_nodes[:len(snap_0_nodes) / 2]
+    # ego_nodes = snap_0_nodes[len(snap_0_nodes) / 2:]
+
+    print("start working..")
+    # Parallel(n_jobs=6)(delayed(gnet, gplus_get_egonet)(ego_node) for ego_node in ego_nodes)
+
+    ctr = 0
+    for ego_node in ego_nodes:
+
+        # check if the egonet file already exists
+        if os.path.isfile(
+                '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
+                        ego_node)):
+            return
+
+        # check if the egonet file already exists
+        if os.path.isfile(
+                '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
+                    ego_node)):
+            return
+
+        ego_net = nx.ego_graph(gnet, ego_node, radius=2, center=True, undirected=True)
+
+        print(type(ego_net))
+        print("num nodes: {0}".format(nx.number_of_nodes(ego_net)))
+        print("num edges: {0}".format(nx.number_of_edges(ego_net)))
+        print("Preds: ")
+        print(ego_net.predecessors(ego_node))
+        print("Successors: ")
+        print(ego_net.successors(ego_node))
+
+        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
+                ego_node), 'wb') as f:
+            pickle.dump([ego_node, ego_net], f, protocol=-1)
+
+        ctr += 1
+        print(ctr, end='\r')
+        return
+
+
+def gplus_get_egonet(gnet, ego_node):
+    print("Fetching an egonet...")
+
+    # check if the egonet file already exists
+    if os.path.isfile(
+            '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
+                ego_node)):
+        return
+
+    # check if the egonet file already exists
+    if os.path.isfile(
+            '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
+                ego_node)):
+        return
+
+    print("start ")
+    ego_net = nx.ego_graph(gnet, ego_node, radius=2, center=True, undirected=True)
+
+    print(type(ego_net))
+    print("num nodes: {0}".format(nx.number_of_nodes(ego_net)))
+    print("num edges: {0}".format(nx.number_of_edges(ego_net)))
+    print("Preds: ")
+    print(ego_net.predecessors(ego_node))
+    print("Successors: ")
+    print(ego_net.successors(ego_node))
+
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
+            ego_node), 'wb') as f:
+        pickle.dump([ego_node, ego_net], f, protocol=-1)
+
+    return
+
+
 def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
     nodes = set()
 
@@ -42,18 +143,19 @@ def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
     return node_list
 
 
-def read_gplus_ego_graph(n):
+def read_gplus_ego_graph():
     print("Reading in Google+ data...")
 
     with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
         all_nodes = pickle.load(f)
 
-    ego_nodes = random.sample(all_nodes, n)
+    # ego_nodes = random.sample(all_nodes, n)
+    ego_nodes = all_nodes[:math.ceil(len(all_nodes) / 2)]
     all_nodes = None
 
-    print("Selected {0} random nodes...".format(n))
+    # print("Selected {0} random nodes...".format(n))
 
-    Parallel(n_jobs=25)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
+    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
 
 
 def read_ego_gplus_graph(ego_node):
@@ -87,6 +189,69 @@ def read_ego_gplus_graph(ego_node):
         pickle.dump([ego_node, ego_net], f, protocol=-1)
 
     print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
+    print("time -> {0} minutes".format((time.time() - start_time) / 60))
+
+
+def read_ego_gplus_graph_by_batch_parallelizer(batch_size):
+    print("Reading in Google+ data...")
+
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl',
+              'rb') as f:
+        all_nodes = pickle.load(f)
+
+    num_nodes = math.ceil(len(all_nodes) / 2)
+    ego_nodes = all_nodes[:num_nodes]
+    all_nodes = None
+
+    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(ego_nodes, batch_size))
+
+
+def read_ego_gplus_graph_by_batch(ego_nodes):
+    ego_dict = {}
+    for ego_node in ego_nodes:
+        # check if the egonet file already exists
+        if not os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node)):
+            ego_dict[ego_node] = nx.DiGraph()
+
+    if len(ego_dict) == 0:
+        return
+
+    print("Start reading in the file for {0} nodes...".format(len(ego_dict)))
+    start_time = time.time()
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            if nums[0] in ego_dict:
+                ego_dict[nums[0]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+
+            if nums[1] in ego_dict:
+                ego_dict[nums[1]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+
+    neigh_dict = {}
+
+    for ego_node in ego_dict:
+        neigh_temp = ego_dict[ego_node].nodes()
+        neigh_temp.remove(ego_node)
+        neigh_dict[ego_node] = set(neigh_temp)
+
+    with open(raw_gplus_path) as infile:
+        for l in infile:
+            nums = l.split(" ")
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            for ego_node in ego_dict:
+                if nums[0] in neigh_dict[ego_node] or nums[1] in neigh_dict[ego_node]:
+                    ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+
+    for ego_node in ego_dict:
+        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
+            pickle.dump([ego_node, ego_dict[ego_node]], f, protocol=-1)
+
     print("time -> {0} minutes".format((time.time() - start_time) / 60))
 
 
@@ -473,3 +638,9 @@ def get_combined_type_nodes(ego_net, ego_node):
         second_hop_nodes.remove(ego_node)
 
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]

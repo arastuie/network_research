@@ -121,6 +121,7 @@ def get_conf(list):
 
 ################ GOOGLE + ####################
 
+
 def calc_percent_imp(percent_imp_list, results, base_score, improved_score, ki):
     if results[base_score][ki] != 0:
         percent_imp_list[ki].append((results[improved_score][ki] - results[base_score][ki]) / results[base_score][ki])

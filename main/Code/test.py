@@ -1,12 +1,12 @@
-import networkx as nx
-import helpers as h
-import GSC.generalized_spectral_clustering as gsc
-import numpy as np
-import pickle
-import gplus_hop_degree_directed_analysis as directed_analysis
-from joblib import Parallel, delayed
-import os
-import sys
+# import networkx as nx
+# import helpers as h
+# import GSC.generalized_spectral_clustering as gsc
+# import numpy as np
+# import pickle
+# import gplus_hop_degree_directed_analysis as directed_analysis
+# from joblib import Parallel, delayed
+# import os
+# import sys
 import directed_graphs_helpers as dh
 
 # graph = nx.read_gml("../Data/karate.gml")
@@ -190,10 +190,14 @@ import directed_graphs_helpers as dh
 # dh.read_gplus_ego_graph(100000)
 # dh.create_gplus_multiple_egonets(10000, 55)
 
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/'
-empirical_analyzed_egonets_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
-for tt in ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']:
-    p = len(os.listdir(result_file_base_path + tt)) / len(os.listdir(empirical_analyzed_egonets_path + tt))
-    print("{0} is {1:.1f}% complete!".format(tt, p * 100))
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/'
+# empirical_analyzed_egonets_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
+# for tt in ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']:
+#     p = len(os.listdir(result_file_base_path + tt)) / len(os.listdir(empirical_analyzed_egonets_path + tt))
+#     print("{0} is {1:.1f}% complete!".format(tt, p * 100))
 
 
+# dh.read_entire_gplus_network()
+# dh.read_gplus_ego_graph(2)
+
+dh.read_ego_gplus_graph_by_batch_parallelizer(50)
