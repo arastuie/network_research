@@ -199,11 +199,9 @@ def read_ego_gplus_graph_by_batch_parallelizer(batch_size):
               'rb') as f:
         all_nodes = pickle.load(f)
 
-    num_nodes = math.ceil(len(all_nodes) / 2)
-    ego_nodes = all_nodes[:num_nodes]
-    all_nodes = None
+    np.random.shuffle(all_nodes)
 
-    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(ego_nodes, batch_size))
+    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
 
 
 def read_ego_gplus_graph_by_batch(ego_nodes):
@@ -232,11 +230,13 @@ def read_ego_gplus_graph_by_batch(ego_nodes):
                 ego_dict[nums[1]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
     neigh_dict = {}
+    all_neighbors = set()
 
     for ego_node in ego_dict:
         neigh_temp = ego_dict[ego_node].nodes()
         neigh_temp.remove(ego_node)
         neigh_dict[ego_node] = set(neigh_temp)
+        all_neighbors = all_neighbors.union(neigh_temp)
 
     with open(raw_gplus_path) as infile:
         for l in infile:
@@ -244,9 +244,10 @@ def read_ego_gplus_graph_by_batch(ego_nodes):
             nums[0] = int(nums[0])
             nums[1] = int(nums[1])
 
-            for ego_node in ego_dict:
-                if nums[0] in neigh_dict[ego_node] or nums[1] in neigh_dict[ego_node]:
-                    ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
+            if nums[0] in all_neighbors or nums[1] in all_neighbors:
+                for ego_node in ego_dict:
+                    if nums[0] in neigh_dict[ego_node] or nums[1] in neigh_dict[ego_node]:
+                        ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
     for ego_node in ego_dict:
         with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:

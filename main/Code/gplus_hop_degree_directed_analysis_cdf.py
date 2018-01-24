@@ -36,7 +36,7 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
     ego_net_snapshots = []
 
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net) > 200000:
+    if nx.number_of_nodes(ego_net) > 50000:
         with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 

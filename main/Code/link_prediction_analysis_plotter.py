@@ -263,6 +263,7 @@ for p in paths:
         both_res[p]['imp_aa'].append(percent_imp_aa[k] * 100)
         # both_res[p]['imp_aa_err'].append(eval_2_std(percent_aa[k], percent_dcaa[k]))
 
+    print(len(percent_aa[1]))
 
 plot_it(top_k_values, both_res['lower-6']['imp_aa'], both_res['lower-6']['imp_aa_err'],
         '{0}/plots/dcaa-aa-before-3.pdf'.format(path))
