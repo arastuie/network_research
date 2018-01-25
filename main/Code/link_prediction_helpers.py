@@ -204,6 +204,18 @@ def cclp(ego_net, non_edges):
     return scores
 
 
+def car(ego_net, non_edges):
+    scores = []
+
+    for u, v in non_edges:
+        common_neighbors = list(nx.common_neighbors(ego_net, u, v))
+        cc_sub_g = ego_net.subgraph(common_neighbors)
+
+        scores.append(len(common_neighbors) * cc_sub_g.number_of_edges())
+
+    return scores
+
+
 def common_neighbors_index(ego_net, non_edges):
     scores = []
 
@@ -461,17 +473,17 @@ def run_adamic_adar_on_ego_net_ranking(ego_snapshots, ego_node, top_k_values, sn
     return percent_aa, percent_dcaa, percent_cn, percent_dccn
 
 
-def run_adamic_adar_on_ego_net_ranking_with_cclp(ego_snapshots, ego_node, top_k_values, snap_range):
+def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node, top_k_values, snap_range):
 
     percent_cclp = {}
     percent_dcaa = {}
-    percent_cn = {}
+    percent_car = {}
     percent_dccn = {}
 
     for k in top_k_values:
         percent_cclp[k] = []
         percent_dcaa[k] = []
-        percent_cn[k] = []
+        percent_car[k] = []
         percent_dccn[k] = []
 
     for i in snap_range:
@@ -503,43 +515,28 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp(ego_snapshots, ego_node, top_k_
         y_scores_cclp = cclp(ego_snapshots[i], non_edges)
         y_scores_dcaa = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
 
-        y_scores_cn = common_neighbors_index(ego_snapshots[i], non_edges)
+        y_scores_car = car(ego_snapshots[i], non_edges)
         y_scores_dccn = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
 
         combo_scores = np.concatenate((np.array(y_scores_cclp).astype(float).reshape(-1, 1),
                                        np.array(y_scores_dcaa).astype(float).reshape(-1, 1),
-                                       np.array(y_scores_cn).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_car).astype(float).reshape(-1, 1),
                                        np.array(y_scores_dccn).astype(float).reshape(-1, 1),
                                        np.array(y_true).reshape(-1, 1)), axis=1)
 
         combo_scores_cclp_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
         combo_scores_dcaa_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
 
-        combo_scores_cn_sorted = combo_scores[combo_scores[:, 2].argsort()[::-1]]
+        combo_scores_car_sorted = combo_scores[combo_scores[:, 2].argsort()[::-1]]
         combo_scores_dccn_sorted = combo_scores[combo_scores[:, 3].argsort()[::-1]]
 
-        # ones_index_aa = np.where(combo_scores_aa_sorted[:, 2] == 1)[0]
-        # ones_index_dcaa = np.where(combo_scores_dcaa_sorted[:, 2] == 1)[0]
-        # ones_aa = combo_scores_aa_sorted[ones_index_aa]
-        # ones_dcaa = combo_scores_dcaa_sorted[ones_index_dcaa]
-
-        # top_n = math.ceil(len(y_true) * 0.03)
         for k in percent_cclp.keys():
             percent_cclp[k].append(sum(combo_scores_cclp_sorted[:k, -1]) / k)
             percent_dcaa[k].append(sum(combo_scores_dcaa_sorted[:k, -1]) / k)
-            percent_cn[k].append(sum(combo_scores_cn_sorted[:k, -1]) / k)
+            percent_car[k].append(sum(combo_scores_car_sorted[:k, -1]) / k)
             percent_dccn[k].append(sum(combo_scores_dccn_sorted[:k, -1]) / k)
 
-        # ones_index_aa = ones_index_aa / len(y_true)
-        # ones_index_dcaa = ones_index_dcaa / len(y_true)
-        #
-        # for m in ones_index_aa:
-        #     percent_aa.append(m)
-        #
-        # for m in ones_index_dcaa:
-        #     percent_dcaa.append(m)
-
-    return percent_cclp, percent_dcaa, percent_cn, percent_dccn
+    return percent_cclp, percent_dcaa, percent_car, percent_dccn
 
 
 def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):
