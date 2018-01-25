@@ -1,12 +1,12 @@
-# import networkx as nx
-# import helpers as h
-# import GSC.generalized_spectral_clustering as gsc
-# import numpy as np
-# import pickle
-# import gplus_hop_degree_directed_analysis as directed_analysis
-# from joblib import Parallel, delayed
-# import os
-# import sys
+import networkx as nx
+import helpers as h
+import GSC.generalized_spectral_clustering as gsc
+import numpy as np
+import pickle
+import gplus_hop_degree_directed_analysis as directed_analysis
+from joblib import Parallel, delayed
+import os
+import sys
 import directed_graphs_helpers as dh
 
 # graph = nx.read_gml("../Data/karate.gml")
@@ -200,7 +200,62 @@ import directed_graphs_helpers as dh
 # dh.read_entire_gplus_network()
 # dh.read_gplus_ego_graph(2)
 
+dh.read_ego_gplus_graph_by_batch_parallelizer(50)
 
-
-
-dh.read_ego_gplus_graph_by_batch_parallelizer(200)
+# data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+#
+# over_50 = []
+# over_100 = []
+# over_150 = []
+# over_200 = []
+# over_300 = []
+#
+# n = 0
+# print("")
+#
+# for ego_net_file in os.listdir(data_file_base_path):
+#     with open(data_file_base_path + ego_net_file, 'rb') as f:
+#         ego_node, ego_net = pickle.load(f)
+#
+#     cnt = nx.number_of_nodes(ego_net)
+#     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+#     if cnt > 300000:
+#         over_300.append(ego_node)
+#     elif cnt > 200000:
+#         over_200.append(ego_node)
+#     elif cnt > 150000:
+#         over_150.append(ego_node)
+#     elif cnt > 100000:
+#         over_100.append(ego_node)
+#     elif cnt > 50000:
+#         over_50.append(ego_node)
+#
+#     n += 1
+#     if n % 100 == 0:
+#         print("Num egonets checked: {0}".format(n), end='\r')
+#
+# over_50 = over_50 + over_100 + over_150 + over_200 + over_300
+# over_100 = over_100 + over_150 + over_200 + over_300
+# over_150 = over_150 + over_200 + over_300
+# over_200 = over_200 + over_300
+#
+# print("Number of egonets with over {0}K nodes: {1}".format(50, len(over_50)))
+# print("Number of egonets with over {0}K nodes: {1}".format(100, len(over_100)))
+# print("Number of egonets with over {0}K nodes: {1}".format(150, len(over_150)))
+# print("Number of egonets with over {0}K nodes: {1}".format(200, len(over_200)))
+# print("Number of egonets with over {0}K nodes: {1}".format(300, len(over_300)))
+#
+# with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_50K_nodes.pckle', 'wb') as f:
+#     pickle.dump(set(over_50), f, protocol=-1)
+#
+# with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_100K_nodes.pckle', 'wb') as f:
+#     pickle.dump(set(over_100), f, protocol=-1)
+#
+# with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_150K_nodes.pckle', 'wb') as f:
+#     pickle.dump(set(over_150), f, protocol=-1)
+#
+# with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_200K_nodes.pckle', 'wb') as f:
+#     pickle.dump(set(over_200), f, protocol=-1)
+#
+# with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_300K_nodes.pckle', 'wb') as f:
+#     pickle.dump(set(over_300), f, protocol=-1)

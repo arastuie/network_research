@@ -201,7 +201,7 @@ def read_ego_gplus_graph_by_batch_parallelizer(batch_size):
 
     np.random.shuffle(all_nodes)
 
-    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
+    Parallel(n_jobs=15)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
 
 
 def read_ego_gplus_graph_by_batch(ego_nodes):
