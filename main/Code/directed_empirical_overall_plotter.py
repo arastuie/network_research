@@ -124,7 +124,7 @@ z = 1.96
 pos = list(range(len(triangle_types)))
 bar_width = 0.20
 opacity = 0.6
-error_config = {'ecolor': '0.3', 'capsize': 2, 'lw': 1, 'capthick': 1}
+error_config = {'ecolor': '0.3', 'capsize': 1, 'lw': 1, 'capthick': 1}
 bar_legends = ['In-degree Formed', 'In-degree Not Formed', 'Out-degree Formed', 'Out-degree Not Formed']
 dif_results = ['id-formed', 'id-not-formed', 'od-formed', 'od-not-formed']
 bar_color = ['r', 'b', 'g', 'y']
@@ -180,11 +180,11 @@ bar_color = ['r', 'b', 'g', 'y']
 #
 #     print(triangle_types[t] + ": Done")
 #
-# with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'wb') as f:
+# with open(result_file_base_path + 'all-scores/all-types-plot-2.pckle', 'wb') as f:
 #     pickle.dump(all_results, f, protocol=-1)
 
 
-with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'rb') as f:
+with open(result_file_base_path + 'all-scores/all-types-plot-2.pckle', 'rb') as f:
     all_results = pickle.load(f)
 
 # plotting
@@ -212,5 +212,5 @@ for i_degree in range(2):
     if i_degree == 0:
         plt.ylim(ymax=.51)
     plt.tight_layout()
-    plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
+    plt.savefig('{0}/overall-{1}-2.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
     plt.clf()

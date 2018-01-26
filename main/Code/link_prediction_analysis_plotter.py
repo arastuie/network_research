@@ -209,12 +209,13 @@ def eval_2_std(base_score, imp_score):
 
 def plot_it(top_K, res, err, path):
     ax = plt.figure().gca()
-    plt.rc('xtick', labelsize=17)
-    plt.rc('ytick', labelsize=17)
     plt.errorbar(top_K, res, marker='o', color='b', ecolor='r', elinewidth=2)
     plt.ylabel('Percent Improvement', fontsize=22)
     plt.xlabel('Top K Value', fontsize=22)
     plt.tight_layout()
+    plt.rc('xtick', labelsize=17)
+    plt.rc('ytick', labelsize=17)
+    plt.yticks(np.arange(0, max(res) + 0.5, 0.5))
     current_fig = plt.gcf()
     current_fig.savefig(path, format='pdf')
     plt.clf()
@@ -265,17 +266,30 @@ for p in paths:
 
     print(len(percent_aa[1]))
 
-plot_it(top_k_values, both_res['lower-6']['imp_aa'], both_res['lower-6']['imp_aa_err'],
-        '{0}/plots/dcaa-aa-before-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['after-6']['imp_aa'], both_res['after-6']['imp_aa_err'],
         '{0}/plots/dcaa-aa-after-3.pdf'.format(path))
+
+plot_it(top_k_values, both_res['lower-6']['imp_aa'], both_res['lower-6']['imp_aa_err'],
+        '{0}/plots/dcaa-aa-before-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['lower-6']['imp_cn'], both_res['lower-6']['imp_cn_err'],
         '{0}/plots/dccn-cn-before-3.pdf'.format(path))
 
 plot_it(top_k_values, both_res['after-6']['imp_cn'], both_res['after-6']['imp_cn_err'],
         '{0}/plots/dccn-cn-after-3.pdf'.format(path))
+
+# plot_it(top_k_values, both_res['lower-6']['imp_aa'], both_res['lower-6']['imp_aa_err'],
+#         '{0}/plots/ldaa-cclp-before-4.pdf'.format(path))
+#
+# plot_it(top_k_values, both_res['after-6']['imp_aa'], both_res['after-6']['imp_aa_err'],
+#         '{0}/plots/ldaa-cclp-after-4.pdf'.format(path))
+#
+# plot_it(top_k_values, both_res['lower-6']['imp_cn'], both_res['lower-6']['imp_cn_err'],
+#         '{0}/plots/ldcn-car-before-4.pdf'.format(path))
+#
+# plot_it(top_k_values, both_res['after-6']['imp_cn'], both_res['after-6']['imp_cn_err'],
+#         '{0}/plots/ldcn-car-after-4.pdf'.format(path))
 
 # plt.figure()
 # plt.rc('legend', fontsize=25)

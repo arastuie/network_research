@@ -200,7 +200,7 @@ import directed_graphs_helpers as dh
 # dh.read_entire_gplus_network()
 # dh.read_gplus_ego_graph(2)
 
-dh.read_ego_gplus_graph_by_batch_parallelizer(50)
+dh.read_ego_gplus_graph_by_batch_parallelizer(200)
 
 # data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
 #

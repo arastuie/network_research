@@ -539,6 +539,61 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node
     return percent_cclp, percent_dcaa, percent_car, percent_dccn
 
 
+def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node, top_k_values, snap_range):
+    # percent_cclp = {}
+    percent_car = {}
+
+    for k in top_k_values:
+        # percent_cclp[k] = []
+        percent_car[k] = []
+
+    for i in snap_range:
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) == 0:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            # adding node tuple for adamic adar
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # y_scores_cclp = cclp(ego_snapshots[i], non_edges)
+        y_scores_car = car(ego_snapshots[i], non_edges)
+
+        # combo_scores = np.concatenate((np.array(y_scores_cclp).astype(float).reshape(-1, 1),
+        #                                np.array(y_scores_car).astype(float).reshape(-1, 1),
+        #                                np.array(y_true).reshape(-1, 1)), axis=1)
+
+        combo_scores = np.concatenate((np.array(y_scores_car).astype(float).reshape(-1, 1),
+                                       np.array(y_true).reshape(-1, 1)), axis=1)
+
+        # combo_scores_cclp_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+        combo_scores_car_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+
+        for k in percent_car.keys():
+            # percent_cclp[k].append(sum(combo_scores_cclp_sorted[:k, -1]) / k)
+            percent_car[k].append(sum(combo_scores_car_sorted[:k, -1]) / k)
+
+    # return percent_cclp, percent_car
+    return percent_car
+
+
 def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):
     degree_formation = None
     for i in range(len(ego_snapshots) - 1):
@@ -1125,12 +1180,12 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
     startTime = datetime.now()
 
     # return if the egonet is on the analyzed list
-    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
-        return
+    # if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+    #     return
 
     # return if the egonet is on the skipped list
-    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-        return
+    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+    #     return
 
     score_list = ['cn', 'dccn', 'aa', 'dcaa']
 
@@ -1150,11 +1205,16 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
 
     ego_net_snapshots = []
     total_y_true = 0
+
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net) > 50000:
-        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-            pickle.dump(0, f, protocol=-1)
+    if nx.number_of_nodes(ego_net) > 100000:
+        # with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+        #     pickle.dump(0, f, protocol=-1)
         return
+
+    os.remove(result_file_base_path + 'skipped_egonets/' + ego_net_file)
+    # if nx.number_of_nodes(ego_net) <= 25000:
+    #     return
 
     for r in range(0, 4):
         temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
@@ -1164,8 +1224,8 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
     for i in range(len(ego_net_snapshots) - 1):
         first_hop_nodes, second_hop_nodes, v_nodes = dh.get_combined_type_nodes(ego_net_snapshots[i], ego_node)
 
-        if len(first_hop_nodes) < 10:
-            continue
+        # if len(first_hop_nodes) < 10:
+        #     continue
 
         v_nodes_list = list(v_nodes.keys())
         y_true = []
