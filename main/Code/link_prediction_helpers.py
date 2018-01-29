@@ -540,11 +540,11 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node
 
 
 def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node, top_k_values, snap_range):
-    # percent_cclp = {}
+    percent_cclp = {}
     percent_car = {}
 
     for k in top_k_values:
-        # percent_cclp[k] = []
+        percent_cclp[k] = []
         percent_car[k] = []
 
     for i in snap_range:
@@ -573,25 +573,21 @@ def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node
             else:
                 y_true.append(0)
 
-        # y_scores_cclp = cclp(ego_snapshots[i], non_edges)
+        y_scores_cclp = cclp(ego_snapshots[i], non_edges)
         y_scores_car = car(ego_snapshots[i], non_edges)
 
-        # combo_scores = np.concatenate((np.array(y_scores_cclp).astype(float).reshape(-1, 1),
-        #                                np.array(y_scores_car).astype(float).reshape(-1, 1),
-        #                                np.array(y_true).reshape(-1, 1)), axis=1)
-
-        combo_scores = np.concatenate((np.array(y_scores_car).astype(float).reshape(-1, 1),
+        combo_scores = np.concatenate((np.array(y_scores_cclp).astype(float).reshape(-1, 1),
+                                       np.array(y_scores_car).astype(float).reshape(-1, 1),
                                        np.array(y_true).reshape(-1, 1)), axis=1)
 
-        # combo_scores_cclp_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
-        combo_scores_car_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+        combo_scores_cclp_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+        combo_scores_car_sorted = combo_scores[combo_scores[:, 1].argsort()[::-1]]
 
         for k in percent_car.keys():
-            # percent_cclp[k].append(sum(combo_scores_cclp_sorted[:k, -1]) / k)
+            percent_cclp[k].append(sum(combo_scores_cclp_sorted[:k, -1]) / k)
             percent_car[k].append(sum(combo_scores_car_sorted[:k, -1]) / k)
 
-    # return percent_cclp, percent_car
-    return percent_car
+    return percent_cclp, percent_car
 
 
 def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):

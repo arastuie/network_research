@@ -314,38 +314,38 @@ def run_link_prediction(index):
         print("No analysis in index {0}".format(index))
 
 
-Parallel(n_jobs=10)(delayed(run_link_prediction)(i) for i in range(12, 28))
+Parallel(n_jobs=28)(delayed(run_link_prediction)(i) for i in range(0, 28))
 
-# print("Merging all files...")
-#
-# percent_cclp = {}
-# # percent_dcaa = {}
-# percent_car = {}
-# # percent_dccn = {}
-#
-# for k in top_k_values:
-#     percent_cclp[k] = []
-#     # percent_dcaa[k] = []
-#     percent_car[k] = []
-#     # percent_dccn[k] = []
-#
-# for result_file in os.listdir(path):
-#     # with open('{0}/{1}'.format(path, result_file), 'rb') as f:
-#     #     cclp, dcaa, car, dccn = pickle.load(f)
-#     with open('{0}/{1}'.format(path, result_file), 'rb') as f:
-#         cclp, car = pickle.load(f)
-#
-#     for k in top_k_values:
-#         percent_cclp[k] = percent_cclp[k] + cclp[k]
-#         # percent_dcaa[k] = percent_dcaa[k] + dcaa[k]
-#         percent_car[k] = percent_car[k] + car[k]
-#         # percent_dccn[k] = percent_dccn[k] + dccn[k]
-#
-# # with open('{0}/total-result.pckl'.format(path), 'wb') as f:
-# #     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
-#
+print("Merging all files...")
+
+percent_cclp = {}
+# percent_dcaa = {}
+percent_car = {}
+# percent_dccn = {}
+
+for k in top_k_values:
+    percent_cclp[k] = []
+    # percent_dcaa[k] = []
+    percent_car[k] = []
+    # percent_dccn[k] = []
+
+for result_file in os.listdir(path):
+    # with open('{0}/{1}'.format(path, result_file), 'rb') as f:
+    #     cclp, dcaa, car, dccn = pickle.load(f)
+    with open('{0}/{1}'.format(path, result_file), 'rb') as f:
+        cclp, car = pickle.load(f)
+
+    for k in top_k_values:
+        percent_cclp[k] = percent_cclp[k] + cclp[k]
+        # percent_dcaa[k] = percent_dcaa[k] + dcaa[k]
+        percent_car[k] = percent_car[k] + car[k]
+        # percent_dccn[k] = percent_dccn[k] + dccn[k]
+
 # with open('{0}/total-result.pckl'.format(path), 'wb') as f:
-#     pickle.dump([percent_cclp, percent_car], f, protocol=-1)
+#     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
+
+with open('{0}/total-result.pckl'.format(path), 'wb') as f:
+    pickle.dump([percent_cclp, percent_car], f, protocol=-1)
 
 # for k in top_k_values:
 #     print("For top {0}:".format(k))
