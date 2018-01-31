@@ -8,11 +8,11 @@ import scipy.stats as st
 def get_conf(list):
     m = np.mean(list) * 100
     err = 100 * np.std(list) / np.sqrt(len(list))
-    #
+
     # up = round(m + err, 2)
     # down = round(m - err, 2)
     # return "({0}, {1})".format(down, up)
-    return "{0} $\pm$ {1}".format(round(m, 2), round(err, 2))
+    return "{0} +- {1}".format(round(m, 2), round(err, 2))
 
 
 def does_conf_overlap(base, update, k):
@@ -31,8 +31,8 @@ def does_conf_overlap(base, update, k):
 path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
-# paths = ['lower-6', 'after-6']
-paths = ['after-6']
+paths = ['lower-6', 'after-6']
+# paths = ['lower-6']
 
 lower_imp = []
 lower_imp_err = []
@@ -44,11 +44,11 @@ for p in paths:
     for k in top_k_values:
         percent_imp[k] = []
 
-    # with open('{0}/pickle-files/{1}/temp-4/total-result.pckl'.format(path, p), 'rb') as f:
-    #     percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
+    with open('{0}/pickle-files/{1}/temp-3/total-result.pckl'.format(path, p), 'rb') as f:
+        percent_aa, percent_dcaa, percent_cn, percent_dccn = pickle.load(f)
 
-    with open('{0}/pickle-files/{1}/temp-4/total-result.pckl'.format(path, p), 'rb') as f:
-        percent_aa, percent_cn = pickle.load(f)
+    # with open('{0}/pickle-files/{1}/temp-4/total-result.pckl'.format(path, p), 'rb') as f:
+    #     percent_aa, percent_cn = pickle.load(f)
 
         # for k in top_k_values:
         #     for i in range(len(percent_cn[k])):
@@ -64,27 +64,27 @@ for p in paths:
 
         print("Before PYMK:")
 
-        # print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+        print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 
-        # print("CAR: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_cn[k]), end='& ')
-        # print("")
+        print("CAR: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_cn[k]), end='& ')
+        print("")
 
-        # print("DCCN: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_dccn[k]), end='& ')
-        # print("")
+        print("DCCN: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_dccn[k]), end='& ')
+        print("")
 
-        # print("CCLP: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_aa[k]), end='& ')
-        # print("")
+        print("CCLP: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_aa[k]), end='& ')
+        print("")
 
-        # print("DCAA: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_dcaa[k]), end='& ')
-        # print("")
+        print("DCAA: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_dcaa[k]), end='& ')
+        print("")
 
         # print("\nCN vs. DCCN: ")
         # for k in top_k_values:
@@ -108,20 +108,20 @@ for p in paths:
             print(get_conf(percent_cn[k]), end='& ')
         print("")
 
-        # print("DCCN: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_dccn[k]), end='& ')
-        # print("")
-        #
+        print("DCCN: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_dccn[k]), end='& ')
+        print("")
+        
         print("CCLP: ", end=', \t')
         for k in top_k_values:
             print(get_conf(percent_aa[k]), end='& ')
         print("")
-        #
-        # print("DCAA: ", end=', \t')
-        # for k in top_k_values:
-        #     print(get_conf(percent_dcaa[k]), end='& ')
-        # print("")
+
+        print("DCAA: ", end=', \t')
+        for k in top_k_values:
+            print(get_conf(percent_dcaa[k]), end='& ')
+        print("")
 
         # print("\nCN vs. DCCN: ")
         # for k in top_k_values:

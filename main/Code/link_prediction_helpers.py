@@ -1305,3 +1305,123 @@ def all_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z, first_hop
         scores[v_i, 3] = temp_dcaa
 
     return scores
+
+
+def run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp(ego_net_file, top_k_values):
+    data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/' \
+                            'test-3-car-cclp/'
+
+    startTime = datetime.now()
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+    #     return
+
+    score_list = ['car', 'cclp']
+
+    percent_scores = {
+        'car': {},
+        'cclp': {}
+    }
+
+    for k in top_k_values:
+        for ps in percent_scores.keys():
+            percent_scores[ps][k] = []
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net = pickle.load(f)
+
+    ego_net_snapshots = []
+    total_y_true = 0
+
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    # if nx.number_of_nodes(ego_net) > 100000:
+        # with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+        #     pickle.dump(0, f, protocol=-1)
+        # return
+
+    # os.remove(result_file_base_path + 'skipped_egonets/' + ego_net_file)
+    # if nx.number_of_nodes(ego_net) <= 25000:
+    #     return
+
+    for r in range(0, 4):
+        temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+        ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        first_hop_nodes, second_hop_nodes, v_nodes = dh.get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # continue of no edge was formed
+        if np.sum(y_true) == 0:
+            continue
+
+        total_y_true += np.sum(y_true)
+
+        lp_scores = car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes)
+
+        lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
+
+        for si in range(len(score_list)):
+            lp_score_sorted = lp_scores[lp_scores[:, si].argsort()[::-1]]
+            for k in top_k_values:
+                percent_scores[score_list[si]][k].append(sum(lp_score_sorted[:k, -1]) / k)
+
+    # skip if no snapshot returned a score
+    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
+            for k in top_k_values:
+                percent_scores[s][k] = np.mean(percent_scores[s][k])
+
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
+              .format(ego_net_file, datetime.now() - startTime, nx.number_of_nodes(ego_net), total_y_true))
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+
+def car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z):
+    # every row is a v node, and every column is a score in the following order:
+    # car, cclp
+
+    scores = np.zeros((len(v_nodes_list), 2))
+    undirected_ego_net = ego_net.to_undirected()
+
+    for v_i in range(0, len(v_nodes_list)):
+        num_cn = len(v_nodes_z[v_nodes_list[v_i]])
+        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+
+        # car score
+        scores[v_i, 0] = num_cn * lcl
+
+        temp_cclp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            z_deg = undirected_ego_net.degree(z)
+            z_tri = nx.triangles(undirected_ego_net, z)
+
+            temp_cclp += z_tri / (z_deg * (z_deg - 1) / 2)
+
+        # cclp score
+        scores[v_i, 1] = temp_cclp
+
+    return scores
