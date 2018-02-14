@@ -200,7 +200,7 @@ import directed_graphs_helpers as dh
 # dh.read_entire_gplus_network()
 # dh.read_gplus_ego_graph(2)
 
-dh.read_ego_gplus_graph_by_batch_parallelizer(200)
+# dh.read_ego_gplus_graph_by_batch_parallelizer(200)
 
 # data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
 #
@@ -259,3 +259,17 @@ dh.read_ego_gplus_graph_by_batch_parallelizer(200)
 #
 # with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_300K_nodes.pckle', 'wb') as f:
 #     pickle.dump(set(over_300), f, protocol=-1)
+
+
+result_path = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results/"
+data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+print("0")
+for ego_net_file in os.listdir(result_path):
+    cnt = 0
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net = pickle.load(f)
+
+        if nx.number_of_nodes(ego_net) > 100000:
+            os.rename(result_path + ego_net_file, "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results-over-100K/" + ego_net_file)
+            cnt += 1
+            print(cnt, end="\r")
