@@ -1202,8 +1202,9 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
     ego_net_snapshots = []
     total_y_true = 0
 
+    num_nodes = nx.number_of_nodes(ego_net)
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net) > 100000:
+    if num_nodes >= 10:
         # with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
         #     pickle.dump(0, f, protocol=-1)
         return
@@ -1319,8 +1320,8 @@ def run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and
         return
 
     # return if the egonet is on the skipped list
-    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-    #     return
+    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
     score_list = ['car', 'cclp']
 
@@ -1340,10 +1341,10 @@ def run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and
     total_y_true = 0
 
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    # if nx.number_of_nodes(ego_net) > 100000:
-        # with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-        #     pickle.dump(0, f, protocol=-1)
-        # return
+    if nx.number_of_nodes(ego_net) > 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
 
     # os.remove(result_file_base_path + 'skipped_egonets/' + ego_net_file)
     # if nx.number_of_nodes(ego_net) <= 25000:

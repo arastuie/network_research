@@ -37,10 +37,19 @@ temp_skipped_files = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pic
 #
 # print(len(left_files))
 #
-# Parallel(n_jobs=12)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
-#                     (ego_net_file, top_k_values) for ego_net_file in os.listdir(result_file_base_path + 'skipped_egonets'))
+Parallel(n_jobs=24)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
+                    (ego_net_file, top_k_values) for ego_net_file in os.listdir(result_file_base_path + 'skipped_egonets'))
 
 
-res_from_prev_analysis = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results"
-Parallel(n_jobs=24)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp)
-                    (ego_net_file, top_k_values) for ego_net_file in os.listdir(res_from_prev_analysis))
+# res_from_prev_analysis = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results"
+# result_file_base_3 = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-3-car-cclp/"
+# all_files = set(os.listdir(res_from_prev_analysis))
+# analyzed_files = set(os.listdir(result_file_base_3 + 'analyzed_egonets'))
+# skipped_files = set(os.listdir(result_file_base_3 + 'skipped_egonets'))
+#
+# left_files = all_files - analyzed_files
+# left_files = list(left_files - skipped_files)
+# np.random.shuffle(left_files)
+#
+# Parallel(n_jobs=6)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp)
+#                    (ego_net_file, top_k_values) for ego_net_file in left_files)
