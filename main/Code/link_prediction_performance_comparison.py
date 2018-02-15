@@ -269,7 +269,7 @@ for k in top_k_values:
     dccn[k] = []
 
 # loading result data
-for result_file in os.listdir(result_file_base_path + both_result_directories[1] + 'results'):
+for result_file in os.listdir(result_file_base_path + both_result_directories[0] + 'results'):
 
     with open(result_file_base_path + both_result_directories[1] + 'results/' + result_file, 'rb') as f:
         egonet_lp_results_car_cclp = pickle.load(f)
@@ -284,6 +284,10 @@ for result_file in os.listdir(result_file_base_path + both_result_directories[1]
         dcaa[k].append(egonet_lp_results_first_four['dcaa'][k])
         cn[k].append(egonet_lp_results_first_four['cn'][k])
         dccn[k].append(egonet_lp_results_first_four['dccn'][k])
+
+# Write data into a single file
+with open(result_file_base_path + both_result_directories[0] + "all-6-methods-results.pckle", 'wb') as f:
+    pickle.dump([car, cclp, aa, dcaa, cn, dccn], f, protocol=-1)
 
 print("Number of egonets analyzed: {0}".format(len(cn[k])))
 print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
