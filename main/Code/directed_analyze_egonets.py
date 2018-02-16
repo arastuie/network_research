@@ -14,9 +14,10 @@ triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 temp_skipped_files = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/temp'
-
-Parallel(n_jobs=24)(delayed(analyzer.gplus_run_hop_degree_directed_analysis)(ego_net_file)
-                    for ego_net_file in os.listdir(data_file_base_path))
+all_egonets = os.listdir(data_file_base_path)
+np.random.shuffle(all_egonets)
+Parallel(n_jobs=6)(delayed(analyzer.gplus_run_hop_degree_directed_analysis)(ego_net_file)
+                    for ego_net_file in all_egonets)
 
 
 # Parallel(n_jobs=15)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types)(ego_net_file, top_k_values)
