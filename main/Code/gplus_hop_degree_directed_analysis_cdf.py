@@ -8,7 +8,8 @@ import directed_graphs_helpers as dh
 
 def gplus_run_hop_degree_directed_analysis(ego_net_file):
     data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
-    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/' \
+                            'test-2-no-least-num-nodes/'
 
     # return if the egonet is on the analyzed list
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
@@ -17,6 +18,13 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
     # return if the egonet is on the skipped list
     if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
         return
+
+    # return if the egonet is on the currently being analyzed list
+    if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
+        return
+
+    with open(result_file_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
 
     triangle_type_func = {
         'T01': dh.get_t01_type_nodes,
@@ -36,7 +44,7 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
     ego_net_snapshots = []
 
     # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net) > 50000:
+    if nx.number_of_nodes(ego_net) > 100000:
         with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 
@@ -64,8 +72,8 @@ def gplus_run_hop_degree_directed_analysis(ego_net_file):
             len_first_hop = len(first_hop_nodes)
             tot_num_nodes = nx.number_of_nodes(ego_net_snapshots[i])
 
-            if len_first_hop < 10:
-                continue
+            # if len_first_hop < 10:
+            #     continue
 
             # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
             has_any_formed = False
