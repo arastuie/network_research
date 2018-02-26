@@ -114,7 +114,8 @@ def get_mean_ci(res, z_value):
 #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree, global-not-formed-out-degree
 
 triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/'
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/' \
+                        'test-2-no-least-num-nodes/'
 plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/cdf-plots'
 
 gl_labels = ['Local', 'Global']
@@ -130,61 +131,61 @@ dif_results = ['id-formed', 'id-not-formed', 'od-formed', 'od-not-formed']
 bar_color = ['r', 'b', 'g', 'y']
 
 
-# all_results = {
-#     'Global': {
-#         'id-formed': [],
-#         'id-not-formed': [],
-#         'od-formed': [],
-#         'od-not-formed': [],
-#         'id-formed-err': [],
-#         'id-not-formed-err': [],
-#         'od-formed-err': [],
-#         'od-not-formed-err': []
-#     },
-#     'Local': {
-#         'id-formed': [],
-#         'id-not-formed': [],
-#         'od-formed': [],
-#         'od-not-formed': [],
-#         'id-formed-err': [],
-#         'id-not-formed-err': [],
-#         'od-formed-err': [],
-#         'od-not-formed-err': []
-#     }
-# }
-#
-# # grabbing all scores
-# for t in range(len(triangle_types)):
-#     results = []
-#
-#     # loading result data
-#     for result_file in os.listdir(result_file_base_path + triangle_types[t]):
-#         with open(result_file_base_path + triangle_types[t] + '/' + result_file, 'rb') as f:
-#             egonet_result = pickle.load(f)
-#
-#         results.append(egonet_result)
-#     results = np.array(results)
-#
-#     for i in range(2):
-#         # computing mean
-#         all_results[gl_labels[i]]['id-formed'].append(np.mean(results[:, i]))
-#         all_results[gl_labels[i]]['id-not-formed'].append(np.mean(results[:, i + 4]))
-#         all_results[gl_labels[i]]['od-formed'].append(np.mean(results[:, i + 2]))
-#         all_results[gl_labels[i]]['od-not-formed'].append(np.mean(results[:, i + 6]))
-#
-#         # computing 95% confidence interval
-#         all_results[gl_labels[i]]['id-formed-err'].append(get_mean_ci(results[:, i], z))
-#         all_results[gl_labels[i]]['id-not-formed-err'].append(get_mean_ci(results[:, i + 4], z))
-#         all_results[gl_labels[i]]['od-formed-err'].append(get_mean_ci(results[:, i + 2], z))
-#         all_results[gl_labels[i]]['od-not-formed-err'].append(get_mean_ci(results[:, i + 6], z))
-#
-#     print(triangle_types[t] + ": Done")
-#
-# with open(result_file_base_path + 'all-scores/all-types-plot-2.pckle', 'wb') as f:
-#     pickle.dump(all_results, f, protocol=-1)
+all_results = {
+    'Global': {
+        'id-formed': [],
+        'id-not-formed': [],
+        'od-formed': [],
+        'od-not-formed': [],
+        'id-formed-err': [],
+        'id-not-formed-err': [],
+        'od-formed-err': [],
+        'od-not-formed-err': []
+    },
+    'Local': {
+        'id-formed': [],
+        'id-not-formed': [],
+        'od-formed': [],
+        'od-not-formed': [],
+        'id-formed-err': [],
+        'id-not-formed-err': [],
+        'od-formed-err': [],
+        'od-not-formed-err': []
+    }
+}
+
+# grabbing all scores
+for t in range(len(triangle_types)):
+    results = []
+
+    # loading result data
+    for result_file in os.listdir(result_file_base_path + triangle_types[t]):
+        with open(result_file_base_path + triangle_types[t] + '/' + result_file, 'rb') as f:
+            egonet_result = pickle.load(f)
+
+        results.append(egonet_result)
+    results = np.array(results)
+
+    for i in range(2):
+        # computing mean
+        all_results[gl_labels[i]]['id-formed'].append(np.mean(results[:, i]))
+        all_results[gl_labels[i]]['id-not-formed'].append(np.mean(results[:, i + 4]))
+        all_results[gl_labels[i]]['od-formed'].append(np.mean(results[:, i + 2]))
+        all_results[gl_labels[i]]['od-not-formed'].append(np.mean(results[:, i + 6]))
+
+        # computing 95% confidence interval
+        all_results[gl_labels[i]]['id-formed-err'].append(get_mean_ci(results[:, i], z))
+        all_results[gl_labels[i]]['id-not-formed-err'].append(get_mean_ci(results[:, i + 4], z))
+        all_results[gl_labels[i]]['od-formed-err'].append(get_mean_ci(results[:, i + 2], z))
+        all_results[gl_labels[i]]['od-not-formed-err'].append(get_mean_ci(results[:, i + 6], z))
+
+    print(triangle_types[t] + ": Done")
+
+with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'wb') as f:
+    pickle.dump(all_results, f, protocol=-1)
 
 
-with open(result_file_base_path + 'all-scores/all-types-plot-2.pckle', 'rb') as f:
+with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'rb') as f:
     all_results = pickle.load(f)
 
 # plotting
@@ -212,5 +213,5 @@ for i_degree in range(2):
     if i_degree == 0:
         plt.ylim(ymax=.51)
     plt.tight_layout()
-    plt.savefig('{0}/overall-{1}-2.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
+    plt.savefig('{0}/overall-{1}-3.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
     plt.clf()
