@@ -607,7 +607,7 @@ def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node
     return percent_cclp, percent_car
 
 
-def run_linkprediction_on_test_method(ego_snapshots, ego_node, top_k_values, snap_range):
+def run_link_prediction_on_test_method(ego_snapshots, ego_node, top_k_values, snap_range):
     percent_test = {}
 
     for k in top_k_values:

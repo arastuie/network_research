@@ -263,123 +263,218 @@ from joblib import Parallel, delayed
 
 
 ############## With CCLP & CAR ##################
-# path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/lower-6/temp-4'
-path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/after-6/temp-4'
+# # path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/lower-6/temp-4'
+# path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/after-6/temp-4'
+# top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+#
+#
+# def run_link_prediction(index):
+#     percent_cclp = {}
+#     # percent_dcaa = {}
+#     percent_car = {}
+#     # percent_dccn = {}
+#
+#     for k in top_k_values:
+#         percent_cclp[k] = []
+#         # percent_dcaa[k] = []
+#         percent_car[k] = []
+#         # percent_dccn[k] = []
+#
+#     for ego_net_file in os.listdir('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}'.format(index)):
+#         with open('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
+#             egonet_snapshots, ego_node = pickle.load(f)
+#
+#         # cclp, dcaa, car, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(egonet_snapshots,
+#         #                                                                                         ego_node, top_k_values,
+#         #                                                                                         range(5))
+#
+#         # cclp, dcaa, car, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(egonet_snapshots,
+#         #                                                                                         ego_node, top_k_values,
+#         #                                                                                         range(5, len(egonet_snapshots) - 1))
+#
+#         cclp, car = lp_helpers.run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(egonet_snapshots, ego_node, top_k_values,
+#                                                                                   range(5, len(egonet_snapshots) - 1))
+#
+#         for k in top_k_values:
+#             if len(cclp[k]) > 0:
+#                 percent_cclp[k].append(np.mean(cclp[k]))
+#                 # percent_dcaa[k].append(np.mean(dcaa[k]))
+#                 percent_car[k].append(np.mean(car[k]))
+#                 # percent_dccn[k].append(np.mean(dccn[k]))
+#
+#     if len(percent_cclp[top_k_values[0]]) > 0:
+#         # with open('{0}/{1}-lp-result.pckl'.format(path, index), 'wb') as f:
+#         #     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
+#
+#         with open('{0}/{1}-lp-result.pckl'.format(path, index), 'wb') as f:
+#             pickle.dump([percent_cclp, percent_car], f, protocol=-1)
+#
+#         print("Done with index {0}".format(index))
+#     else:
+#         print("No analysis in index {0}".format(index))
+#
+#
+# Parallel(n_jobs=28)(delayed(run_link_prediction)(i) for i in range(0, 28))
+#
+# print("Merging all files...")
+#
+# percent_cclp = {}
+# # percent_dcaa = {}
+# percent_car = {}
+# # percent_dccn = {}
+#
+# for k in top_k_values:
+#     percent_cclp[k] = []
+#     # percent_dcaa[k] = []
+#     percent_car[k] = []
+#     # percent_dccn[k] = []
+#
+# for result_file in os.listdir(path):
+#     # with open('{0}/{1}'.format(path, result_file), 'rb') as f:
+#     #     cclp, dcaa, car, dccn = pickle.load(f)
+#     with open('{0}/{1}'.format(path, result_file), 'rb') as f:
+#         cclp, car = pickle.load(f)
+#
+#     for k in top_k_values:
+#         percent_cclp[k] = percent_cclp[k] + cclp[k]
+#         # percent_dcaa[k] = percent_dcaa[k] + dcaa[k]
+#         percent_car[k] = percent_car[k] + car[k]
+#         # percent_dccn[k] = percent_dccn[k] + dccn[k]
+#
+# # with open('{0}/total-result.pckl'.format(path), 'wb') as f:
+# #     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
+#
+# with open('{0}/total-result.pckl'.format(path), 'wb') as f:
+#     pickle.dump([percent_cclp, percent_car], f, protocol=-1)
+#
+# # for k in top_k_values:
+# #     print("For top {0}:".format(k))
+# #     cclp = np.mean(percent_cclp[k])
+# #     dcaa = np.mean(percent_dcaa[k])
+# #     cclp_diff = dcaa - cclp
+# #     cclp_p_improve = cclp_diff / cclp
+# #     print("\tcclp -> {0}".format(cclp))
+# #     print("\tdcaa -> {0}\n".format(dcaa))
+# #     print("\tdcaa - cclp -> {0}".format(cclp_diff))
+# #     print("\tdcaa percent improvement -> {0}".format(cclp_p_improve))
+# #
+# #     dccn = np.mean(percent_dccn[k])
+# #     cclp_diff = dccn - cclp
+# #     cclp_p_improve = cclp_diff / cclp
+# #     print("\tcclp -> {0}".format(cclp))
+# #     print("\tdccn -> {0}\n".format(dccn))
+# #     print("\tdccn - cclp -> {0}".format(dccn - cclp))
+# #     print("\tdccn percent improvement -> {0}".format(cclp_p_improve))
+# #
+# #     print("For top {0}:".format(k))
+# #     car = np.mean(percent_car[k])
+# #     dcaa = np.mean(percent_dcaa[k])
+# #     car_diff = dcaa - car
+# #     car_p_improve = car_diff / car
+# #     print("\tcar -> {0}".format(car))
+# #     print("\tdcaa -> {0}\n".format(dcaa))
+# #     print("\tdcaa - car -> {0}".format(car_diff))
+# #     print("\tdcaa percent improvement -> {0}".format(car_p_improve))
+# #
+# #     dccn = np.mean(percent_dccn[k])
+# #     car_diff = dccn - car
+# #     car_p_improve = car_diff / car
+# #     print("\tcar -> {0}".format(car))
+# #     print("\tdccn -> {0}\n".format(dccn))
+# #     print("\tdccn - car -> {0}".format(dccn - car))
+# #     print("\tdccn percent improvement -> {0}".format(car_p_improve))
+
+
+
+
+
+
+#######################  Test new lp methods on FB #########################
+datasets_directory = '/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets'
+path_before_pymk = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/lower-6/temp-5'
+path_after_pymk = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files/after-6/temp-5'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 
-def run_link_prediction(index):
-    percent_cclp = {}
-    # percent_dcaa = {}
-    percent_car = {}
-    # percent_dccn = {}
+def run_link_prediction_on_test_method(index, num_ego_per_index):
+    percent_test_before = {}
+    percent_test_after = {}
 
     for k in top_k_values:
-        percent_cclp[k] = []
-        # percent_dcaa[k] = []
-        percent_car[k] = []
-        # percent_dccn[k] = []
+        percent_test_before[k] = []
+        percent_test_after[k] = []
 
-    for ego_net_file in os.listdir('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}'.format(index)):
-        with open('/shared/DataSets/FacebookViswanath2009/egocentric/fb-egonets/{0}/{1}'.format(index, ego_net_file), 'rb') as f:
+    count = 0
+    for ego_net_file in os.listdir('{0}/{1}'.format(datasets_directory, index)):
+        with open('{0}/{1}/{2}'.format(datasets_directory, index, ego_net_file), 'rb') as f:
             egonet_snapshots, ego_node = pickle.load(f)
 
-        # cclp, dcaa, car, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(egonet_snapshots,
-        #                                                                                         ego_node, top_k_values,
-        #                                                                                         range(5))
+        test_score_before = lp_helpers.run_link_prediction_on_test_method(egonet_snapshots, ego_node, top_k_values,
+                                                                          range(5))
 
-        # cclp, dcaa, car, dccn = lp_helpers.run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(egonet_snapshots,
-        #                                                                                         ego_node, top_k_values,
-        #                                                                                         range(5, len(egonet_snapshots) - 1))
-
-        cclp, car = lp_helpers.run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(egonet_snapshots, ego_node, top_k_values,
-                                                                                  range(5, len(egonet_snapshots) - 1))
+        test_score_after = lp_helpers.run_link_prediction_on_test_method(egonet_snapshots, ego_node, top_k_values,
+                                                                         range(5, len(egonet_snapshots) - 1))
 
         for k in top_k_values:
-            if len(cclp[k]) > 0:
-                percent_cclp[k].append(np.mean(cclp[k]))
-                # percent_dcaa[k].append(np.mean(dcaa[k]))
-                percent_car[k].append(np.mean(car[k]))
-                # percent_dccn[k].append(np.mean(dccn[k]))
+            if len(test_score_before[k]) > 0:
+                percent_test_before[k].append(np.mean(test_score_before[k]))
+                count += 1
 
-    if len(percent_cclp[top_k_values[0]]) > 0:
-        # with open('{0}/{1}-lp-result.pckl'.format(path, index), 'wb') as f:
-        #     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
+            if len(test_score_after[k]) > 0:
+                percent_test_after[k].append(np.mean(test_score_after[k]))
 
-        with open('{0}/{1}-lp-result.pckl'.format(path, index), 'wb') as f:
-            pickle.dump([percent_cclp, percent_car], f, protocol=-1)
+        if count >= num_ego_per_index:
+            break
+
+    if len(percent_test_before[top_k_values[0]]) > 0:
+        with open('{0}/{1}-lp-result.pckl'.format(path_before_pymk, index), 'wb') as f:
+            pickle.dump(percent_test_before, f, protocol=-1)
+
+    if len(percent_test_after[top_k_values[0]]) > 0:
+        with open('{0}/{1}-lp-result.pckl'.format(path_after_pymk, index), 'wb') as f:
+            pickle.dump(percent_test_after, f, protocol=-1)
 
         print("Done with index {0}".format(index))
     else:
         print("No analysis in index {0}".format(index))
 
 
-Parallel(n_jobs=28)(delayed(run_link_prediction)(i) for i in range(0, 28))
+Parallel(n_jobs=28)(delayed(run_link_prediction_on_test_method)(i, 50) for i in range(0, 28))
 
 print("Merging all files...")
 
-percent_cclp = {}
-# percent_dcaa = {}
-percent_car = {}
-# percent_dccn = {}
-
-for k in top_k_values:
-    percent_cclp[k] = []
-    # percent_dcaa[k] = []
-    percent_car[k] = []
-    # percent_dccn[k] = []
-
-for result_file in os.listdir(path):
-    # with open('{0}/{1}'.format(path, result_file), 'rb') as f:
-    #     cclp, dcaa, car, dccn = pickle.load(f)
-    with open('{0}/{1}'.format(path, result_file), 'rb') as f:
-        cclp, car = pickle.load(f)
+for path in [path_before_pymk, path_after_pymk]:
+    percent_test = {}
 
     for k in top_k_values:
-        percent_cclp[k] = percent_cclp[k] + cclp[k]
-        # percent_dcaa[k] = percent_dcaa[k] + dcaa[k]
-        percent_car[k] = percent_car[k] + car[k]
-        # percent_dccn[k] = percent_dccn[k] + dccn[k]
+        percent_test[k] = []
 
-# with open('{0}/total-result.pckl'.format(path), 'wb') as f:
-#     pickle.dump([percent_cclp, percent_dcaa, percent_car, percent_dccn], f, protocol=-1)
+    for result_file in os.listdir(path):
+        if result_file == 'total-result.pckl':
+            continue
 
-with open('{0}/total-result.pckl'.format(path), 'wb') as f:
-    pickle.dump([percent_cclp, percent_car], f, protocol=-1)
+        with open('{0}/{1}'.format(path, result_file), 'rb') as f:
+            test_score = pickle.load(f)
 
-# for k in top_k_values:
-#     print("For top {0}:".format(k))
-#     cclp = np.mean(percent_cclp[k])
-#     dcaa = np.mean(percent_dcaa[k])
-#     cclp_diff = dcaa - cclp
-#     cclp_p_improve = cclp_diff / cclp
-#     print("\tcclp -> {0}".format(cclp))
-#     print("\tdcaa -> {0}\n".format(dcaa))
-#     print("\tdcaa - cclp -> {0}".format(cclp_diff))
-#     print("\tdcaa percent improvement -> {0}".format(cclp_p_improve))
-#
-#     dccn = np.mean(percent_dccn[k])
-#     cclp_diff = dccn - cclp
-#     cclp_p_improve = cclp_diff / cclp
-#     print("\tcclp -> {0}".format(cclp))
-#     print("\tdccn -> {0}\n".format(dccn))
-#     print("\tdccn - cclp -> {0}".format(dccn - cclp))
-#     print("\tdccn percent improvement -> {0}".format(cclp_p_improve))
-#
-#     print("For top {0}:".format(k))
-#     car = np.mean(percent_car[k])
-#     dcaa = np.mean(percent_dcaa[k])
-#     car_diff = dcaa - car
-#     car_p_improve = car_diff / car
-#     print("\tcar -> {0}".format(car))
-#     print("\tdcaa -> {0}\n".format(dcaa))
-#     print("\tdcaa - car -> {0}".format(car_diff))
-#     print("\tdcaa percent improvement -> {0}".format(car_p_improve))
-#
-#     dccn = np.mean(percent_dccn[k])
-#     car_diff = dccn - car
-#     car_p_improve = car_diff / car
-#     print("\tcar -> {0}".format(car))
-#     print("\tdccn -> {0}\n".format(dccn))
-#     print("\tdccn - car -> {0}".format(dccn - car))
-#     print("\tdccn percent improvement -> {0}".format(car_p_improve))
+        for k in top_k_values:
+            percent_test[k] = percent_test[k] + test_score[k]
+
+    with open('{0}/total-result.pckl'.format(path), 'wb') as f:
+        pickle.dump(percent_test, f, protocol=-1)
+
+# reading result for final evaluation
+cnt = 0
+for path in [path_before_pymk, path_after_pymk]:
+
+    with open('{0}/total-result.pckl'.format(path), 'rb') as f:
+        percent_test = pickle.load(f)
+
+    if cnt == 0:
+        print("\nResults for before PYMK:")
+    else:
+        print("\nResults for after PYMK:")
+
+    for k in top_k_values:
+        print("\tTop {0} K -> {1}".format(k, np.mean(percent_test[k])))
+
+    cnt += 1
