@@ -186,6 +186,23 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
     return scores
 
 
+def test_lp_method(ego_net, non_edges, first_hop_nodes):
+    scores = []
+    for u, v in non_edges:
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        temp_score = 0
+        for c in common_neighbors:
+            all_neighbors = set(nx.neighbors(ego_net, c))
+            local_degree = len(all_neighbors.intersection(first_hop_nodes)) + 1
+            global_degree = len(all_neighbors)
+
+            temp_score += local_degree / math.log(global_degree)
+
+        scores.append(temp_score)
+
+    return scores
+
+
 def cclp(ego_net, non_edges):
     scores = []
 
@@ -588,6 +605,50 @@ def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node
             percent_car[k].append(sum(combo_scores_car_sorted[:k, -1]) / k)
 
     return percent_cclp, percent_car
+
+
+def run_linkprediction_on_test_method(ego_snapshots, ego_node, top_k_values, snap_range):
+    percent_test = {}
+
+    for k in top_k_values:
+        percent_test[k] = []
+
+    for i in snap_range:
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) == 0:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        y_scores_test = test_lp_method(ego_snapshots[i], non_edges, first_hop_nodes)
+
+        combo_scores = np.concatenate((np.array(y_scores_test).astype(float).reshape(-1, 1),
+                                       np.array(y_true).reshape(-1, 1)), axis=1)
+
+        combo_scores_test_sorted = combo_scores[combo_scores[:, 0].argsort()[::-1]]
+
+        for k in percent_test.keys():
+            percent_test[k].append(sum(combo_scores_test_sorted[:k, -1]) / k)
+
+    return percent_test
 
 
 def ego_net_link_formation_hop_degree(ego_snapshots, ego_node):
