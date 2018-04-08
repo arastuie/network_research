@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn import linear_model
 from sklearn.model_selection import KFold
-from sklearn.metrics import roc_curve, average_precision_score, auc, f1_score
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import roc_curve, average_precision_score, auc, f1_score
 
 
 def run_linear_regression(path, aa_only):

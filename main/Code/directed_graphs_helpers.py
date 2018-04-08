@@ -137,7 +137,8 @@ def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
 
     print('\nNumber of nodes in snapshot {0}: {1}'.format(snapshot, len(node_list)))
 
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-{0}-list.pckl'.format(snapshot), 'wb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-{0}-list.pckl'.format(
+            snapshot), 'wb') as f:
         pickle.dump(node_list, f, protocol=-1)
 
     return node_list
@@ -160,7 +161,8 @@ def read_gplus_ego_graph():
 
 def read_ego_gplus_graph(ego_node):
     # check if the egonet file already exists
-    if os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node)):
+    if os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
+            ego_node)):
         return
     start_time = time.time()
     ego_net = nx.DiGraph()
@@ -185,7 +187,8 @@ def read_ego_gplus_graph(ego_node):
             if nums[0] in neighbors or nums[1] in neighbors:
                 ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
+    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node),
+              'wb') as f:
         pickle.dump([ego_node, ego_net], f, protocol=-1)
 
     print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
@@ -250,7 +253,8 @@ def read_ego_gplus_graph_by_batch(ego_nodes):
                         ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
     for ego_node in ego_dict:
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node), 'wb') as f:
+        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
+                ego_node), 'wb') as f:
             pickle.dump([ego_node, ego_dict[ego_node]], f, protocol=-1)
 
     print("time -> {0} minutes".format((time.time() - start_time) / 60))

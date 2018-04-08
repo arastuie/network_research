@@ -2,7 +2,6 @@ import re
 import sys
 import math
 import pickle
-import random
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -73,8 +72,9 @@ def get_ego_centric_networks_in_fb(original_graph, n, pickle_file_name, search_t
     ego_centric_networks = []
     ego_nodes = []
 
-    orig_nodes = nx.nodes(orig_snapshots[0])
+    orig_nodes = list(nx.nodes(orig_snapshots[0]))
     if search_type == 'random':
+
         np.random.shuffle(orig_nodes)
         ego_nodes = orig_nodes[0:n]
 
@@ -352,10 +352,10 @@ def get_avg_num_neighbors(network, nodes=[]):
     if len(nodes) == 0:
         return 0
 
-    avg = len(nx.neighbors(network, nodes[0]))
+    avg = len(list(nx.neighbors(network, nodes[0])))
     count = 1
     for n in range(1, len(nodes)):
-        avg = (avg * count + len(nx.neighbors(network, nodes[n]))) / (count + 1)
+        avg = (avg * count + len(list(nx.neighbors(network, nodes[n])))) / (count + 1)
         count += 1
 
     return avg

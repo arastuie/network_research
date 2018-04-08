@@ -2,7 +2,7 @@ import os
 import math
 import pickle
 import numpy as np
-import helpers as h
+import Code.helpers as h
 import matplotlib.pyplot as plt
 
 # Results pickle files are in the following order

@@ -1,6 +1,6 @@
 import pickle
 import sys
-import helpers as h
+import Code.helpers as h
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt

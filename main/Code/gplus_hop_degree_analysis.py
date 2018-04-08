@@ -1,8 +1,8 @@
 import sys
-import helpers as h
-import networkx as nx
-import numpy as np
 import pickle
+import numpy as np
+import networkx as nx
+import Code.helpers as h
 
 
 def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=''):
@@ -15,9 +15,7 @@ def gplus_run_hop_degree_analysis(ego_net_file, save_plot=False, plot_save_path=
         3. Plots a histogram comparing the degree of nodes in the second hop which formed an edge with the ego node vs
            the node that did not.
 
-    :param ego_net_snapshots: Snapshots of an ego-centric network
-    :param ego_node: The ego node
-    :param ego_net_num: The number of the ego network, only used for the plot title
+    :param ego_net_file: Snapshots of an ego-centric network
     :param save_plot: If true, saves the plot, also a path should be passed as the next argument.
     :param plot_save_path: Path to save the plot. ex: '../Plots/degree_based'
     """

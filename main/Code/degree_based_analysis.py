@@ -1,6 +1,6 @@
 import sys
-import helpers as h
 import networkx as nx
+import Code.helpers as h
 
 
 def run_degree_based_analysis(ego_net_snapshots, ego_node, ego_net_num, save_plot=False, plot_save_path=''):

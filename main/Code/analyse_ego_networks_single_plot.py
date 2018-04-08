@@ -1,12 +1,7 @@
+import os
 import pickle
 import numpy as np
-import helpers as h
-import networkx as nx
-from joblib import Parallel, delayed
-import os
 import hop_degree_analysis_temp as a6
-import adamic_adar_analysis as a8
-import matplotlib.pyplot as plt
 
 print("Analysing ego centric networks...")
 path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files/local/lower-6/temp'

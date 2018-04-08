@@ -5,7 +5,7 @@ import numpy as np
 import networkx as nx
 from datetime import datetime
 import matplotlib.pyplot as plt
-import directed_graphs_helpers as dh
+import Code.directed_graphs_helpers as dh
 from sklearn import metrics, preprocessing
 
 
@@ -186,17 +186,18 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
     return scores
 
 
-def test_lp_method(ego_net, non_edges, first_hop_nodes):
+def lp_test_method(ego_net, non_edges, first_hop_nodes):
     scores = []
     for u, v in non_edges:
         common_neighbors = nx.common_neighbors(ego_net, u, v)
         temp_score = 0
         for c in common_neighbors:
             all_neighbors = set(nx.neighbors(ego_net, c))
-            local_degree = len(all_neighbors.intersection(first_hop_nodes)) + 1
+            local_degree = len(all_neighbors.intersection(first_hop_nodes))
+            # v_common_neighbors = len(set(nx.common_neighbors(ego_net, c, v)))
             global_degree = len(all_neighbors)
 
-            temp_score += local_degree / math.log(global_degree)
+            temp_score += math.log(local_degree + 2) / math.log(global_degree)
 
         scores.append(temp_score)
 
@@ -638,7 +639,7 @@ def run_link_prediction_on_test_method(ego_snapshots, ego_node, top_k_values, sn
             else:
                 y_true.append(0)
 
-        y_scores_test = test_lp_method(ego_snapshots[i], non_edges, first_hop_nodes)
+        y_scores_test = lp_test_method(ego_snapshots[i], non_edges, first_hop_nodes)
 
         combo_scores = np.concatenate((np.array(y_scores_test).astype(float).reshape(-1, 1),
                                        np.array(y_true).reshape(-1, 1)), axis=1)

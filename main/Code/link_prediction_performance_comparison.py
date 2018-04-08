@@ -1,8 +1,8 @@
+import os
 import pickle
 import numpy as np
-import os
-import matplotlib.pyplot as plt
 import scipy.stats as st
+import matplotlib.pyplot as plt
 
 
 def get_conf(list):

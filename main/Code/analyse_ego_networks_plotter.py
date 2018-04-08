@@ -1,5 +1,4 @@
 import pickle
-import numpy as np
 import helpers as h
 import matplotlib.pyplot as plt
 

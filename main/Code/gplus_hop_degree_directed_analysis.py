@@ -1,8 +1,8 @@
 import sys
-import directed_graphs_helpers as dh
-import networkx as nx
-import numpy as np
 import pickle
+import numpy as np
+import networkx as nx
+import Code.directed_graphs_helpers as dh
 
 
 def gplus_run_hop_degree_directed_analysis(ego_net_file, triangle_type, overall_means, save_plot=False,

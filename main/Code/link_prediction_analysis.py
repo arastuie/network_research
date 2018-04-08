@@ -1,11 +1,12 @@
+import os
 import pickle
-import helpers
+import numpy as np
+import networkx as nx
+import Code.helpers as h
+from joblib import Parallel, delayed
 import link_prediction_helpers as lp_helpers
 import linear_regression_link_prediction as lr
-import numpy as np
-import os
-import networkx as nx
-from joblib import Parallel, delayed
+
 
 # print("Reading in 200 random Facebook ego networks...")
 #
@@ -396,7 +397,7 @@ path_after_pymk = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-fi
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 
-def run_link_prediction_on_test_method(index, num_ego_per_index):
+def run_link_prediction_on_test_method(index, num_ego_per_index=0):
     percent_test_before = {}
     percent_test_after = {}
 
@@ -423,7 +424,7 @@ def run_link_prediction_on_test_method(index, num_ego_per_index):
             if len(test_score_after[k]) > 0:
                 percent_test_after[k].append(np.mean(test_score_after[k]))
 
-        if count >= num_ego_per_index:
+        if num_ego_per_index != 0 and count >= num_ego_per_index:
             break
 
     if len(percent_test_before[top_k_values[0]]) > 0:
@@ -439,7 +440,7 @@ def run_link_prediction_on_test_method(index, num_ego_per_index):
         print("No analysis in index {0}".format(index))
 
 
-Parallel(n_jobs=28)(delayed(run_link_prediction_on_test_method)(i, 50) for i in range(0, 28))
+Parallel(n_jobs=28)(delayed(run_link_prediction_on_test_method)(i) for i in range(0, 28))
 
 print("Merging all files...")
 

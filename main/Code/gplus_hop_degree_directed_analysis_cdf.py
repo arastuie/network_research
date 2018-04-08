@@ -3,7 +3,7 @@ import sys
 import pickle
 import numpy as np
 import networkx as nx
-import directed_graphs_helpers as dh
+import Code.directed_graphs_helpers as dh
 
 
 def gplus_run_hop_degree_directed_analysis(ego_net_file):

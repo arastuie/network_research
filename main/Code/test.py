@@ -260,16 +260,41 @@ import directed_graphs_helpers as dh
 # with open(data_file_base_path + 'egonets-info/' + 'set_of_egonets_with_over_300K_nodes.pckle', 'wb') as f:
 #     pickle.dump(set(over_300), f, protocol=-1)
 
+#
+# result_path = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results/"
+# data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+# print("0")
+# for ego_net_file in os.listdir(result_path):
+#     cnt = 0
+#     with open(data_file_base_path + ego_net_file, 'rb') as f:
+#         ego_node, ego_net = pickle.load(f)
+#
+#         if nx.number_of_nodes(ego_net) > 100000:
+#             os.rename(result_path + ego_net_file, "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results-over-100K/" + ego_net_file)
+#             cnt += 1
+#             print(cnt, end="\r")
 
-result_path = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results/"
-data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
-print("0")
-for ego_net_file in os.listdir(result_path):
-    cnt = 0
-    with open(data_file_base_path + ego_net_file, 'rb') as f:
-        ego_node, ego_net = pickle.load(f)
-
-        if nx.number_of_nodes(ego_net) > 100000:
-            os.rename(result_path + ego_net_file, "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results-over-100K/" + ego_net_file)
-            cnt += 1
-            print(cnt, end="\r")
+#
+# g = nx.karate_club_graph()
+# u = nx.degree(g, 1)
+# r = g.degree(1)
+# t = g.degree
+#
+# # cn = nx.common_neighbors(g, 1, 2)
+# # # for x in cn:
+# # #     print(x)
+#
+# l = len(list(nx.neighbors(g, 2)))
+# ll = sorted(nx.common_neighbors(g, 2, 4))
+# print(nx.number_of_nodes(g))
+#
+# h = g.nodes()
+# pp = 2 in h
+#
+# import random
+# g.add_edge(2, 32)
+# lll = g.edges(data=True)
+# oo = list(h)
+# np.random.shuffle(oo)
+# uii = h
+# print("end")

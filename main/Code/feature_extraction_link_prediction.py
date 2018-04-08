@@ -1,7 +1,7 @@
-import networkx as nx
-import helpers as helpers
-import math
 import os
+import math
+import networkx as nx
+import Code.helpers as h
 from joblib import Parallel, delayed
 
 
@@ -41,9 +41,9 @@ def get_ego_net(ego_node, orig_snaps):
             #         first_hop_degrees[ii] = 1.5
             #     elif first_hop_degrees[ii] == 1:
             #         first_hop_degrees[ii] = 1.75
-            #
-            # aa_index = sum(1 / math.log(d) for d in total_degrees)
-            # dc_aa_index = sum(1 / math.log(d) for d in first_hop_degrees)
+
+            aa_index = sum(1 / math.log(d) for d in total_degrees)
+            dc_aa_index = sum(1 / math.log(d) for d in first_hop_degrees)
 
             did_form = ego_snapshots[s + 1].has_edge(ego_node, n)
             file.write("{0},{1},{2},{3},{4},{5}\n".format(aa_index, dc_aa_index, density, average_num_edge, s,
@@ -60,7 +60,7 @@ def get_ego_net(ego_node, orig_snaps):
         print("Network in.")
 
 
-fb_graph = helpers.read_facebook_graph()
+fb_graph = h.read_facebook_graph()
 
 orig_snapshots = []
 

@@ -1,8 +1,9 @@
-import pickle
 import math
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+
 
 # path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb'
 # top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]

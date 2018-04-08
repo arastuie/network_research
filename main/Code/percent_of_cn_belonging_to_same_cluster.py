@@ -1,7 +1,7 @@
 import sys
 import numpy as np
-import helpers as h
 import networkx as nx
+import Code.helpers as h
 import GSC.generalized_spectral_clustering as gsc
 
 
