@@ -15,8 +15,8 @@ def read_graph():
         for line in f:
             line = line.rstrip().replace('"', '').split(',')
 
-            # only use mutual friendships and with a valid timestamp
-            if line[0] == "0" or line[1] == "0":
+            # only use mutual friendships and with a valid timestamp and no self loops
+            if line[0] == "0" or line[1] == "0" or line[2] == line[3]:
                 continue
 
             original_graph.add_edge(int(line[2]), int(line[3]), timestamp=int(line[1]))
