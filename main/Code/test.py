@@ -1,13 +1,13 @@
-import networkx as nx
-import helpers as h
-import GSC.generalized_spectral_clustering as gsc
-import numpy as np
+# import networkx as nx
+# import helpers as h
+# import GSC.generalized_spectral_clustering as gsc
+# import numpy as np
 import pickle
-import gplus_hop_degree_directed_analysis as directed_analysis
-from joblib import Parallel, delayed
-import os
-import sys
-import directed_graphs_helpers as dh
+# import gplus_hop_degree_directed_analysis as directed_analysis
+# from joblib import Parallel, delayed
+# import os
+# import sys
+# import directed_graphs_helpers as dh
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -298,3 +298,9 @@ import directed_graphs_helpers as dh
 # np.random.shuffle(oo)
 # uii = h
 # print("end")
+
+
+with open('/shared/Results/EgocentricLinkPrediction/main/empirical/digg/pickle-files/90-days-duration-results.pckle', 'rb') as f:
+    results = pickle.load(f)
+
+print(results)
