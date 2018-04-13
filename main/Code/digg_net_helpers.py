@@ -1,5 +1,6 @@
 import re
 import math
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -59,42 +60,77 @@ def divide_to_snapshots(graph, length_of_snapshots_in_days):
     print("Snapshots extracted!")
     return orig_snapshots
 
-# graph = read_graph()
-# snapshots = divide_to_snapshots(graph, 90)
-#
-# print("num of snapshots: {0}".format(len(snapshots)))
-# last_num_edges = 0
-# last_num_nodes = 0
-#
-# count = 1
-# for snapshot in snapshots:
-#     print("Snapshot Number: {0}".format(count), end='')
-#     temp = snapshot.number_of_edges()
-#     print("Number of edges: {0} - Added: {1}".format(temp, temp - last_num_edges), end='')
-#     last_num_edges = temp
-#     temp = snapshot.number_of_nodes()
-#     print("Number of nodes: {0} - Added: {1} \n".format(temp, temp - last_num_nodes))
-#     last_num_nodes = temp
-#     count += 1
-#
-#
-# # divide_to_snapshots(graph, 60)
-# # divide_to_snapshots(graph, 90)
-# # divide_to_snapshots(graph, 180)
-#
-#
-# # list_of_timestamps = []
-# # for u, v, t in edges:
-# #     list_of_timestamps.append(t)
-# #
-# # print("hist")
-# # print(len(list_of_timestamps))
-# #
-# # n, bins, patches = plt.hist(list_of_timestamps, 50, density=True, facecolor='g', alpha=0.75)
-# #
-# # print("show")
-# #
-# # plt.xlabel('Timestamps')
-# # plt.ylabel('Probability')
-# # plt.title('Histogram of Friendship timestamps')
-# # plt.show()
+
+def get_mean_ci(res, z_value):
+    return z_value * np.std(res) / np.sqrt(len(res))
+
+
+def extract_empirical_overall_plotter_data(all_results, z_value):
+    plot_results = {
+        'global-formed': [],
+        'global-not-formed': [],
+        'local-formed': [],
+        'local-not-formed': [],
+        'error': {
+            'global-formed': [],
+            'global-not-formed': [],
+            'local-formed': [],
+            'local-not-formed': []
+        }
+    }
+
+    analyzed_egos = set()
+    num_of_snaps = len(all_results.keys())
+    for snap_index in range(num_of_snaps):
+        for ego in all_results[snap_index]:
+            if ego in analyzed_egos:
+                continue
+
+            temp_local_formed = []
+            temp_local_not_formed = []
+            temp_global_formed = []
+            temp_global_not_formed = []
+
+            # get the mean for degrees of z nodes of an ego-node in one snap
+            for i in range(snap_index, num_of_snaps):
+
+                if ego not in all_results[i]:
+                    continue
+
+                # check for a bug in the empirical analysis code
+                if len(all_results[i][ego]['local_degrees_not_formed']) == 0:
+                    analyzed_egos.add(ego)
+                    continue
+
+                temp_local_formed.append(
+                    np.mean(all_results[i][ego]['local_degrees_formed']) / all_results[i][ego]['num_z_nodes'])
+                temp_local_not_formed.append(
+                    np.mean(all_results[i][ego]['local_degrees_not_formed']) / all_results[i][ego]['num_z_nodes'])
+
+                temp_global_formed.append(
+                    np.mean(all_results[i][ego]['global_degrees_formed']) / all_results[i][ego]['num_nodes'])
+                temp_global_not_formed.append(
+                    np.mean(all_results[i][ego]['global_degrees_not_formed']) / all_results[i][ego]['num_nodes'])
+
+            if len(temp_local_not_formed) > 0:
+                # get the mean of the degrees of an ego-node across all snaps
+                plot_results['local-formed'].append(np.mean(temp_local_formed))
+                plot_results['local-not-formed'].append(np.mean(temp_local_not_formed))
+                plot_results['global-formed'].append(np.mean(temp_global_formed))
+                plot_results['global-not-formed'].append(np.mean(temp_global_not_formed))
+
+            analyzed_egos.add(ego)
+
+    # getting confidence interval over all degrees of all ego-node means
+
+    plot_results['error']['local-formed'] = get_mean_ci(plot_results['local-formed'], z_value)
+    plot_results['error']['local-not-formed'] = get_mean_ci(plot_results['local-not-formed'], z_value)
+    plot_results['error']['global-formed'] = get_mean_ci(plot_results['global-formed'], z_value)
+    plot_results['error']['global-not-formed'] = get_mean_ci(plot_results['global-not-formed'], z_value)
+
+    plot_results['local-formed'] = np.mean(plot_results['local-formed'])
+    plot_results['local-not-formed'] = np.mean(plot_results['local-not-formed'])
+    plot_results['global-formed'] = np.mean(plot_results['global-formed'])
+    plot_results['global-not-formed'] = np.mean(plot_results['global-not-formed'])
+
+    return plot_results
