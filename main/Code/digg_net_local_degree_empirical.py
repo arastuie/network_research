@@ -49,7 +49,7 @@ for snap_index in range(len(orig_snaps) - 1):
 
             num_first_hop_nodes = nx.degree(ego_snaps[i], ego)
 
-            if len(formed_v_nodes) == 0 or not_formed_v_nodes == 0:
+            if len(formed_v_nodes) == 0 or len(not_formed_v_nodes) == 0:
                 continue
 
             for v in formed_v_nodes:
