@@ -5,7 +5,7 @@ import numpy as np
 import networkx as nx
 from datetime import datetime
 import matplotlib.pyplot as plt
-import Code.directed_graphs_helpers as dh
+import directed_graphs_helpers as dh
 from sklearn import metrics, preprocessing
 
 
@@ -555,6 +555,77 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node
             percent_dccn[k].append(sum(combo_scores_dccn_sorted[:k, -1]) / k)
 
     return percent_cclp, percent_dcaa, percent_car, percent_dccn
+
+
+def run_link_prediction_parallel(ego_snapshots, ego_node, top_k_values, snap_range, scores_list):
+    percent_scores = {}
+    for score in scores_list:
+        percent_scores[score] = {}
+        for k in top_k_values:
+            percent_scores[score][k] = []
+
+    for i in snap_range:
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) == 0:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            # adding node with no edge as tuple
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
+
+        # evaluating different link prediction methods
+        if 'cn' in percent_scores:
+            y_scores = common_neighbors_index(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
+
+        if 'aa' in percent_scores:
+            y_scores = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
+
+        if 'dccn' in percent_scores:
+            y_scores = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
+
+        if 'dcaa' in percent_scores:
+            y_scores = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dcaa'])
+
+        if 'car' in percent_scores:
+            y_scores = car(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
+
+        if 'cclp' in percent_scores:
+            y_scores = cclp(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
+
+    return percent_scores
+
+
+def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
+    index_of_top_k_scores = np.argsort(y_scores)[::-1][:top_k_values[-1]]
+    top_preds = y_true[index_of_top_k_scores]
+    for k in top_k_values:
+        percent_score[k].append(sum(top_preds[:k]) / k)
 
 
 def run_adamic_adar_on_ego_net_ranking_only_cclp_and_car(ego_snapshots, ego_node, top_k_values, snap_range):

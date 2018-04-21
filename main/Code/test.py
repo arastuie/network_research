@@ -3,6 +3,7 @@
 # import GSC.generalized_spectral_clustering as gsc
 # import numpy as np
 import pickle
+from multiprocessing import Pool
 # import gplus_hop_degree_directed_analysis as directed_analysis
 # from joblib import Parallel, delayed
 # import os
@@ -299,8 +300,20 @@ import pickle
 # uii = h
 # print("end")
 
+#
+# with open('/shared/Results/EgocentricLinkPrediction/main/empirical/digg/pickle-files/90-days-duration-results.pckle', 'rb') as f:
+#     results = pickle.load(f)
+#
+# print(results)
 
-with open('/shared/Results/EgocentricLinkPrediction/main/empirical/digg/pickle-files/90-days-duration-results.pckle', 'rb') as f:
-    results = pickle.load(f)
+def multi(var):
+    res = 0
+    for i in range(var):
+        res += i
 
-print(results)
+    return res
+
+if __name__ == "__main__":
+    pool = Pool(processes=5)
+    e = pool.map(multi, range(10, 10000))
+    print(e)
