@@ -45,8 +45,6 @@ if __name__ == '__main__':
     for snap_index in range(len(orig_snaps) - 1):
         nodes_in_snap = set(orig_snaps[snap_index].nodes())
         for node in nodes_in_snap:
-            if len(ego_nodes_for_lp) > 30000:
-                break
             if node not in added_nodes:
                 ego_nodes_for_lp.append((node, snap_index))
                 added_nodes.add(node)
