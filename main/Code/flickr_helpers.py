@@ -1,9 +1,10 @@
-import re
+import os
 import time
 import math
 import pickle
 import numpy as np
 import networkx as nx
+import directed_graphs_helpers as dh
 import matplotlib.pyplot as plt
 
 flickr_growth_file_path = '/shared/DataSets/FlickrGrowth/flickr-growth.txt'
@@ -56,5 +57,5 @@ def read_snapshot_pickle_file():
     with open('/shared/DataSets/FlickrGrowth/flickr_growth_snapshots.pckl', 'rb') as f:
         snap_graph = pickle.load(f)
 
-    print("Flickr pickle file in. Took {0:.2f}".format((time.time() - t0) / 60))
+    print("Flickr pickle file in. Took {0:.2f}min".format((time.time() - t0) / 60))
     return snap_graph

@@ -1,7 +1,7 @@
 # import networkx as nx
 # import helpers as h
 # import GSC.generalized_spectral_clustering as gsc
-# import numpy as np
+import numpy as np
 import pickle
 from multiprocessing import Pool
 # import gplus_hop_degree_directed_analysis as directed_analysis
@@ -9,6 +9,7 @@ from multiprocessing import Pool
 # import os
 # import sys
 # import directed_graphs_helpers as dh
+import digg_net_helpers as digg
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -305,15 +306,39 @@ from multiprocessing import Pool
 #     results = pickle.load(f)
 #
 # print(results)
+#
+# def multi(var):
+#     res = 0
+#     for i in range(var):
+#         res += i
+#
+#     return res
+#
+# if __name__ == "__main__":
+#     pool = Pool(processes=5)
+#     e = pool.map(multi, range(10, 10000))
+#     print(e)
+#
+# g = digg.read_graph()
+# s = digg.divide_to_snapshots(g, 90)
+#
+# print("nodes: ", g.number_of_nodes())
+# print("edges: ", g.number_of_edges())
+# print("\n snapshots \n")
+# for i in range(len(s)):
+#     print(i, " nodes: ", s[i].number_of_nodes(), "edges: ", s[i].number_of_edges())
+#
+# results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/pickle_files/'
+# scores_list = ['cn', 'aa', 'dccn', 'dcaa', 'car', 'cclp']
+# top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+# # Read in the results
+# with open('{0}/total-result.pckl'.format(results_path), 'rb') as f:
+#     percent_tests = pickle.load(f)
+#
+# print("\nResults:")
+# for score_type in scores_list:
+#     print(score_type, end=",")
+#     for k in top_k_values:
+#         print(np.mean(percent_tests[score_type][k]) * 100, end=',')
+#     print()
 
-def multi(var):
-    res = 0
-    for i in range(var):
-        res += i
-
-    return res
-
-if __name__ == "__main__":
-    pool = Pool(processes=5)
-    e = pool.map(multi, range(10, 10000))
-    print(e)

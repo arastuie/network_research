@@ -35,13 +35,13 @@ plt.rc('ytick', labelsize=14)
 
 fig, ax = plt.subplots()
 degrees = ['global-formed', 'global-not-formed', 'local-formed', 'local-not-formed']
-
-plt.bar(np.arange(4), [plot_results[x] for x in degrees],
-            bar_width,
-            alpha=opacity,
-            yerr=[plot_results['error'][x] for x in degrees],
-            error_kw=error_config,
-            label=degrees)
+print(plot_results)
+# plt.bar(np.arange(4), [plot_results[x] for x in degrees],
+#             bar_width,
+#             alpha=opacity,
+#             yerr=[plot_results['error'][x] for x in degrees],
+#             error_kw=error_config,
+#             label=degrees)
 
 # print(plot_results)
 # for i_bar in range(len(degrees)):
@@ -54,9 +54,9 @@ plt.bar(np.arange(4), [plot_results[x] for x in degrees],
 #             error_kw=error_config,
 #             label=bar_legends)
 
-plt.ylabel('Mean Normalized Degree', fontsize=25)
-# plt.xticks(np.arange(len(names)) + bar_width / 2, names)
-plt.legend(loc='upper left')
-
-plt.savefig('{0}/overall.pdf'.format(plot_path), format='pdf')
-plt.clf()
+# plt.ylabel('Mean Normalized Degree', fontsize=25)
+# # plt.xticks(np.arange(len(names)) + bar_width / 2, names)
+# plt.legend(loc='upper left')
+#
+# plt.savefig('{0}/overall.pdf'.format(plot_path), format='pdf')
+# plt.clf()
