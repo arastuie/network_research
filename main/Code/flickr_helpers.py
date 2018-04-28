@@ -7,7 +7,9 @@ import networkx as nx
 import directed_graphs_helpers as dh
 import matplotlib.pyplot as plt
 
-flickr_growth_file_path = '/shared/DataSets/FlickrGrowth/flickr-growth.txt'
+flickr_growth_file_path = '/shared/DataSets/FlickrGrowth/raw/flickr-growth.txt'
+flickr_growth_empirical_result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files/'
+flickr_growth_egonets_path = '/shared/DataSets/FlickrGrowth/egonets'
 
 
 def read_graph():
@@ -59,3 +61,42 @@ def read_snapshot_pickle_file():
 
     print("Flickr pickle file in. Took {0:.2f}min".format((time.time() - t0) / 60))
     return snap_graph
+
+
+def extract_ego_nets(n_egonets, max_n_nodes_in_egonet=100000):
+    # Read in the pickle file of the snapshot flickr graph
+    orig_snaps = read_snapshot_pickle_file()
+
+    # Choosing which random nodes to extract from the first hop
+    first_snap_nodes = list(orig_snaps[0].nodes())
+    n_egonets_to_be_chosen = len(first_snap_nodes)
+    if n_egonets > len(first_snap_nodes):
+        n_egonets = len(first_snap_nodes)
+        print("Not enough nodes to extract. Extracting {0} egonets...".format(n_egonets_to_be_chosen))
+    elif n_egonets * 2 < len(first_snap_nodes):
+        n_egonets_to_be_chosen = n_egonets * 2
+    # select n_egonets_to_be_chosen to make sure you get n_egonets with the max number of nodes will not
+    nodes_to_analyze = list(np.random.choice(first_snap_nodes, n_egonets_to_be_chosen))
+
+    print()
+    cnt = 0
+    n_egonets_extracted = 0
+    while n_egonets_extracted <= n_egonets and cnt < len(nodes_to_analyze):
+        ego_net_snapshots = []
+        for s in range(len(orig_snaps)):
+            print("I'm here")
+            ego_net_snapshots.append(nx.ego_graph(orig_snaps[s], nodes_to_analyze[cnt], radius=2, center=True,
+                                                  undirected=True))
+            print("but not here")
+            if s == 0 and nx.number_of_nodes(ego_net_snapshots[0]) > max_n_nodes_in_egonet:
+                cnt += 1
+                break
+
+        with open('{0}/{1}.pckl'.format(flickr_growth_egonets_path, nodes_to_analyze[cnt]), 'wb') as f:
+            pickle.dump(ego_net_snapshots, f, protocol=-1)
+
+        cnt += 1
+        n_egonets_extracted += 1
+        print("Progress: {0:2.2f}%".format(100 * n_egonets_extracted / n_egonets), end='\r')
+
+    return

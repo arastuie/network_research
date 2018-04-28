@@ -10,6 +10,7 @@ from multiprocessing import Pool
 # import sys
 # import directed_graphs_helpers as dh
 import digg_net_helpers as digg
+import flickr_helpers as flickr
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -342,3 +343,4 @@ import digg_net_helpers as digg
 #         print(np.mean(percent_tests[score_type][k]) * 100, end=',')
 #     print()
 
+flickr.extract_ego_nets(250000)
