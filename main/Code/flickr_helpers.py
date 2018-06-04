@@ -26,7 +26,6 @@ def read_graph():
 
             t = int(time.mktime(time.strptime(nums[2], "%Y-%m-%d")))
             flickr_net.add_edge(int(nums[0]), int(nums[1]), timestamp=t)
-
     print("Flickr network in. Took {0:.2f}min".format((time.time() - t0) / 60))
     return flickr_net
 
@@ -104,10 +103,10 @@ def extract_ego_nets(n_egonets, max_n_nodes_in_egonet=100000):
     return
 
 
-def create_gplus_multiple_egonets(n, batch_size):
+def create_gplus_multiple_egonets(n, batch_size, n_cores=10):
     print("Reading in Flickr data...")
 
-    with open('{0}/first_snap_nodes_list.pckl'.format(flickr_growth_egonets_path), 'rb') as f:
+    with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'rb') as f:
         all_nodes = pickle.load(f)
 
     ego_nodes = random.sample(all_nodes, n)
@@ -120,8 +119,9 @@ def create_gplus_multiple_egonets(n, batch_size):
 
     print("Selected {0} random nodes...".format(len(ego_nodes)))
 
-    Parallel(n_jobs=10)(delayed(read_multiple_ego_flickr_graphs)(ego_nodes[i * batch_size: i * batch_size + batch_size])
-                        for i in range(0, int(len(ego_nodes) / batch_size)))
+    Parallel(n_jobs=n_cores)(delayed(read_multiple_ego_flickr_graphs)
+                             (ego_nodes[i * batch_size: i * batch_size + batch_size])
+                             for i in range(0, int(len(ego_nodes) / batch_size)))
 
 
 def read_multiple_ego_flickr_graphs(ego_node_list):
@@ -149,10 +149,10 @@ def read_multiple_ego_flickr_graphs(ego_node_list):
                 t = int(time.mktime(time.strptime(nums[2], "%Y-%m-%d")))
 
                 if nums[0] in egonets:
-                    egonets[nums[0]].add_edge(nums[0], nums[1], snapshot=t)
+                    egonets[nums[0]].add_edge(nums[0], nums[1], timestamp=t)
 
                 if nums[1] in egonets:
-                    egonets[nums[1]].add_edge(nums[0], nums[1], snapshot=t)
+                    egonets[nums[1]].add_edge(nums[0], nums[1], timestamp=t)
 
     for ego_node in egonets:
         temp = list(egonets[ego_node].nodes)
@@ -177,12 +177,12 @@ def read_multiple_ego_flickr_graphs(ego_node_list):
                 if nums[0] in all_neighbors:
                     for ego_node in egonets:
                         if nums[0] in ego_neighbors[ego_node]:
-                            egonets[ego_node].add_edge(nums[0], nums[1], snapshot=t)
+                            egonets[ego_node].add_edge(nums[0], nums[1], timestamp=t)
 
                 if nums[1] in all_neighbors:
                     for ego_node in egonets:
                         if nums[1] in ego_neighbors[ego_node]:
-                            egonets[ego_node].add_edge(nums[0], nums[1], snapshot=t)
+                            egonets[ego_node].add_edge(nums[0], nums[1], timestamp=t)
 
     for ego_node in egonets:
         egonet_sanpshots = divide_to_snapshots(egonets[ego_node])

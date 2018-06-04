@@ -353,9 +353,11 @@ import flickr_helpers as flickr
 #         count += 1
 #
 # print(count)
+#
+# flickr_graph = flickr.read_snapshot_pickle_file()
+# first_snap = list(flickr_graph[0].nodes())
+#
+# with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'wb') as f:
+#     pickle.dump(first_snap, f, protocol=-1)
 
-flickr_graph = flickr.read_snapshot_pickle_file()
-first_snap = list(flickr_graph[0].nodes())
-
-with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'wb') as f:
-    pickle.dump(first_snap, f, protocol=-1)
+flickr.create_gplus_multiple_egonets(100000, 100, 20)
