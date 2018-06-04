@@ -2,8 +2,10 @@ import os
 import time
 import math
 import pickle
+import random
 import numpy as np
 import networkx as nx
+from joblib import Parallel, delayed
 import directed_graphs_helpers as dh
 import matplotlib.pyplot as plt
 
@@ -50,7 +52,7 @@ def divide_to_snapshots(graph):
 
     orig_snapshots.append(graph)
 
-    print("Snapshots extracted!")
+    # print("Snapshots extracted!")
     return orig_snapshots
 
 
@@ -100,3 +102,91 @@ def extract_ego_nets(n_egonets, max_n_nodes_in_egonet=100000):
         print("Progress: {0:2.2f}%".format(100 * n_egonets_extracted / n_egonets), end='\r')
 
     return
+
+
+def create_gplus_multiple_egonets(n, batch_size):
+    print("Reading in Flickr data...")
+
+    with open('{0}/first_snap_nodes_list.pckl'.format(flickr_growth_egonets_path), 'rb') as f:
+        all_nodes = pickle.load(f)
+
+    ego_nodes = random.sample(all_nodes, n)
+
+    for node in ego_nodes:
+        if os.path.isfile('{0}/{1}.pckl'.format(flickr_growth_egonets_path, node)):
+            ego_nodes.remove(node)
+
+    all_nodes = None
+
+    print("Selected {0} random nodes...".format(len(ego_nodes)))
+
+    Parallel(n_jobs=10)(delayed(read_multiple_ego_flickr_graphs)(ego_nodes[i * batch_size: i * batch_size + batch_size])
+                        for i in range(0, int(len(ego_nodes) / batch_size)))
+
+
+def read_multiple_ego_flickr_graphs(ego_node_list):
+    start_time = time.time()
+
+    egonets = {}
+    ego_neighbors = {}
+    all_neighbors = set()
+
+    for ego_node in ego_node_list:
+        egonets[ego_node] = nx.DiGraph()
+
+    with open(flickr_growth_file_path) as infile:
+        for l in infile:
+            nums = l.rstrip().split("\t")
+
+            # there is one self-loop in the network that should be removed
+            if nums[0] == nums[1]:
+                continue
+
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            if nums[0] in egonets or nums[1] in egonets:
+                t = int(time.mktime(time.strptime(nums[2], "%Y-%m-%d")))
+
+                if nums[0] in egonets:
+                    egonets[nums[0]].add_edge(nums[0], nums[1], snapshot=t)
+
+                if nums[1] in egonets:
+                    egonets[nums[1]].add_edge(nums[0], nums[1], snapshot=t)
+
+    for ego_node in egonets:
+        temp = list(egonets[ego_node].nodes)
+        temp.remove(ego_node)
+        ego_neighbors[ego_node] = set(temp)
+        all_neighbors = all_neighbors.union(temp)
+
+    with open(flickr_growth_file_path) as infile:
+        for l in infile:
+            nums = l.rstrip().split("\t")
+
+            # there is one self-loop in the network that should be removed
+            if nums[0] == nums[1]:
+                continue
+
+            nums[0] = int(nums[0])
+            nums[1] = int(nums[1])
+
+            if nums[0] in all_neighbors or nums[1] in all_neighbors:
+                t = int(time.mktime(time.strptime(nums[2], "%Y-%m-%d")))
+
+                if nums[0] in all_neighbors:
+                    for ego_node in egonets:
+                        if nums[0] in ego_neighbors[ego_node]:
+                            egonets[ego_node].add_edge(nums[0], nums[1], snapshot=t)
+
+                if nums[1] in all_neighbors:
+                    for ego_node in egonets:
+                        if nums[1] in ego_neighbors[ego_node]:
+                            egonets[ego_node].add_edge(nums[0], nums[1], snapshot=t)
+
+    for ego_node in egonets:
+        egonet_sanpshots = divide_to_snapshots(egonets[ego_node])
+        with open('{0}/{1}.pckl'.format(flickr_growth_egonets_path, ego_node), 'wb') as f:
+            pickle.dump([ego_node, egonet_sanpshots], f, protocol=-1)
+
+    print("Generating {0} ego-nets took {1} minutes.".format(len(ego_node_list), (time.time() - start_time) / 60))

@@ -1,4 +1,4 @@
-# import networkx as nx
+import networkx as nx
 # import helpers as h
 # import GSC.generalized_spectral_clustering as gsc
 import numpy as np
@@ -343,4 +343,19 @@ import flickr_helpers as flickr
 #         print(np.mean(percent_tests[score_type][k]) * 100, end=',')
 #     print()
 
-flickr.extract_ego_nets(250000)
+#flickr.extract_ego_nets(250000)
+
+# digg_graph = digg.read_graph_as_directed()
+# count = 0
+# print(digg_graph.number_of_edges())
+# for u, v in digg_graph.edges:
+#     if not digg_graph.has_edge(v, u):
+#         count += 1
+#
+# print(count)
+
+flickr_graph = flickr.read_snapshot_pickle_file()
+first_snap = list(flickr_graph[0].nodes())
+
+with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'wb') as f:
+    pickle.dump(first_snap, f, protocol=-1)

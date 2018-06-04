@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import digg_net_helpers as dh
+# import digg_net_helpers as dh
 
 plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/plots'
 path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/pickle-files'
@@ -17,11 +18,11 @@ bar_color = ['r', 'b']
 
 print("Reading Result file")
 
-with open('{0}/{1}'.format(path, '90-days-duration-results.pckle'), 'rb') as f:
+with open('{0}/{1}'.format(path, '90-days-duration-results-1.pckle'), 'rb') as f:
     all_results = pickle.load(f)
 
 print("Results in...")
-
+# dh.extract_empirical_overall_plotter_data_test(all_results)
 plot_results = dh.extract_empirical_overall_plotter_data(all_results, z)
 
 print("plot results extracted...")
