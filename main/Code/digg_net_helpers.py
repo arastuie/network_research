@@ -35,7 +35,7 @@ def read_graph_as_directed():
         for line in f:
             line = line.rstrip().replace('"', '').split(',')
 
-            # only use mutual friendships and with a valid timestamp and no self loops
+            # use only valid timestamp and no self loops
             if line[1] == "0" or line[2] == line[3]:
                 continue
 
