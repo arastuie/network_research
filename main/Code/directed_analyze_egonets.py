@@ -29,7 +29,7 @@ analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_result_path + '
 egonets_to_analyze = list(all_egonets - analyzed_egonets)
 np.random.shuffle(egonets_to_analyze)
 
-Parallel(n_jobs=6)(delayed(flickr.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
+Parallel(n_jobs=20)(delayed(flickr.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
 
 
 # Parallel(n_jobs=15)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types)(ego_net_file, top_k_values)

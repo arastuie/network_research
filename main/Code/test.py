@@ -344,18 +344,16 @@ import flickr_helpers as flickr
 #     print()
 
 #flickr.extract_ego_nets(250000)
+#
 
-digg_graph = digg.read_graph_as_directed()
-count = 0
-print(digg_graph.number_of_nodes())
-print(digg_graph.number_of_edges())
-nodes = list(digg_graph.nodes)
-for node in nodes:
-    if digg_graph.out_degree(node) == 0:
-        digg_graph.remove_node(node)
+# digg_graph = digg.read_graph_as_directed()
+# digg_snapshots = digg.divide_to_snapshots(digg_graph, 90)
+# print(len(digg_snapshots))
 
-print(digg_graph.number_of_nodes())
-print(digg_graph.number_of_edges())
+#
+# print(digg_snapshots[0].number_of_nodes())
+# print(digg_snapshots[0].number_of_edges())
+
 
 # print(count)
 # count = 0
@@ -373,3 +371,5 @@ print(digg_graph.number_of_edges())
 #     pickle.dump(first_snap, f, protocol=-1)
 
 # flickr.create_gplus_multiple_egonets(250000, 100, 20)
+
+digg.extract_all_egonets()

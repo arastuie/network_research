@@ -1,10 +1,15 @@
 import re
 import math
+import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
 
 digg_friends_file_path = '/shared/DataSets/Digg2009/raw/digg_friends.csv'
+digg_undirected_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/undirected'
+digg_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg'
+digg_egonets_file_path = '/shared/DataSets/Digg2009/egonets'
 
 
 def read_graph():
@@ -18,25 +23,6 @@ def read_graph():
 
             # only use mutual friendships and with a valid timestamp and no self loops
             if line[0] == "0" or line[1] == "0" or line[2] == line[3]:
-                continue
-
-            original_graph.add_edge(int(line[2]), int(line[3]), timestamp=int(line[1]))
-
-    print("Digg graph in.")
-    return original_graph
-
-
-def read_graph_as_directed():
-    print("Reading the original Digg graph...")
-
-    original_graph = nx.DiGraph()
-
-    with open(digg_friends_file_path, 'r') as f:
-        for line in f:
-            line = line.rstrip().replace('"', '').split(',')
-
-            # use only valid timestamp and no self loops
-            if line[1] == "0" or line[2] == line[3]:
                 continue
 
             original_graph.add_edge(int(line[2]), int(line[3]), timestamp=int(line[1]))
@@ -60,7 +46,7 @@ def get_first_and_last_timestamps(graph):
     return first_timestamp, last_timestamp
 
 
-def divide_to_snapshots(graph, length_of_snapshots_in_days):
+def divide_to_snapshots(graph, length_of_snapshots_in_days, directed=True):
     orig_snapshots = []
 
     first_timestamp, last_timestamp = get_first_and_last_timestamps(graph)
@@ -68,9 +54,14 @@ def divide_to_snapshots(graph, length_of_snapshots_in_days):
 
     num_of_snapshots = int(math.floor((last_timestamp - first_timestamp) / timestamp_duration))
 
-    for i in range(1, num_of_snapshots + 1):
-        orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in graph.edges(data=True)
-                                        if d['timestamp'] <= (first_timestamp + timestamp_duration * i)]))
+    if directed:
+        for i in range(1, num_of_snapshots + 1):
+            orig_snapshots.append(nx.DiGraph([(u, v, d) for u, v, d in graph.edges(data=True)
+                                              if d['timestamp'] <= (first_timestamp + timestamp_duration * i)]))
+    else:
+        for i in range(1, num_of_snapshots + 1):
+            orig_snapshots.append(nx.Graph([(u, v, d) for u, v, d in graph.edges(data=True)
+                                            if d['timestamp'] <= (first_timestamp + timestamp_duration * i)]))
 
     # check if any edge is left based on the snapshot numbers
     if (last_timestamp - first_timestamp) % timestamp_duration != 0:
@@ -221,3 +212,65 @@ def extract_empirical_overall_plotter_data_test(all_results):
     plt.ylabel("Local Degree")
     plt.legend(loc=2)
     plt.show()
+
+
+#################################
+####         Directed        ####
+#################################
+
+def read_graph_as_directed():
+    print("Reading the original directed Digg graph...")
+
+    original_graph = nx.DiGraph()
+
+    with open(digg_friends_file_path, 'r') as f:
+        for line in f:
+            line = line.rstrip().replace('"', '').split(',')
+
+            # use only valid timestamp and no self loops
+            if line[1] == "0" or line[2] == line[3]:
+                continue
+
+            # Ignore mutual friendship flag, if the other user is active, the friendship shows up again in the dataset.
+            # Else, the person will have an out-degree of zero and will be deleted.
+            original_graph.add_edge(int(line[2]), int(line[3]), timestamp=int(line[1]))
+
+    nodes = list(original_graph.nodes)
+    for node in nodes:
+        if original_graph.out_degree(node) == 0:
+            original_graph.remove_node(node)
+
+    print("Digg graph in.")
+    return original_graph
+
+
+def extract_all_egonets(snapshot_duration_in_days=90):
+    orig_snaps = divide_to_snapshots(read_graph_as_directed(), snapshot_duration_in_days)
+
+    extracted_nodes = set()
+
+    n = orig_snaps[len(orig_snaps) - 1].number_of_nodes()
+
+    print("Start extracting {} egonets...".format(n))
+
+    snaps_nodes = []
+    for snap_index in range(len(orig_snaps) - 1):
+        nodes_in_snap = set(orig_snaps[snap_index].nodes())
+        nodes_to_extract = nodes_in_snap - extracted_nodes
+        snaps_nodes.append(nodes_to_extract)
+        extracted_nodes = extracted_nodes.union(nodes_to_extract)
+
+    Parallel(n_jobs=15)(delayed(extract_egonets_from)(orig_snaps, node_list, snap_index) for snap_index, node_list in
+                        enumerate(snaps_nodes))
+
+
+def extract_egonets_from(orig_snaps, nodes_to_extract, snap_index):
+    for ego in nodes_to_extract:
+        ego_snaps = []
+        for i in range(snap_index, len(orig_snaps)):
+            ego_snaps.append(nx.ego_graph(orig_snaps[i], ego, radius=2, center=True, undirected=True))
+
+        with open('{}/{}.pckl'.format(digg_egonets_file_path, ego), 'wb') as f:
+            pickle.dump([ego, ego_snaps], f, protocol=-1)
+
+        print('{} egonet extracted!'.format(ego))
