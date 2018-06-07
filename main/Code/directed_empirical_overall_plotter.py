@@ -1,7 +1,7 @@
 import os
 import pickle
 import numpy as np
-import Code.helpers as h
+import helpers as h
 import matplotlib.pyplot as plt
 
 
@@ -113,11 +113,19 @@ def get_mean_ci(res, z_value):
 #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
 #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree, global-not-formed-out-degree
 
-triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/' \
-                        'test-2-no-least-num-nodes/'
-plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/cdf-plots'
 
+#### Google + ####
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/' \
+#                         'test-2-no-least-num-nodes/'
+# plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/cdf-plots'
+
+
+#### Flickr ####
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files/test1/'
+plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
+
+
+triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
 gl_labels = ['Local', 'Global']
 z = 1.96
 
@@ -213,5 +221,5 @@ for i_degree in range(2):
     if i_degree == 0:
         plt.ylim(ymax=.51)
     plt.tight_layout()
-    plt.savefig('{0}/overall-{1}-3.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
+    plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
     plt.clf()
