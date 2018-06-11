@@ -1562,8 +1562,9 @@ def car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z):
     return scores
 
 
+###### Directed LP on combined triads written for Digg and Flickr #######
 def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path):
-    startTime = datetime.now()
+    start_time = datetime.now()
 
     # return if the egonet is on the analyzed list
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
@@ -1581,7 +1582,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         for k in top_k_values:
             percent_scores[score][k] = []
 
-    with open(data_file_base_path + ego_net_file, 'rb') as f:
+    with open(data_file_base_path + '/' + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
     total_y_true = 0
@@ -1612,14 +1613,18 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
 
         total_y_true += np.sum(y_true)
 
-        lp_scores = all_directed_lp_indices_combined(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
 
-        lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
+        # getting scores for cn, dccn, aa, dcaa
+        lp_scores = aa_cn_dc_lp_scores_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        for s in lp_scores.keys():
+            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
-        for si in range(len(score_list)):
-            lp_score_sorted = lp_scores[lp_scores[:, si].argsort()[::-1]]
-            for k in top_k_values:
-                percent_scores[score_list[si]][k].append(sum(lp_score_sorted[:k, -1]) / k)
+        # getting scores for car and cclp
+        lp_scores = car_and_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes)
+        for s in lp_scores.keys():
+            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
     # skip if no snapshot returned a score
     if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
@@ -1632,8 +1637,83 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
             pickle.dump(percent_scores, f, protocol=-1)
 
         print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
-              .format(ego_net_file, datetime.now() - startTime, nx.number_of_nodes(ego_net), total_y_true))
+              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
 
     # save an empty file in analyzed_egonets to know which ones were analyzed
     with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
+
+
+def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
+
+    scores = {
+        'cn': [],
+        'dccn': [],
+        'aa': [],
+        'dcaa': []
+    }
+
+    for v_i in range(len(v_nodes_list)):
+        # cn score
+        scores['cn'].append(len(v_nodes_z[v_nodes_list[v_i]]))
+
+        temp_dccn = 0
+        temp_aa = 0
+        temp_dcaa = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+            # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+            z_global_degree = len(z_neighbors)
+
+            z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+            y = z_global_degree - z_local_degree
+
+            temp_dccn += math.log(z_local_degree + 2)
+            # temp_dccn += (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
+
+            temp_aa += 1 / math.log(z_global_degree)
+
+            z_local_degree += 1
+            temp_dcaa += 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+                                      (y * (z_global_degree / z_local_degree)))
+
+        scores['dccn'].append(temp_dccn)
+        scores['aa'].append(temp_aa)
+        scores['dcaa'].append(temp_dcaa)
+
+    return scores
+
+
+def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z):
+    # exact same as `car_and_cclp_directed_lp_indices_combined`, but this returns a dict instead
+
+    scores = {
+        'car': [],
+        'cclp': []
+    }
+
+    undirected_ego_net = ego_net.to_undirected()
+
+    for v_i in range(0, len(v_nodes_list)):
+        num_cn = len(v_nodes_z[v_nodes_list[v_i]])
+        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+
+        # car score
+        scores['car'].append(num_cn * lcl)
+
+        temp_cclp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            z_deg = undirected_ego_net.degree(z)
+            z_tri = nx.triangles(undirected_ego_net, z)
+
+            temp_cclp += z_tri / (z_deg * (z_deg - 1) / 2)
+
+        # cclp score
+        scores['cclp'].append(temp_cclp)
+
+    return scores

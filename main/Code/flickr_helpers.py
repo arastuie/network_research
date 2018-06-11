@@ -14,6 +14,7 @@ flickr_growth_empirical_result_path = '/shared/Results/EgocentricLinkPrediction/
                                       '/test1/'
 flickr_growth_egonets_path = '/shared/DataSets/FlickrGrowth/egonets'
 
+flickr_growth_lp_result_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/pickle-files/'
 
 def read_graph():
     flickr_net = nx.DiGraph()
