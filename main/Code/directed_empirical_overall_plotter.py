@@ -121,8 +121,13 @@ def get_mean_ci(res, z_value):
 
 
 #### Flickr ####
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files/test1/'
-plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files/test1/'
+# plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
+
+
+#### Digg ####
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
+plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/plots'
 
 
 triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']

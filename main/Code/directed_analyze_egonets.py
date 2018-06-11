@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 # import helpers as h
 import flickr_helpers as flickr
+import digg_net_helpers as digg
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 # import link_prediction_helpers as dh
@@ -22,14 +23,23 @@ from joblib import Parallel, delayed
 
 
 # Flickr Empirical Test
-temp_skipped_files = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/temp'
-all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
-analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_result_path + 'analyzed_egonets')).union(
-    os.listdir(flickr.flickr_growth_empirical_result_path + 'skipped_egonets'))
+# all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
+# analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_result_path + 'analyzed_egonets')).union(
+#     os.listdir(flickr.flickr_growth_empirical_result_path + 'skipped_egonets'))
+# egonets_to_analyze = list(all_egonets - analyzed_egonets)
+# np.random.shuffle(egonets_to_analyze)
+#
+# Parallel(n_jobs=20)(delayed(flickr.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
+
+
+# Digg Directed Empirical Test
+all_egonets = set(os.listdir(digg.digg_egonets_file_path))
+analyzed_egonets = set(os.listdir(digg.digg_results_file_path + 'analyzed_egonets')).union(
+    os.listdir(digg.digg_results_file_path + 'skipped_egonets'))
 egonets_to_analyze = list(all_egonets - analyzed_egonets)
 np.random.shuffle(egonets_to_analyze)
 
-Parallel(n_jobs=15)(delayed(flickr.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
+Parallel(n_jobs=17)(delayed(digg.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
 
 
 # Parallel(n_jobs=15)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types)(ego_net_file, top_k_values)

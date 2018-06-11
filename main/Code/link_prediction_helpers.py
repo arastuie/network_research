@@ -1372,7 +1372,7 @@ def run_link_prediction_comparison_on_directed_graph_combined_types(ego_net_file
 
         total_y_true += np.sum(y_true)
 
-        lp_scores = all_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes, first_hop_nodes)
+        lp_scores = all_directed_lp_indices_combined(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
 
         lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
 
@@ -1416,14 +1416,15 @@ def all_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z, first_hop
         for z in v_nodes_z[v_nodes_list[v_i]]:
             z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
 
+            # This should be the intersection of z_neighbors with the union of nodes in first and second hops
             z_global_degree = len(z_neighbors)
 
             z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
 
             y = z_global_degree - z_local_degree
 
-            # temp_dccn += math.log(z_local_degree + 2)
-            temp_dccn += (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
+            temp_dccn += math.log(z_local_degree + 2)
+            # temp_dccn += (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
 
             temp_aa += 1 / math.log(z_global_degree)
 
@@ -1559,3 +1560,80 @@ def car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z):
         scores[v_i, 1] = temp_cclp
 
     return scores
+
+
+def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path):
+    startTime = datetime.now()
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
+    score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
+    percent_scores = {}
+
+    for score in score_list:
+        percent_scores[score] = {}
+        for k in top_k_values:
+            percent_scores[score][k] = []
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net_snapshots = pickle.load(f)
+
+    total_y_true = 0
+
+    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
+    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
+    if num_nodes >= 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        first_hop_nodes, second_hop_nodes, v_nodes = dh.get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # continue of no edge was formed
+        if np.sum(y_true) == 0:
+            continue
+
+        total_y_true += np.sum(y_true)
+
+        lp_scores = all_directed_lp_indices_combined(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+
+        lp_scores = np.concatenate((lp_scores, np.array(y_true).reshape(-1, 1)), axis=1)
+
+        for si in range(len(score_list)):
+            lp_score_sorted = lp_scores[lp_scores[:, si].argsort()[::-1]]
+            for k in top_k_values:
+                percent_scores[score_list[si]][k].append(sum(lp_score_sorted[:k, -1]) / k)
+
+    # skip if no snapshot returned a score
+    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
+            for k in top_k_values:
+                percent_scores[s][k] = np.mean(percent_scores[s][k])
+
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
+              .format(ego_net_file, datetime.now() - startTime, nx.number_of_nodes(ego_net), total_y_true))
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
