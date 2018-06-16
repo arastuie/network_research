@@ -649,3 +649,398 @@ def batch(iterable, n=1):
     l = len(iterable)
     for ndx in range(0, l, n):
         yield iterable[ndx:min(ndx + n, l)]
+
+
+########## Links formed in triad ratio analysis ##############
+def get_t01_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego.intersection(predecessors_of_the_ego)
+
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t02_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego.intersection(predecessors_of_the_ego)
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)) - set(ego_net.predecessors(z))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t03_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego - predecessors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t04_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego - predecessors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)) - set(ego_net.predecessors(z)))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t05_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego.intersection(predecessors_of_the_ego)
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z)))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t06_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = successors_of_the_ego - predecessors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z)))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t07_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = predecessors_of_the_ego - successors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = set(ego_net.successors(z)).intersection(ego_net.predecessors(z))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t08_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = predecessors_of_the_ego - successors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.predecessors(z)) - set(ego_net.successors(z)))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def get_t09_type_second_hop_nodes(ego_net, ego_node):
+    successors_of_the_ego = set(ego_net.successors(ego_node))
+    predecessors_of_the_ego = set(ego_net.predecessors(ego_node))
+
+    first_hop_nodes = predecessors_of_the_ego - successors_of_the_ego
+    second_hop_nodes = set()
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)) - set(ego_net.predecessors(z)))
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+    # remove nodes in the second hop which are already in the first hop
+    second_hop_nodes = second_hop_nodes - first_hop_nodes
+
+    # remove all nodes in the second hop that have any edge with the ego
+    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove the ego node from the second hop
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return second_hop_nodes
+
+
+def gpus_empirical_triad_links_formed_ratio(ego_net_file):
+    data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+    result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/' \
+                            'pickle-files/'
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the currently being analyzed list
+    if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
+        return
+
+    with open(result_file_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    triangle_type_func = {
+        'T01': get_t01_type_nodes,
+        'T02': get_t02_type_nodes,
+        'T03': get_t03_type_nodes,
+        'T04': get_t04_type_nodes,
+        'T05': get_t05_type_nodes,
+        'T06': get_t06_type_nodes,
+        'T07': get_t07_type_nodes,
+        'T08': get_t08_type_nodes,
+        'T09': get_t09_type_nodes,
+    }
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net = pickle.load(f)
+
+    ego_net_snapshots = []
+
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if nx.number_of_nodes(ego_net) > 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+
+        return
+
+    results = {
+        'T01': {}, 'T02': {}, 'T03': {}, 'T04': {}, 'T05': {}, 'T06': {}, 'T07': {}, 'T08': {}, 'T09': {}
+    }
+
+    for t_type in results.keys():
+        results[t_type]['num_edges_formed'] = []
+        results[t_type]['num_nodes'] = []
+        results[t_type]['num_second_hop_nodes'] = []
+
+    for r in range(0, 4):
+        temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_net.edges(data=True) if d['snapshot'] <= r])
+        ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+    for i in range(len(ego_net_snapshots) - 1):
+        for triangle_type in triangle_type_func.keys():
+            first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i],
+                                                                                           ego_node)
+            v_nodes_list = list(v_nodes.keys())
+            num_edges_formed = 0
+
+            for v_i in range(0, len(v_nodes_list)):
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                    num_edges_formed += 1
+
+    for triangle_type in triangle_type_func.keys():
+        local_snapshots_formed_z_in_degree = []
+        local_snapshots_formed_z_out_degree = []
+        local_snapshots_not_formed_z_in_degree = []
+        local_snapshots_not_formed_z_out_degree = []
+
+        global_snapshots_formed_z_in_degree = []
+        global_snapshots_formed_z_out_degree = []
+        global_snapshots_not_formed_z_in_degree = []
+        global_snapshots_not_formed_z_out_degree = []
+
+        # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+        for i in range(len(ego_net_snapshots) - 1):
+            first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i], ego_node)
+
+            len_first_hop = len(first_hop_nodes)
+            tot_num_nodes = nx.number_of_nodes(ego_net_snapshots[i])
+
+
+
+            # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
+            has_any_formed = False
+            has_any_not_formed = False
+            for v in v_nodes:
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                    has_any_formed = True
+                else:
+                    has_any_not_formed = True
+
+                if has_any_formed and has_any_not_formed:
+                    break
+
+            if not has_any_formed or not has_any_not_formed:
+                continue
+
+            # ANALYSIS
+            local_formed_z_in_degree = []
+            local_formed_z_out_degree = []
+            local_not_formed_z_in_degree = []
+            local_not_formed_z_out_degree = []
+
+            global_formed_z_in_degree = []
+            global_formed_z_out_degree = []
+            global_not_formed_z_in_degree = []
+            global_not_formed_z_out_degree = []
+
+            for v in v_nodes:
+                local_temp_in_degree = []
+                local_temp_out_degree = []
+
+                global_temp_in_degree = []
+                global_temp_out_degree = []
+
+                for z in v_nodes[v]:
+                    z_preds = set(ego_net_snapshots[i].predecessors(z))
+                    z_succs = set(ego_net_snapshots[i].successors(z))
+
+                    local_temp_in_degree.append(len(z_preds.intersection(first_hop_nodes)))
+                    local_temp_out_degree.append(len(z_succs.intersection(first_hop_nodes)))
+
+                    global_temp_in_degree.append(len(z_preds))
+                    global_temp_out_degree.append(len(z_succs))
+
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                    local_formed_z_in_degree.append(np.mean(local_temp_in_degree))
+                    local_formed_z_out_degree.append(np.mean(local_temp_out_degree))
+
+                    global_formed_z_in_degree.append(np.mean(global_temp_in_degree))
+                    global_formed_z_out_degree.append(np.mean(global_temp_out_degree))
+                else:
+                    local_not_formed_z_in_degree.append(np.mean(local_temp_in_degree))
+                    local_not_formed_z_out_degree.append(np.mean(local_temp_out_degree))
+
+                    global_not_formed_z_in_degree.append(np.mean(global_temp_in_degree))
+                    global_not_formed_z_out_degree.append(np.mean(global_temp_out_degree))
+
+            # normalizing by the number of nodes in the first hop
+            local_snapshots_formed_z_in_degree.append(np.mean(local_formed_z_in_degree) / len_first_hop)
+            local_snapshots_formed_z_out_degree.append(np.mean(local_formed_z_out_degree) / len_first_hop)
+            local_snapshots_not_formed_z_in_degree.append(np.mean(local_not_formed_z_in_degree) / len_first_hop)
+            local_snapshots_not_formed_z_out_degree.append(np.mean(local_not_formed_z_out_degree) / len_first_hop)
+
+            # normalizing by the number of nodes in the entire snapshot
+            global_snapshots_formed_z_in_degree.append(np.mean(global_formed_z_in_degree) / tot_num_nodes)
+            global_snapshots_formed_z_out_degree.append(np.mean(global_formed_z_out_degree) / tot_num_nodes)
+            global_snapshots_not_formed_z_in_degree.append(np.mean(global_not_formed_z_in_degree) / tot_num_nodes)
+            global_snapshots_not_formed_z_out_degree.append(np.mean(global_not_formed_z_out_degree) / tot_num_nodes)
+
+        # Return if there was no V node found
+        if len(local_snapshots_formed_z_in_degree) == 0:
+            continue
+
+        with open(result_file_base_path + triangle_type + '/' + ego_net_file, 'wb') as f:
+            pickle.dump([np.mean(local_snapshots_formed_z_in_degree),
+                         np.mean(global_snapshots_formed_z_in_degree),
+                         np.mean(local_snapshots_formed_z_out_degree),
+                         np.mean(global_snapshots_formed_z_out_degree),
+                         np.mean(local_snapshots_not_formed_z_in_degree),
+                         np.mean(global_snapshots_not_formed_z_in_degree),
+                         np.mean(local_snapshots_not_formed_z_out_degree),
+                         np.mean(global_snapshots_not_formed_z_out_degree)], f, protocol=-1)
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    print("Analyzed ego net {0}".format(ego_net_file))
