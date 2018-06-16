@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 flickr_growth_file_path = '/shared/DataSets/FlickrGrowth/raw/flickr-growth.txt'
 flickr_growth_empirical_result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files' \
                                       '/test1/'
+flickr_growth_empirical_triad_ratio_result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/' \
+                                                  'triad-link-formed-ratio/pickle-files/'
 flickr_growth_egonets_path = '/shared/DataSets/FlickrGrowth/egonets'
-
 flickr_growth_lp_result_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/pickle-files/'
 
 def read_graph():

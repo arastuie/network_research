@@ -13,6 +13,7 @@ digg_undirected_results_file_path = '/shared/Results/EgocentricLinkPrediction/ma
 digg_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
 digg_egonets_file_path = '/shared/DataSets/Digg2009/egonets'
 
+digg_results_lp_file_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/pickle-files/'
 
 def read_graph():
     print("Reading the original Digg graph...")

@@ -917,14 +917,17 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
         return
 
     results = {
-        'T01': {}, 'T02': {}, 'T03': {}, 'T04': {}, 'T05': {}, 'T06': {}, 'T07': {}, 'T08': {}, 'T09': {},
-        'total_num_nodes': []
+        'T01': {}, 'T02': {}, 'T03': {}, 'T04': {}, 'T05': {}, 'T06': {}, 'T07': {}, 'T08': {}, 'T09': {}
     }
+
+    total_num_edges_formed = 0
 
     for t_type in results.keys():
         results[t_type]['num_edges_formed'] = []
         results[t_type]['num_nodes'] = []
         results[t_type]['num_second_hop_nodes'] = []
+
+    results['total_num_nodes'] = []
 
     for i in range(len(ego_net_snapshots) - 1):
         results['total_num_nodes'].append(ego_net_snapshots[i].number_of_nodes())
@@ -940,8 +943,11 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
             results[triangle_type]['num_nodes'].append(num_nodes)
             results[triangle_type]['num_second_hop_nodes'].append(len(second_hop_nodes))
 
-    with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
-        pickle.dump(results, f, protocol=-1)
+            total_num_edges_formed += num_edges_formed
+
+    if total_num_edges_formed > 0:
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(results, f, protocol=-1)
 
     # save an empty file in analyzed_egonets to know which ones were analyzed
     with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
