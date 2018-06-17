@@ -126,16 +126,33 @@ import directed_graphs_helpers as dgh
 #                    (ego_net_file, data_file_base_path, result_file_base_path)for ego_net_file in egonets_to_analyze)
 
 
-### Flickr Empirical Triad Links Formed Ratio Test
-egonets_path = flickr.flickr_growth_egonets_path + '/'
+# ### Flickr Empirical Triad Links Formed Ratio Test
+# egonets_path = flickr.flickr_growth_egonets_path + '/'
+# all_egonets = set(os.listdir(egonets_path))
+# analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_triad_ratio_result_path + 'analyzed_egonets')).union(
+#     os.listdir(flickr.flickr_growth_empirical_triad_ratio_result_path + 'skipped_egonets'))
+# egonets_to_analyze = list(all_egonets - analyzed_egonets)
+# np.random.shuffle(egonets_to_analyze)
+#
+# print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+#
+# Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
+#                     (ego_net_file, egonets_path, flickr.flickr_growth_empirical_triad_ratio_result_path)
+#                     for ego_net_file in egonets_to_analyze)
+
+
+
+### Digg Empirical Triad Links Formed Ratio Test
+egonets_path = digg.digg_egonets_file_path + '/'
+result_path = digg.digg_empirical_triad_ratio_result_path
+
 all_egonets = set(os.listdir(egonets_path))
-analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_triad_ratio_result_path + 'analyzed_egonets')).union(
-    os.listdir(flickr.flickr_growth_empirical_triad_ratio_result_path + 'skipped_egonets'))
+analyzed_egonets = set(os.listdir(result_path + 'analyzed_egonets')).union(os.listdir(result_path + 'skipped_egonets'))
 egonets_to_analyze = list(all_egonets - analyzed_egonets)
 np.random.shuffle(egonets_to_analyze)
 
 print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 
 Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
-                    (ego_net_file, egonets_path, flickr.flickr_growth_empirical_triad_ratio_result_path)
-                    for ego_net_file in egonets_to_analyze)
+                    (ego_net_file, egonets_path, result_path)for ego_net_file in egonets_to_analyze)
+

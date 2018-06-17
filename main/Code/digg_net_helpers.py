@@ -14,6 +14,9 @@ digg_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/empirica
 digg_egonets_file_path = '/shared/DataSets/Digg2009/egonets'
 
 digg_results_lp_file_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/pickle-files/'
+digg_empirical_triad_ratio_result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \
+                                              'triad-link-formed-ratio/pickle-files/'
+
 
 def read_graph():
     print("Reading the original Digg graph...")
