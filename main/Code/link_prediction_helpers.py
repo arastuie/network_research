@@ -1731,38 +1731,75 @@ def get_conf(list):
     return "{0}^{1}".format(round(m, 2), round(err, 2))
 
 
-def calculate_lp_perfomace(car, cclp, aa, dcaa, cn, dccn):
+def calculate_lp_performance(lp_results_base_file_path, gather_individual_lp_results=False):
     top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+
+    if gather_individual_lp_results:
+        car = {}
+        cclp = {}
+        aa = {}
+        dcaa = {}
+        cn = {}
+        dccn = {}
+
+        for k in top_k_values:
+            car[k] = []
+            cclp[k] = []
+            aa[k] = []
+            dcaa[k] = []
+            cn[k] = []
+            dccn[k] = []
+
+        # loading result data
+        for result_file in os.listdir(lp_results_base_file_path + 'results'):
+
+            with open(lp_results_base_file_path + 'results/' + result_file, 'rb') as f:
+                egonet_lp_results = pickle.load(f)
+
+            for k in top_k_values:
+                car[k].append(egonet_lp_results['car'][k])
+                cclp[k].append(egonet_lp_results['cclp'][k])
+                aa[k].append(egonet_lp_results['aa'][k])
+                dcaa[k].append(egonet_lp_results['dcaa'][k])
+                cn[k].append(egonet_lp_results['cn'][k])
+                dccn[k].append(egonet_lp_results['dccn'][k])
+
+        # Write data into a single file
+        with open(lp_results_base_file_path + "cumulated_results/all-6-methods-results.pckle", 'wb') as f:
+            pickle.dump([car, cclp, aa, dcaa, cn, dccn], f, protocol=-1)
+    else:
+        with open(lp_results_base_file_path + "cumulated_results/all-6-methods-results.pckle", 'rb') as f:
+            car, cclp, aa, dcaa, cn, dccn = pickle.load(f)
 
     print("Number of egonets analyzed: {0}".format(len(cn[top_k_values[0]])))
     print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 
     print("CAR& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(car[k]), end='& ')
+        print(get_conf(car[k]), end='&')
     print("")
 
     print("CCLP& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(cclp[k]), end='& ')
+        print(get_conf(cclp[k]), end='&')
     print("")
 
     print("CN& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(cn[k]), end='& ')
+        print(get_conf(cn[k]), end='&')
     print("")
 
-    print("DCCN& ", end=' \t')
+    print("LD-CN& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(dccn[k]), end='& ')
+        print(get_conf(dccn[k]), end='&')
     print("")
 
     print("AA& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(aa[k]), end='& ')
+        print(get_conf(aa[k]), end='&')
     print("")
 
-    print("DCAA& ", end=' \t')
+    print("LD-AA& ", end=' \t')
     for k in top_k_values:
-        print(get_conf(dcaa[k]), end='& ')
+        print(get_conf(dcaa[k]), end='&')
     print("")

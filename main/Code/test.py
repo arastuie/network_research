@@ -11,6 +11,7 @@ from multiprocessing import Pool
 import directed_graphs_helpers as dh
 import digg_net_helpers as digg
 import flickr_helpers as flickr
+import link_prediction_helpers as lph
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -374,6 +375,7 @@ import flickr_helpers as flickr
 
 # digg.extract_all_egonets()
 
-dh.read_ego_gplus_graph_by_batch_parallelizer(250, 5)
+# dh.read_ego_gplus_graph_by_batch_parallelizer(250, 5)
 
-# digg.get_lp_resutls(gather_individual_lp_results=True)
+lph.calculate_lp_performance(digg.digg_results_lp_file_path, gather_individual_lp_results=False)
+lph.calculate_lp_performance(flickr.flickr_growth_lp_result_path, gather_individual_lp_results=False)
