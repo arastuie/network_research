@@ -78,19 +78,19 @@ import directed_graphs_helpers as dgh
 # Parallel(n_jobs=6)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp)
 #                    (ego_net_file, top_k_values) for ego_net_file in left_files)
 
-### Flickr Link prediction
-# top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
-# all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
-# analyzed_egonets = set(os.listdir(flickr.flickr_growth_lp_result_path + 'analyzed_egonets')).union(
-#     os.listdir(flickr.flickr_growth_lp_result_path + 'skipped_egonets'))
-# egonets_to_analyze = list(all_egonets - analyzed_egonets)
-# np.random.shuffle(egonets_to_analyze)
-#
-# print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
-#
-# Parallel(n_jobs=4)(delayed(dh.run_directed_link_prediction)
-#                     (ego_net_file, top_k_values, flickr.flickr_growth_egonets_path, flickr.flickr_growth_lp_result_path)
-#                     for ego_net_file in egonets_to_analyze)
+## Flickr Link prediction
+top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
+analyzed_egonets = set(os.listdir(flickr.flickr_growth_lp_result_path + 'analyzed_egonets')).union(
+    os.listdir(flickr.flickr_growth_lp_result_path + 'skipped_egonets'))
+egonets_to_analyze = list(all_egonets - analyzed_egonets)
+np.random.shuffle(egonets_to_analyze)
+
+print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+
+Parallel(n_jobs=24)(delayed(dh.run_directed_link_prediction)
+                    (ego_net_file, top_k_values, flickr.flickr_growth_egonets_path, flickr.flickr_growth_lp_result_path)
+                    for ego_net_file in egonets_to_analyze)
 
 
 
@@ -104,7 +104,7 @@ import directed_graphs_helpers as dgh
 #
 # print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 #
-# Parallel(n_jobs=12)(delayed(dh.run_directed_link_prediction)
+# Parallel(n_jobs=24)(delayed(dh.run_directed_link_prediction)
 #                     (ego_net_file, top_k_values, digg.digg_egonets_file_path, digg.digg_results_lp_file_path)
 #                     for ego_net_file in egonets_to_analyze)
 
@@ -142,17 +142,17 @@ import directed_graphs_helpers as dgh
 
 
 
-### Digg Empirical Triad Links Formed Ratio Test
-egonets_path = digg.digg_egonets_file_path + '/'
-result_path = digg.digg_empirical_triad_ratio_result_path
-
-all_egonets = set(os.listdir(egonets_path))
-analyzed_egonets = set(os.listdir(result_path + 'analyzed_egonets')).union(os.listdir(result_path + 'skipped_egonets'))
-egonets_to_analyze = list(all_egonets - analyzed_egonets)
-np.random.shuffle(egonets_to_analyze)
-
-print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
-
-Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
-                    (ego_net_file, egonets_path, result_path)for ego_net_file in egonets_to_analyze)
+# ### Digg Empirical Triad Links Formed Ratio Test
+# egonets_path = digg.digg_egonets_file_path + '/'
+# result_path = digg.digg_empirical_triad_ratio_result_path
+#
+# all_egonets = set(os.listdir(egonets_path))
+# analyzed_egonets = set(os.listdir(result_path + 'analyzed_egonets')).union(os.listdir(result_path + 'skipped_egonets'))
+# egonets_to_analyze = list(all_egonets - analyzed_egonets)
+# np.random.shuffle(egonets_to_analyze)
+#
+# print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+#
+# Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
+#                     (ego_net_file, egonets_path, result_path)for ego_net_file in egonets_to_analyze)
 

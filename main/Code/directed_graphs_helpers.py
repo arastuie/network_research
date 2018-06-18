@@ -253,9 +253,15 @@ def read_ego_gplus_graph_by_batch(ego_nodes):
                         ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
 
     for ego_node in ego_dict:
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
+        ego_net_snapshots = []
+
+        for r in range(0, 4):
+            temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_dict[ego_node].edges(data=True) if d['snapshot'] <= r])
+            ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
+
+        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/{0}.pckle'.format(
                 ego_node), 'wb') as f:
-            pickle.dump([ego_node, ego_dict[ego_node]], f, protocol=-1)
+            pickle.dump([ego_node, ego_net_snapshots], f, protocol=-1)
 
     print("time -> {0} minutes".format((time.time() - start_time) / 60))
 
