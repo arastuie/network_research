@@ -8,7 +8,7 @@ from multiprocessing import Pool
 # from joblib import Parallel, delayed
 # import os
 # import sys
-# import directed_graphs_helpers as dh
+import directed_graphs_helpers as dh
 import digg_net_helpers as digg
 import flickr_helpers as flickr
 
@@ -372,4 +372,8 @@ import flickr_helpers as flickr
 
 # flickr.create_gplus_multiple_egonets(250000, 100, 20)
 
-digg.extract_all_egonets()
+# digg.extract_all_egonets()
+
+dh.read_ego_gplus_graph_by_batch_parallelizer(250, 5)
+
+# digg.get_lp_resutls(gather_individual_lp_results=True)

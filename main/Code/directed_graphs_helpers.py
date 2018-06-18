@@ -195,7 +195,7 @@ def read_ego_gplus_graph(ego_node):
     print("time -> {0} minutes".format((time.time() - start_time) / 60))
 
 
-def read_ego_gplus_graph_by_batch_parallelizer(batch_size):
+def read_ego_gplus_graph_by_batch_parallelizer(batch_size, n_process):
     print("Reading in Google+ data...")
 
     with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl',
@@ -204,14 +204,15 @@ def read_ego_gplus_graph_by_batch_parallelizer(batch_size):
 
     np.random.shuffle(all_nodes)
 
-    Parallel(n_jobs=5)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
+    Parallel(n_jobs=n_process)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
 
 
 def read_ego_gplus_graph_by_batch(ego_nodes):
     ego_dict = {}
     for ego_node in ego_nodes:
         # check if the egonet file already exists
-        if not os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node)):
+        if not os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/'
+                              '{0}.pckle'.format(ego_node)):
             ego_dict[ego_node] = nx.DiGraph()
 
     if len(ego_dict) == 0:
@@ -236,9 +237,9 @@ def read_ego_gplus_graph_by_batch(ego_nodes):
     all_neighbors = set()
 
     for ego_node in ego_dict:
-        neigh_temp = ego_dict[ego_node].nodes()
+        neigh_temp = set(ego_dict[ego_node].nodes())
         neigh_temp.remove(ego_node)
-        neigh_dict[ego_node] = set(neigh_temp)
+        neigh_dict[ego_node] = neigh_temp
         all_neighbors = all_neighbors.union(neigh_temp)
 
     with open(raw_gplus_path) as infile:

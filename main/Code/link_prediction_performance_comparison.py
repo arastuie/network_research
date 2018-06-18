@@ -246,7 +246,87 @@ def does_conf_overlap(base, update, k):
 # for k in top_k_values:
 #     does_conf_overlap(aa[k], dcaa[k], k)
 
-############### GOOGLE + w/ CAR and CCLP ####################
+# ############### GOOGLE + w/ CAR and CCLP ####################
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
+# plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots'
+# top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+#
+# car = {}
+# cclp = {}
+# aa = {}
+# dcaa = {}
+# cn = {}
+# dccn = {}
+#
+# both_result_directories = ['test-2/', 'test-3-car-cclp/']
+#
+# for k in top_k_values:
+#     car[k] = []
+#     cclp[k] = []
+#     aa[k] = []
+#     dcaa[k] = []
+#     cn[k] = []
+#     dccn[k] = []
+#
+# # loading result data
+# for result_file in os.listdir(result_file_base_path + both_result_directories[0] + 'results'):
+#
+#     with open(result_file_base_path + both_result_directories[1] + 'results/' + result_file, 'rb') as f:
+#         egonet_lp_results_car_cclp = pickle.load(f)
+#
+#     with open(result_file_base_path + both_result_directories[0] + 'results/' + result_file, 'rb') as f:
+#         egonet_lp_results_first_four = pickle.load(f)
+#
+#     for k in top_k_values:
+#         car[k].append(egonet_lp_results_car_cclp['car'][k])
+#         cclp[k].append(egonet_lp_results_car_cclp['cclp'][k])
+#         aa[k].append(egonet_lp_results_first_four['aa'][k])
+#         dcaa[k].append(egonet_lp_results_first_four['dcaa'][k])
+#         cn[k].append(egonet_lp_results_first_four['cn'][k])
+#         dccn[k].append(egonet_lp_results_first_four['dccn'][k])
+#
+# # Write data into a single file
+# with open(result_file_base_path + both_result_directories[0] + "all-6-methods-results.pckle", 'wb') as f:
+#     pickle.dump([car, cclp, aa, dcaa, cn, dccn], f, protocol=-1)
+#
+# print("Number of egonets analyzed: {0}".format(len(cn[k])))
+# print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+#
+# print("CAR& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(car[k]), end='& ')
+# print("")
+#
+# print("CCLP& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(cclp[k]), end='& ')
+# print("")
+#
+# print("CN& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(cn[k]), end='& ')
+# print("")
+#
+# print("DCCN& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(dccn[k]), end='& ')
+# print("")
+#
+# print("AA& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(aa[k]), end='& ')
+# print("")
+#
+# print("DCAA& ", end=' \t')
+# for k in top_k_values:
+#     print(get_conf(dcaa[k]), end='& ')
+# print("")
+
+
+
+
+
+############### Digg All LP Results ####################
 result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/'
 plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots'
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
@@ -289,7 +369,7 @@ for result_file in os.listdir(result_file_base_path + both_result_directories[0]
 with open(result_file_base_path + both_result_directories[0] + "all-6-methods-results.pckle", 'wb') as f:
     pickle.dump([car, cclp, aa, dcaa, cn, dccn], f, protocol=-1)
 
-print("Number of egonets analyzed: {0}".format(len(cn[k])))
+print("Number of egonets analyzed: {0}".format(len(cn[top_k_values[0]])))
 print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 
 print("CAR& ", end=' \t')

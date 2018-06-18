@@ -1717,3 +1717,52 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z):
         scores['cclp'].append(temp_cclp)
 
     return scores
+
+
+
+###### Calculating Performance #########
+def get_conf(list):
+    m = np.mean(list) * 100
+    err = 100 * np.std(list) / np.sqrt(len(list))
+
+    # up = round(m + err, 2)
+    # down = round(m - err, 2)
+    # return "({0}, {1})".format(down, up)
+    return "{0}^{1}".format(round(m, 2), round(err, 2))
+
+
+def calculate_lp_perfomace(car, cclp, aa, dcaa, cn, dccn):
+    top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+
+    print("Number of egonets analyzed: {0}".format(len(cn[top_k_values[0]])))
+    print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+
+    print("CAR& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(car[k]), end='& ')
+    print("")
+
+    print("CCLP& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(cclp[k]), end='& ')
+    print("")
+
+    print("CN& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(cn[k]), end='& ')
+    print("")
+
+    print("DCCN& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(dccn[k]), end='& ')
+    print("")
+
+    print("AA& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(aa[k]), end='& ')
+    print("")
+
+    print("DCAA& ", end=' \t')
+    for k in top_k_values:
+        print(get_conf(dcaa[k]), end='& ')
+    print("")
