@@ -375,7 +375,15 @@ import link_prediction_helpers as lph
 
 # digg.extract_all_egonets()
 
-# dh.read_ego_gplus_graph_by_batch_parallelizer(250, 5)
+# dh.read_ego_gplus_graph_by_batch_parallelizer(200, 5)
 
-lph.calculate_lp_performance(digg.digg_results_lp_file_path, gather_individual_lp_results=False)
-lph.calculate_lp_performance(flickr.flickr_growth_lp_result_path, gather_individual_lp_results=False)
+# lph.calculate_lp_performance(digg.digg_results_lp_file_path, gather_individual_lp_results=False)
+# lph.calculate_lp_performance(flickr.flickr_growth_lp_result_path, gather_individual_lp_results=False)
+
+dh.empirical_triad_list_formed_ratio_results_plot(digg.digg_empirical_triad_ratio_result_path,
+                                                  digg.digg_empirical_triad_ratio_result_plots_path,
+                                                  gather_individual_results=True)
+
+dh.empirical_triad_list_formed_ratio_results_plot(flickr.flickr_growth_empirical_triad_ratio_result_path,
+                                                  flickr.flickr_growth_empirical_triad_ratio_result_plot_path,
+                                                  gather_individual_results=True)

@@ -964,3 +964,90 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
     os.remove(result_file_base_path + 'temp-analyses-start/' + ego_net_file)
 
     print("Analyzed ego net {0}".format(ego_net_file))
+
+
+def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_save_path, gather_individual_results=False):
+    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+
+    if gather_individual_results:
+        fraction_of_all_formed_edges = {}
+        edge_probability = {}
+
+        for t in triangle_types:
+            fraction_of_all_formed_edges[t] = []
+            edge_probability[t] = []
+
+        for result_file in os.listdir(result_file_base_path + 'results'):
+            with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+                egonet_results = pickle.load(f)
+
+            temp_fraction = []
+
+            for t_type in triangle_types:
+                t_type_total_formed_edges = np.sum(egonet_results[t_type]['num_edges_formed'])
+                temp_fraction.append(t_type_total_formed_edges)
+
+                if egonet_results[t_type]['num_second_hop_nodes'][-1] != 0:
+                    edge_probability[t_type].append(t_type_total_formed_edges /
+                                                    egonet_results[t_type]['num_second_hop_nodes'][-1])
+                else:
+                    edge_probability[t_type].append(0)
+
+            total_links_formed = np.sum(temp_fraction)
+            temp_fraction = np.array(temp_fraction) / total_links_formed
+
+            for i, t_type in enumerate(triangle_types):
+                fraction_of_all_formed_edges[t_type].append(temp_fraction[i])
+
+        # Create directory if not exists
+        if not os.path.exists(result_file_base_path + "cumulated_results"):
+            os.makedirs(result_file_base_path + "cumulated_results")
+
+        # Write data into a single file for fraction of all edges
+        with open(result_file_base_path + "cumulated_results/fraction_of_all_formed_edges.pckle", 'wb') as f:
+            pickle.dump(fraction_of_all_formed_edges, f, protocol=-1)
+
+        # Write data into a single file for edge probability
+        with open(result_file_base_path + "cumulated_results/edge_probability.pckle", 'wb') as f:
+            pickle.dump(fraction_of_all_formed_edges, f, protocol=-1)
+    else:
+        with open(result_file_base_path + "cumulated_results/fraction_of_all_formed_edges.pckle", 'rb') as f:
+            fraction_of_all_formed_edges = pickle.load(f)
+
+        with open(result_file_base_path + "cumulated_results/edge_probability.pckle", 'rb') as f:
+            edge_probability = pickle.load(f)
+
+    plot_fraction_results = []
+    plot_edge_prob_results = []
+    for t_type in triangle_types:
+        plot_fraction_results.append(np.mean(fraction_of_all_formed_edges[t_type]))
+        plot_edge_prob_results.append(np.mean(edge_probability[t_type]))
+
+    # plotting the fraction of edges
+    plt.figure()
+    plt.rc('xtick', labelsize=17)
+    plt.rc('ytick', labelsize=17)
+    plt.plot(np.arange(1, len(triangle_types) + 1), plot_fraction_results, color='b', marker='o')
+
+    plt.ylabel('Fraction of All Edges', fontsize=22)
+    plt.xlabel('Triad Type', fontsize=22)
+    plt.tight_layout()
+    current_fig = plt.gcf()
+    plt.xticks(np.arange(1, len(triangle_types) + 1), triangle_types)
+    current_fig.savefig('{0}/triad_fraction_of_formed_edges.pdf'.format(plot_save_path), format='pdf')
+    plt.clf()
+
+    # plotting the edge probability
+    plt.figure()
+    plt.rc('xtick', labelsize=17)
+    plt.rc('ytick', labelsize=17)
+    plt.plot(np.arange(1, len(triangle_types) + 1), plot_edge_prob_results, color='b', marker='o')
+
+    plt.ylabel('Edge Probability', fontsize=22)
+    plt.xlabel('Triad Type', fontsize=22)
+    plt.tight_layout()
+    current_fig = plt.gcf()
+    plt.xticks(np.arange(1, len(triangle_types) + 1), triangle_types)
+    current_fig.savefig('{0}/triad_edge_probability.pdf'.format(plot_save_path), format='pdf')
+    plt.clf()
+
