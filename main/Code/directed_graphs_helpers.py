@@ -987,9 +987,9 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
                 t_type_total_formed_edges = np.sum(egonet_results[t_type]['num_edges_formed'])
                 temp_fraction.append(t_type_total_formed_edges)
 
-                if egonet_results[t_type]['num_second_hop_nodes'][-1] != 0:
-                    edge_probability[t_type].append(t_type_total_formed_edges /
-                                                    egonet_results[t_type]['num_second_hop_nodes'][-1])
+                t_type_total_num_second_hop_nodes = sum(egonet_results[t_type]['num_second_hop_nodes'])
+                if t_type_total_num_second_hop_nodes != 0:
+                    edge_probability[t_type].append(t_type_total_formed_edges / t_type_total_num_second_hop_nodes)
                 else:
                     edge_probability[t_type].append(0)
 
