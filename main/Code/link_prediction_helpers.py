@@ -1654,6 +1654,35 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
         'dcaa': []
     }
 
+    # a dict of info on z nodes. Every key points to a list [dccn, aa, dcaa]
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_info[z] = []
+
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # dccn
+        # temp_dccn = (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
+        z_info[z].append(math.log(z_local_degree + 2))
+
+        # aa
+        z_info[z].append(1 / math.log(z_global_degree))
+
+        # dcaa
+        z_local_degree += 1
+        dcaa = 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+                            (y * (z_global_degree / z_local_degree)))
+
+        z_info[z].append(dcaa)
+
     for v_i in range(len(v_nodes_list)):
         # cn score
         scores['cn'].append(len(v_nodes_z[v_nodes_list[v_i]]))
@@ -1663,23 +1692,9 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
         temp_dcaa = 0
 
         for z in v_nodes_z[v_nodes_list[v_i]]:
-            z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
-
-            # This should be the intersection of z_neighbors with the union of nodes in first and second hops
-            z_global_degree = len(z_neighbors)
-
-            z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
-
-            y = z_global_degree - z_local_degree
-
-            temp_dccn += math.log(z_local_degree + 2)
-            # temp_dccn += (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
-
-            temp_aa += 1 / math.log(z_global_degree)
-
-            z_local_degree += 1
-            temp_dcaa += 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
-                                      (y * (z_global_degree / z_local_degree)))
+            temp_dccn += z_info[z][0]
+            temp_aa += z_info[z][1]
+            temp_dcaa += z_info[z][2]
 
         scores['dccn'].append(temp_dccn)
         scores['aa'].append(temp_aa)
@@ -1688,7 +1703,7 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
     return scores
 
 
-def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z):
+def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     # exact same as `car_and_cclp_directed_lp_indices_combined`, but this returns a dict instead
 
     scores = {
@@ -1697,6 +1712,14 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z):
     }
 
     undirected_ego_net = ego_net.to_undirected()
+
+    z_cclp = {}
+
+    for z in first_hop_nodes:
+        z_deg = undirected_ego_net.degree(z)
+        z_tri = nx.triangles(undirected_ego_net, z)
+
+        z_cclp[z] = z_tri / (z_deg * (z_deg - 1) / 2)
 
     for v_i in range(0, len(v_nodes_list)):
         num_cn = len(v_nodes_z[v_nodes_list[v_i]])
@@ -1708,10 +1731,7 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z):
         temp_cclp = 0
 
         for z in v_nodes_z[v_nodes_list[v_i]]:
-            z_deg = undirected_ego_net.degree(z)
-            z_tri = nx.triangles(undirected_ego_net, z)
-
-            temp_cclp += z_tri / (z_deg * (z_deg - 1) / 2)
+            temp_cclp += z_cclp[z]
 
         # cclp score
         scores['cclp'].append(temp_cclp)
