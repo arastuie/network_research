@@ -1562,7 +1562,7 @@ def car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z):
     return scores
 
 
-###### Directed LP on combined triads written for Digg and Flickr #######
+###### Directed LP on combined triads Latest version #######
 def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path):
     start_time = datetime.now()
 
@@ -1622,7 +1622,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
             calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
         # getting scores for car and cclp
-        lp_scores = car_and_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes)
+        lp_scores = car_and_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
         for s in lp_scores.keys():
             calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
@@ -1658,8 +1658,6 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
     z_info = {}
 
     for z in first_hop_nodes:
-        z_info[z] = []
-
         z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
 
         # This should be the intersection of z_neighbors with the union of nodes in first and second hops
@@ -1669,6 +1667,11 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
 
         y = z_global_degree - z_local_degree
 
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_info[z] = []
         # dccn
         # temp_dccn = (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
         z_info[z].append(math.log(z_local_degree + 2))
@@ -1717,6 +1720,11 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
 
     for z in first_hop_nodes:
         z_deg = undirected_ego_net.degree(z)
+
+        # if z_deg = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if z_deg == 1:
+            continue
+
         z_tri = nx.triangles(undirected_ego_net, z)
 
         z_cclp[z] = z_tri / (z_deg * (z_deg - 1) / 2)
