@@ -981,23 +981,37 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
             with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
                 egonet_results = pickle.load(f)
 
-            temp_fraction = []
+            # Calculating fraction ratio
+            temp_snapshot_total_edges_formed = []
 
             for t_type in triangle_types:
-                t_type_total_formed_edges = np.sum(egonet_results[t_type]['num_edges_formed'])
-                temp_fraction.append(t_type_total_formed_edges)
+                temp_snapshot_total_edges_formed.append(egonet_results[t_type]['num_edges_formed'])
 
-                t_type_total_num_second_hop_nodes = sum(egonet_results[t_type]['num_second_hop_nodes'])
-                if t_type_total_num_second_hop_nodes != 0:
-                    edge_probability[t_type].append(t_type_total_formed_edges / t_type_total_num_second_hop_nodes)
-                else:
-                    edge_probability[t_type].append(0)
+            temp_snapshot_total_edges_formed = np.sum(temp_snapshot_total_edges_formed, axis=0)
 
-            total_links_formed = np.sum(temp_fraction)
-            temp_fraction = np.array(temp_fraction) / total_links_formed
+            for t_type in triangle_types:
+                temp_fraction = []
+                for i in range(len(egonet_results[t_type]['num_edges_formed'])):
+                    if temp_snapshot_total_edges_formed[i] != 0:
+                        temp_fraction.append(egonet_results[t_type]['num_edges_formed'][i] /
+                                             temp_snapshot_total_edges_formed[i])
+                    else:
+                        temp_fraction.append(0)
 
-            for i, t_type in enumerate(triangle_types):
-                fraction_of_all_formed_edges[t_type].append(temp_fraction[i])
+                fraction_of_all_formed_edges[t_type].append(np.mean(temp_fraction))
+
+
+            # Calculating edge probability
+            for t_type in triangle_types:
+                temp_prob = []
+                for i in range(len(egonet_results[t_type]['num_edges_formed'])):
+                    if egonet_results[t_type]['num_second_hop_nodes'][i] != 0:
+                        temp_prob.append(egonet_results[t_type]['num_edges_formed'][i] /
+                                         egonet_results[t_type]['num_second_hop_nodes'][i])
+                    else:
+                        temp_prob.append(0)
+
+                edge_probability[t_type].append(np.mean(temp_prob))
 
         # Create directory if not exists
         if not os.path.exists(result_file_base_path + "cumulated_results"):
@@ -1018,17 +1032,24 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
             edge_probability = pickle.load(f)
 
     plot_fraction_results = []
+    plot_fraction_results_err = []
     plot_edge_prob_results = []
+    plot_edge_prob_results_err = []
     for t_type in triangle_types:
         plot_fraction_results.append(np.mean(fraction_of_all_formed_edges[t_type]))
+        plot_fraction_results_err.append(np.std(fraction_of_all_formed_edges[t_type]) /
+                                         np.sqrt(len(fraction_of_all_formed_edges[t_type])))
+
         plot_edge_prob_results.append(np.mean(edge_probability[t_type]))
+        plot_edge_prob_results_err.append(np.std(edge_probability[t_type]) /
+                                          np.sqrt(len(edge_probability[t_type])))
 
     # plotting the fraction of edges
     plt.figure()
     plt.rc('xtick', labelsize=17)
     plt.rc('ytick', labelsize=17)
-    plt.plot(np.arange(1, len(triangle_types) + 1), plot_fraction_results, color='b', marker='o')
-
+    plt.errorbar(np.arange(1, len(triangle_types) + 1), plot_fraction_results, yerr=plot_fraction_results_err,
+                 color='b', fmt='--o')
     plt.ylabel('Fraction of All Edges', fontsize=22)
     plt.xlabel('Triad Type', fontsize=22)
     plt.tight_layout()
@@ -1041,7 +1062,8 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
     plt.figure()
     plt.rc('xtick', labelsize=17)
     plt.rc('ytick', labelsize=17)
-    plt.plot(np.arange(1, len(triangle_types) + 1), plot_edge_prob_results, color='b', marker='o')
+    plt.errorbar(np.arange(1, len(triangle_types) + 1), plot_edge_prob_results, yerr=plot_edge_prob_results_err,
+                 color='b', fmt='--o')
 
     plt.ylabel('Edge Probability', fontsize=22)
     plt.xlabel('Triad Type', fontsize=22)

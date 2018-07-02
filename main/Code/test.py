@@ -12,6 +12,7 @@ import directed_graphs_helpers as dh
 import digg_net_helpers as digg
 import flickr_helpers as flickr
 import link_prediction_helpers as lph
+import facebook_helpers as facebook
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -385,11 +386,69 @@ import link_prediction_helpers as lph
 # dh.empirical_triad_list_formed_ratio_results_plot(digg.digg_empirical_triad_ratio_result_path,
 #                                                   digg.digg_empirical_triad_ratio_result_plots_path,
 #                                                   gather_individual_results=True)
-#
+
 # dh.empirical_triad_list_formed_ratio_results_plot(flickr.flickr_growth_empirical_triad_ratio_result_path,
 #                                                   flickr.flickr_growth_empirical_triad_ratio_result_plot_path,
 #                                                   gather_individual_results=True)
+#
+# dh.empirical_triad_list_formed_ratio_results_plot('/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/pickle-files/',
+#                                                   '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/plots',
+#                                                   gather_individual_results=True)
 
-dh.empirical_triad_list_formed_ratio_results_plot('/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/pickle-files/',
-                                                  '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/plots',
-                                                  gather_individual_results=True)
+
+# import numpy as np
+# import glob
+# import pandas as pd
+#
+# filepath = "/shared/DataSets/Sussex_Huawei_Locomotion_Dataset/test/"
+#
+# print("****LOADING DATA****")
+#
+# for file in glob.glob(filepath + "*.txt"):
+#     print(file)
+#     data = pd.read_csv(file, sep=" ", header=None, dtype=np.float64)
+#     print(data.shape)
+#     #loaded_file = np.loadtxt(file, delimiter=' ')
+#
+#     data2 = data.as_matrix()
+#     data2 = data2[~pd.isnull(data2).any(axis=1)]
+#     print(data2.shape)
+#     print(np.argwhere(np.isnan(data2)))
+#     print("potato")
+#     break
+#     np.save(file=file[:len(file) - 4], arr=data2, allow_pickle=True)
+#
+# filepath = "/shared/DataSets/Sussex_Huawei_Locomotion_Dataset/train/"
+
+# with open('/shared/DataSets/Sussex_Huawei_Locomotion_Dataset/test/Pressure.txt', 'r') as f:
+#     cnt = 0
+#     for line in f:
+#         if cnt == 5355:
+#             line = line.split(' ')
+#             print(len(line))
+#             print(line[3402])
+#
+#         cnt += 1
+
+
+#for file in glob.glob(filepath + "*.txt"):
+#    print(file)
+#    loaded_file = np.loadtxt(file, delimiter=' ')
+#
+#    data = np.reshape(loaded_file, (16310, 6000))
+#
+#    np.save(file=file[:len(file) - 4], arr=data, allow_pickle=True)
+#
+#filepath = "/shared/DataSets/Sussex_Huawei_Locomotion_Dataset/labels/"
+#
+#for file in glob.glob(filepath + "*.txt"):
+#    print(file)
+#    loaded_file = np.loadtxt(file, delimiter=' ')
+#
+#    data = np.reshape(loaded_file, (16310, 6000))
+#
+#    np.save(file=file[:len(file) - 4], arr=data, allow_pickle=True)
+#
+
+g = facebook.read_graph()
+facebook.extract_all_ego_centric_networks_in_fb(g)

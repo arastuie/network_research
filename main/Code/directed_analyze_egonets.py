@@ -78,7 +78,7 @@ import directed_graphs_helpers as dgh
 # Parallel(n_jobs=6)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp)
 #                    (ego_net_file, top_k_values) for ego_net_file in left_files)
 
-## Flickr Link prediction
+# Flickr Link prediction
 # top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 # all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
 # analyzed_egonets = set(os.listdir(flickr.flickr_growth_lp_result_path + 'analyzed_egonets')).union(
@@ -88,7 +88,7 @@ import directed_graphs_helpers as dgh
 #
 # print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 #
-# Parallel(n_jobs=12)(delayed(dh.run_directed_link_prediction)
+# Parallel(n_jobs=24)(delayed(dh.run_directed_link_prediction)
 #                     (ego_net_file, top_k_values, flickr.flickr_growth_egonets_path, flickr.flickr_growth_lp_result_path)
 #                     for ego_net_file in egonets_to_analyze)
 
@@ -107,6 +107,23 @@ import directed_graphs_helpers as dgh
 # Parallel(n_jobs=24)(delayed(dh.run_directed_link_prediction)
 #                     (ego_net_file, top_k_values, digg.digg_egonets_file_path, digg.digg_results_lp_file_path)
 #                     for ego_net_file in egonets_to_analyze)
+
+
+# Google+ Link prediction
+gplus_egonet_files_path = "/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots"
+gplus_egonet_results_path = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files-1/"
+top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+all_egonets = set(os.listdir(gplus_egonet_files_path))
+analyzed_egonets = set(os.listdir(gplus_egonet_results_path + 'analyzed_egonets')).union(
+    os.listdir(gplus_egonet_results_path + 'skipped_egonets'))
+egonets_to_analyze = list(all_egonets - analyzed_egonets)
+np.random.shuffle(egonets_to_analyze)
+
+print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+
+Parallel(n_jobs=5)(delayed(dh.run_directed_link_prediction)
+                    (ego_net_file, top_k_values, gplus_egonet_files_path, gplus_egonet_results_path)
+                    for ego_net_file in egonets_to_analyze)
 
 
 # ### Google+ Empirical Triad Links Formed Ratio Test
@@ -158,15 +175,15 @@ import directed_graphs_helpers as dgh
 
 
 # ### Google+ Empirical Triad Links Formed Ratio Test
-egonets_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/'
-result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/pickle-files/'
-
-all_egonets = set(os.listdir(egonets_path))
-analyzed_egonets = set(os.listdir(result_path + 'analyzed_egonets')).union(os.listdir(result_path + 'skipped_egonets'))
-egonets_to_analyze = list(all_egonets - analyzed_egonets)
-np.random.shuffle(egonets_to_analyze)
-
-print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
-
-Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
-                    (ego_net_file, egonets_path, result_path)for ego_net_file in egonets_to_analyze)
+# egonets_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/'
+# result_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/triad-link-formed-ratio/pickle-files/'
+#
+# all_egonets = set(os.listdir(egonets_path))
+# analyzed_egonets = set(os.listdir(result_path + 'analyzed_egonets')).union(os.listdir(result_path + 'skipped_egonets'))
+# egonets_to_analyze = list(all_egonets - analyzed_egonets)
+# np.random.shuffle(egonets_to_analyze)
+#
+# print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+#
+# Parallel(n_jobs=12)(delayed(dgh.empirical_triad_links_formed_ratio)
+#                     (ego_net_file, egonets_path, result_path)for ego_net_file in egonets_to_analyze)
