@@ -11,7 +11,7 @@ import directed_graphs_helpers as dgh
 # ************************************************************************* #
 # ******************** Local Degree Empirical Analysis ******************** #
 # ************************************************************************* #
-def run_empirical_local_degree_parallel_analysis(egonet_files_path, results_base_path, num_process):
+def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base_path, num_process):
     all_egonets = set(os.listdir(egonet_files_path))
     analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
                                                                                                 'skipped_egonets'))
@@ -25,15 +25,15 @@ def run_empirical_local_degree_parallel_analysis(egonet_files_path, results_base
 
 
 # **** Google+ **** #
-run_empirical_local_degree_parallel_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 2)
+run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 2)
 
 
 # **** Flickr **** #
-# run_empirical_local_degree_parallel_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 20)
+# run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 20)
 
 
 # **** Digg **** #
-# run_empirical_local_degree_parallel_analysis(digg.egonet_files_path,
+# run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
 #                                              digg.directed_local_degree_empirical_results_path, 17)
 
 

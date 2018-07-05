@@ -134,56 +134,56 @@ def evaluate_prediction_result(y_true, y_scores, lp_result):
     return
 
 
-def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
-    scores = []
-
-    for u, v in non_edges:
-        first_hop_degrees = []
-        # other_degrees = []
-        common_neighbors = nx.common_neighbors(ego_net, u, v)
-        v_node_neighbors = set(nx.neighbors(ego_net, v))
-
-        for c in common_neighbors:
-            cn_neighbors = set(nx.neighbors(ego_net, c))
-            # x = len(cn_neighbors.intersection(first_hop_nodes))
-
-            # total degree
-            t = len(cn_neighbors)
-
-            # local degree
-            x = len(cn_neighbors.intersection(first_hop_nodes))
-
-            # total degree - local degree
-            y = t - x
-
-            if x == 0:
-                x = 1
-
-            # if y == 0:
-            #     y = 0.5
-
-            # score = (x ** 3 + y ** 3) / (x * y)
-            # print(x, y, len(cn_neighbors))
-            # if score <= 1:
-            #     print(score)
-
-            # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-
-            first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
-            # other_degrees.append(len(cn_neighbors))
-
-        # for i in range(len(first_hop_degrees)):
-        #     if first_hop_degrees[i] == 0:
-        #         first_hop_degrees[i] = 1.33
-        #     elif first_hop_degrees[i] == 1:
-        #         first_hop_degrees[i] = 1.66
-
-        # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
-        first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
-        # first_hop_degree_index = sum(first_hop_degrees)
-        scores.append(first_hop_degree_index)
-
-    return scores
+# def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
+#     scores = []
+# 
+#     for u, v in non_edges:
+#         first_hop_degrees = []
+#         # other_degrees = []
+#         common_neighbors = nx.common_neighbors(ego_net, u, v)
+#         v_node_neighbors = set(nx.neighbors(ego_net, v))
+# 
+#         for c in common_neighbors:
+#             cn_neighbors = set(nx.neighbors(ego_net, c))
+#             # x = len(cn_neighbors.intersection(first_hop_nodes))
+# 
+#             # total degree
+#             t = len(cn_neighbors)
+# 
+#             # local degree
+#             x = len(cn_neighbors.intersection(first_hop_nodes))
+# 
+#             # total degree - local degree
+#             y = t - x
+# 
+#             if x == 0:
+#                 x = 1
+# 
+#             # if y == 0:
+#             #     y = 0.5
+# 
+#             # score = (x ** 3 + y ** 3) / (x * y)
+#             # print(x, y, len(cn_neighbors))
+#             # if score <= 1:
+#             #     print(score)
+# 
+#             # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
+# 
+#             first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
+#             # other_degrees.append(len(cn_neighbors))
+# 
+#         # for i in range(len(first_hop_degrees)):
+#         #     if first_hop_degrees[i] == 0:
+#         #         first_hop_degrees[i] = 1.33
+#         #     elif first_hop_degrees[i] == 1:
+#         #         first_hop_degrees[i] = 1.66
+# 
+#         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
+#         first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
+#         # first_hop_degree_index = sum(first_hop_degrees)
+#         scores.append(first_hop_degree_index)
+# 
+#     return scores
 
 
 def lp_test_method(ego_net, non_edges, first_hop_nodes):
@@ -203,73 +203,73 @@ def lp_test_method(ego_net, non_edges, first_hop_nodes):
 
     return scores
 
+#
+# def cclp(ego_net, non_edges):
+#     scores = []
+#
+#     for u, v in non_edges:
+#         common_neighbors = nx.common_neighbors(ego_net, u, v)
+#         score = 0
+#
+#         for c in common_neighbors:
+#             c_tri = nx.triangles(ego_net, c)
+#             c_deg = ego_net.degree(c)
+#
+#             score += c_tri / (c_deg * (c_deg - 1) / 2)
+#
+#         scores.append(score)
+#
+#     return scores
+#
+#
+# def car(ego_net, non_edges):
+#     scores = []
+#
+#     for u, v in non_edges:
+#         common_neighbors = list(nx.common_neighbors(ego_net, u, v))
+#         cc_sub_g = ego_net.subgraph(common_neighbors)
+#
+#         scores.append(len(common_neighbors) * cc_sub_g.number_of_edges())
+#
+#     return scores
+#
 
-def cclp(ego_net, non_edges):
-    scores = []
-
-    for u, v in non_edges:
-        common_neighbors = nx.common_neighbors(ego_net, u, v)
-        score = 0
-
-        for c in common_neighbors:
-            c_tri = nx.triangles(ego_net, c)
-            c_deg = ego_net.degree(c)
-
-            score += c_tri / (c_deg * (c_deg - 1) / 2)
-
-        scores.append(score)
-
-    return scores
+# def common_neighbors_index(ego_net, non_edges):
+#     scores = []
+#
+#     for u, v in non_edges:
+#         scores.append(len(list(nx.common_neighbors(ego_net, u, v))))
+#
+#     return scores
 
 
-def car(ego_net, non_edges):
-    scores = []
-
-    for u, v in non_edges:
-        common_neighbors = list(nx.common_neighbors(ego_net, u, v))
-        cc_sub_g = ego_net.subgraph(common_neighbors)
-
-        scores.append(len(common_neighbors) * cc_sub_g.number_of_edges())
-
-    return scores
-
-
-def common_neighbors_index(ego_net, non_edges):
-    scores = []
-
-    for u, v in non_edges:
-        scores.append(len(list(nx.common_neighbors(ego_net, u, v))))
-
-    return scores
-
-
-def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes):
-    scores = []
-
-    for u, v in non_edges:
-        first_hop_degrees = []
-        common_neighbors = nx.common_neighbors(ego_net, u, v)
-        # v_node_neighbors = set(nx.neighbors(ego_net, v))
-
-        for c in common_neighbors:
-            cn_neighbors = set(nx.neighbors(ego_net, c))
-
-            # total degree
-            # t = len(cn_neighbors)
-
-            # local degree
-            x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
-
-            # # total degree - local degree
-            # y = t - x
-
-            first_hop_degrees.append(math.log(x))
-
-        first_hop_degree_index = sum(first_hop_degrees)
-
-        scores.append(first_hop_degree_index)
-
-    return scores
+# def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes):
+#     scores = []
+# 
+#     for u, v in non_edges:
+#         first_hop_degrees = []
+#         common_neighbors = nx.common_neighbors(ego_net, u, v)
+#         # v_node_neighbors = set(nx.neighbors(ego_net, v))
+# 
+#         for c in common_neighbors:
+#             cn_neighbors = set(nx.neighbors(ego_net, c))
+# 
+#             # total degree
+#             # t = len(cn_neighbors)
+# 
+#             # local degree
+#             x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+# 
+#             # # total degree - local degree
+#             # y = t - x
+# 
+#             first_hop_degrees.append(math.log(x))
+# 
+#         first_hop_degree_index = sum(first_hop_degrees)
+# 
+#         scores.append(first_hop_degree_index)
+# 
+#     return scores
 
 
 def degree_corrected_jaccard_coefficient_index(ego_net, non_edges, first_hop_nodes):
@@ -557,68 +557,68 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node
     return percent_cclp, percent_dcaa, percent_car, percent_dccn
 
 
-def run_link_prediction_parallel(ego_snapshots, ego_node, top_k_values, snap_range, scores_list):
-    percent_scores = {}
-    for score in scores_list:
-        percent_scores[score] = {}
-        for k in top_k_values:
-            percent_scores[score][k] = []
-
-    for i in snap_range:
-        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
-
-        if len(first_hop_nodes) == 0:
-            continue
-
-        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
-        second_hop_nodes.remove(ego_node)
-
-        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
-
-        if len(formed_nodes) == 0:
-            continue
-
-        non_edges = []
-        y_true = []
-
-        for n in second_hop_nodes:
-            # adding node with no edge as tuple
-            non_edges.append((ego_node, n))
-
-            if n in formed_nodes:
-                y_true.append(1)
-            else:
-                y_true.append(0)
-
-        # numpy array is needed for sorting purposes
-        y_true = np.array(y_true)
-
-        # evaluating different link prediction methods
-        if 'cn' in percent_scores:
-            y_scores = common_neighbors_index(ego_snapshots[i], non_edges)
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
-
-        if 'aa' in percent_scores:
-            y_scores = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
-
-        if 'dccn' in percent_scores:
-            y_scores = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
-
-        if 'dcaa' in percent_scores:
-            y_scores = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dcaa'])
-
-        if 'car' in percent_scores:
-            y_scores = car(ego_snapshots[i], non_edges)
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
-
-        if 'cclp' in percent_scores:
-            y_scores = cclp(ego_snapshots[i], non_edges)
-            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
-
-    return percent_scores
+# def run_link_prediction_parallel(ego_snapshots, ego_node, top_k_values, snap_range, scores_list):
+#     percent_scores = {}
+#     for score in scores_list:
+#         percent_scores[score] = {}
+#         for k in top_k_values:
+#             percent_scores[score][k] = []
+#
+#     for i in snap_range:
+#         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+#
+#         if len(first_hop_nodes) == 0:
+#             continue
+#
+#         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+#         second_hop_nodes.remove(ego_node)
+#
+#         formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+#
+#         if len(formed_nodes) == 0:
+#             continue
+#
+#         non_edges = []
+#         y_true = []
+#
+#         for n in second_hop_nodes:
+#             # adding node with no edge as tuple
+#             non_edges.append((ego_node, n))
+#
+#             if n in formed_nodes:
+#                 y_true.append(1)
+#             else:
+#                 y_true.append(0)
+#
+#         # numpy array is needed for sorting purposes
+#         y_true = np.array(y_true)
+#
+#         # evaluating different link prediction methods
+#         if 'cn' in percent_scores:
+#             y_scores = common_neighbors_index(ego_snapshots[i], non_edges)
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
+#
+#         if 'aa' in percent_scores:
+#             y_scores = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
+#
+#         if 'dccn' in percent_scores:
+#             y_scores = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
+#
+#         if 'dcaa' in percent_scores:
+#             y_scores = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dcaa'])
+#
+#         if 'car' in percent_scores:
+#             y_scores = car(ego_snapshots[i], non_edges)
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
+#
+#         if 'cclp' in percent_scores:
+#             y_scores = cclp(ego_snapshots[i], non_edges)
+#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
+#
+#     return percent_scores
 
 
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
