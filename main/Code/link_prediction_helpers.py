@@ -1582,7 +1582,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         for k in top_k_values:
             percent_scores[score][k] = []
 
-    with open(data_file_base_path + '/' + ego_net_file, 'rb') as f:
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
     total_y_true = 0

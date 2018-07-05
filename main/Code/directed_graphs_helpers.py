@@ -10,361 +10,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
-raw_gplus_path = "/shared/DataSets/GooglePlus_Gong2012/raw/imc12/direct_social_structure.txt"
-
-
-def read_entire_gplus_network():
-    gplus_net = nx.DiGraph()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            gplus_net.add_edge(int(nums[0]), int(nums[1]), snapshot=int(nums[2][0]))
-
-    input("G+ network in...")
-
-    return gplus_net
-
-
-def get_gplus_ego_from_graph():
-    gnet = nx.DiGraph()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            gnet.add_edge(int(nums[0]), int(nums[1]), snapshot=int(nums[2][0]))
-
-    input("G+ network in...")
-
-    print("here")
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
-        snap_0_nodes = pickle.load(f)
-
-    ego_nodes = snap_0_nodes[:len(snap_0_nodes) / 2]
-    # ego_nodes = snap_0_nodes[len(snap_0_nodes) / 2:]
-
-    print("start working..")
-    # Parallel(n_jobs=6)(delayed(gnet, gplus_get_egonet)(ego_node) for ego_node in ego_nodes)
-
-    ctr = 0
-    for ego_node in ego_nodes:
-
-        # check if the egonet file already exists
-        if os.path.isfile(
-                '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
-                        ego_node)):
-            return
-
-        # check if the egonet file already exists
-        if os.path.isfile(
-                '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
-                    ego_node)):
-            return
-
-        ego_net = nx.ego_graph(gnet, ego_node, radius=2, center=True, undirected=True)
-
-        print(type(ego_net))
-        print("num nodes: {0}".format(nx.number_of_nodes(ego_net)))
-        print("num edges: {0}".format(nx.number_of_edges(ego_net)))
-        print("Preds: ")
-        print(ego_net.predecessors(ego_node))
-        print("Successors: ")
-        print(ego_net.successors(ego_node))
-
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
-                ego_node), 'wb') as f:
-            pickle.dump([ego_node, ego_net], f, protocol=-1)
-
-        ctr += 1
-        print(ctr, end='\r')
-        return
-
-
-def gplus_get_egonet(gnet, ego_node):
-    print("Fetching an egonet...")
-
-    # check if the egonet file already exists
-    if os.path.isfile(
-            '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
-                ego_node)):
-        return
-
-    # check if the egonet file already exists
-    if os.path.isfile(
-            '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
-                ego_node)):
-        return
-
-    print("start ")
-    ego_net = nx.ego_graph(gnet, ego_node, radius=2, center=True, undirected=True)
-
-    print(type(ego_net))
-    print("num nodes: {0}".format(nx.number_of_nodes(ego_net)))
-    print("num edges: {0}".format(nx.number_of_edges(ego_net)))
-    print("Preds: ")
-    print(ego_net.predecessors(ego_node))
-    print("Successors: ")
-    print(ego_net.successors(ego_node))
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/new/{0}.pckle'.format(
-            ego_node), 'wb') as f:
-        pickle.dump([ego_node, ego_net], f, protocol=-1)
-
-    return
-
-
-def gplus_get_all_nodes_appeared_in_snapshot(snapshot):
-    nodes = set()
-
-    cnt = 0
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-
-            # if cnt % 100000 == 0:
-            #     print(cnt, end='\r')
-            # cnt += 1
-
-            nums = l.split(" ")
-            nums[2] = int(nums[2])
-            print(nums[2])
-            if nums[2] == snapshot:
-                nodes.update([int(nums[0]), int(nums[1])])
-                print("added")
-
-    node_list = list(nodes)
-    nodes = None
-
-    print('\nNumber of nodes in snapshot {0}: {1}'.format(snapshot, len(node_list)))
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-{0}-list.pckl'.format(
-            snapshot), 'wb') as f:
-        pickle.dump(node_list, f, protocol=-1)
-
-    return node_list
-
-
-def read_gplus_ego_graph():
-    print("Reading in Google+ data...")
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
-        all_nodes = pickle.load(f)
-
-    # ego_nodes = random.sample(all_nodes, n)
-    ego_nodes = all_nodes[:math.ceil(len(all_nodes) / 2)]
-    all_nodes = None
-
-    # print("Selected {0} random nodes...".format(n))
-
-    Parallel(n_jobs=6)(delayed(read_ego_gplus_graph)(ego_node) for ego_node in ego_nodes)
-
-
-def read_ego_gplus_graph(ego_node):
-    # check if the egonet file already exists
-    if os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
-            ego_node)):
-        return
-    start_time = time.time()
-    ego_net = nx.DiGraph()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if ego_node == nums[0] or ego_node == nums[1]:
-                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    neighbors = ego_net.nodes()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in neighbors or nums[1] in neighbors:
-                ego_net.add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(ego_node),
-              'wb') as f:
-        pickle.dump([ego_node, ego_net], f, protocol=-1)
-
-    print("network in! with {0} nodes and {1} edges.".format(len(ego_net.nodes()), len(ego_net.edges())))
-    print("time -> {0} minutes".format((time.time() - start_time) / 60))
-
-
-def read_ego_gplus_graph_by_batch_parallelizer(batch_size, n_process):
-    print("Reading in Google+ data...")
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl',
-              'rb') as f:
-        all_nodes = pickle.load(f)
-
-    np.random.shuffle(all_nodes)
-
-    Parallel(n_jobs=n_process)(delayed(read_ego_gplus_graph_by_batch)(ego_batch) for ego_batch in batch(all_nodes, batch_size))
-
-
-def read_ego_gplus_graph_by_batch(ego_nodes):
-    ego_dict = {}
-    for ego_node in ego_nodes:
-        # check if the egonet file already exists
-        if not os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/'
-                              '{0}.pckle'.format(ego_node)):
-            ego_dict[ego_node] = nx.DiGraph()
-
-    if len(ego_dict) == 0:
-        return
-
-    print("Start reading in the file for {0} nodes...".format(len(ego_dict)))
-    start_time = time.time()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in ego_dict:
-                ego_dict[nums[0]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-            if nums[1] in ego_dict:
-                ego_dict[nums[1]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    neigh_dict = {}
-    all_neighbors = set()
-
-    for ego_node in ego_dict:
-        neigh_temp = set(ego_dict[ego_node].nodes())
-        neigh_temp.remove(ego_node)
-        neigh_dict[ego_node] = neigh_temp
-        all_neighbors = all_neighbors.union(neigh_temp)
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in all_neighbors or nums[1] in all_neighbors:
-                for ego_node in ego_dict:
-                    if nums[0] in neigh_dict[ego_node] or nums[1] in neigh_dict[ego_node]:
-                        ego_dict[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    for ego_node in ego_dict:
-        ego_net_snapshots = []
-
-        for r in range(0, 4):
-            temp_net = nx.DiGraph([(u, v, d) for u, v, d in ego_dict[ego_node].edges(data=True) if d['snapshot'] <= r])
-            ego_net_snapshots.append(nx.ego_graph(temp_net, ego_node, radius=2, center=True, undirected=True))
-
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/{0}.pckle'.format(
-                ego_node), 'wb') as f:
-            pickle.dump([ego_node, ego_net_snapshots], f, protocol=-1)
-
-    print("time -> {0} minutes".format((time.time() - start_time) / 60))
-
-
-def create_gplus_multiple_egonets(n, batch_size):
-    print("Reading in Google+ data...")
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/gplus-nodes-snap-0-list.pckl', 'rb') as f:
-        all_nodes = pickle.load(f)
-
-    ego_nodes = random.sample(all_nodes, n)
-
-    for node in ego_nodes:
-        if os.path.isfile('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(node)):
-            ego_nodes.remove(node)
-
-    all_nodes = None
-
-    print("Selected {0} random nodes...".format(len(ego_nodes)))
-
-    Parallel(n_jobs=10)(delayed(read_multiple_ego_gplus_graphs)(ego_nodes[i * batch_size: i * batch_size + batch_size])
-                        for i in range(0, int(len(ego_nodes) / batch_size)))
-
-
-def read_multiple_ego_gplus_graphs(ego_node_list):
-    start_time = time.time()
-
-    egonets = {}
-    ego_neighbors = {}
-    all_neighbors = set()
-
-    for ego_node in ego_node_list:
-        egonets[ego_node] = nx.DiGraph()
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in egonets:
-                egonets[nums[0]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-            if nums[1] in egonets:
-                egonets[nums[1]].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    for ego_node in egonets:
-        temp = egonets[ego_node].nodes()
-        temp.remove(ego_node)
-        ego_neighbors[ego_node] = set(temp)
-        all_neighbors = all_neighbors.union(temp)
-
-    with open(raw_gplus_path) as infile:
-        for l in infile:
-            nums = l.split(" ")
-            nums[0] = int(nums[0])
-            nums[1] = int(nums[1])
-
-            if nums[0] in all_neighbors:
-                for ego_node in egonets:
-                    if nums[0] in ego_neighbors[ego_node]:
-                        egonets[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-            if nums[1] in all_neighbors:
-                for ego_node in egonets:
-                    if nums[1] in ego_neighbors[ego_node]:
-                        egonets[ego_node].add_edge(nums[0], nums[1], snapshot=int(nums[2][0]))
-
-    for ego_node in egonets:
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/{0}.pckle'.format(
-                ego_node), 'wb') as f:
-            pickle.dump([ego_node, egonets[ego_node]], f, protocol=-1)
-
-        print("ego node {0} has {1} nodes and {2} edges.".format(ego_node, nx.number_of_nodes(egonets[ego_node]),
-                                                                 nx.number_of_edges(egonets[ego_node])))
-
-    print("Generating {0} ego-nets took {1} minutes.".format(len(ego_node_list), (time.time() - start_time) / 60))
-
-
-def read_ego_gplus_pickle(ego_node):
-    pickle_files = ['gplus-edges-snap-0-list.pckl', 'gplus-edges-snap-1-list.pckl', 'gplus-edges-snap-2-list.pckl',
-                    'gplus-edges-snap-3-list.pckl']
-
-    ego_net = nx.DiGraph()
-
-    for i in range(4):
-        with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/%s' % pickle_files[i], 'rb') as f:
-            snapshot_edges = pickle.load(f)
-
-        for u, v, attr in snapshot_edges:
-            if u == ego_node or v == ego_node:
-                ego_net.add_edge(u, v, attr)
-
-        neighbors = ego_net.nodes()
-
-        for u, v, attr in snapshot_edges:
-            if u in neighbors or v in neighbors:
-                ego_net.add_edge(u, v, attr)
-
-    with open('/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/{0}.pckle'.format(ego_node), 'wb') as f:
-        pickle.dump([ego_node, ego_net], f, protocol=-1)
-
 
 def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed, overall_mean_not_formed,
                        save_plot=False, save_path=''):
@@ -410,6 +55,31 @@ def plot_formed_vs_not(formed, not_formed, xlabel, subtitle, overall_mean_formed
         current_fig.savefig(save_path)
 
     plt.close(fig)
+
+
+########## Local degree empirical analysis ##############
+def get_combined_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if v == ego_node or ego_net.has_edge(ego_node, v):
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
 def get_t01_type_nodes(ego_net, ego_node):
@@ -628,34 +298,162 @@ def get_t09_type_nodes(ego_net, ego_node):
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
-def get_combined_type_nodes(ego_net, ego_node):
-    first_hop_nodes = set(ego_net.successors(ego_node))
-    second_hop_nodes = set()
+def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path):
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(results_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
 
-    v_nodes = {}
+    # return if the egonet is on the skipped list
+    if os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
-    for z in first_hop_nodes:
-        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
-        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+    # return if the egonet is on the currently being analyzed list
+    if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
+        return
 
-        for v in temp_v_nodes:
-            if v == ego_node or ego_net.has_edge(ego_node, v):
+    with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    triangle_type_func = {
+        'T01': get_t01_type_nodes,
+        'T02': get_t02_type_nodes,
+        'T03': get_t03_type_nodes,
+        'T04': get_t04_type_nodes,
+        'T05': get_t05_type_nodes,
+        'T06': get_t06_type_nodes,
+        'T07': get_t07_type_nodes,
+        'T08': get_t08_type_nodes,
+        'T09': get_t09_type_nodes,
+    }
+
+    with open(egonet_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net_snapshots = pickle.load(f)
+
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
+        with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+
+        return
+
+    for triangle_type in triangle_type_func.keys():
+        local_snapshots_formed_z_in_degree = []
+        local_snapshots_formed_z_out_degree = []
+        local_snapshots_not_formed_z_in_degree = []
+        local_snapshots_not_formed_z_out_degree = []
+
+        global_snapshots_formed_z_in_degree = []
+        global_snapshots_formed_z_out_degree = []
+        global_snapshots_not_formed_z_in_degree = []
+        global_snapshots_not_formed_z_out_degree = []
+
+        # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+        for i in range(len(ego_net_snapshots) - 1):
+            first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i],
+                                                                                           ego_node)
+
+            len_first_hop = len(first_hop_nodes)
+            tot_num_nodes = nx.number_of_nodes(ego_net_snapshots[i])
+
+            # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
+            has_any_formed = False
+            has_any_not_formed = False
+            for v in v_nodes:
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                    has_any_formed = True
+                else:
+                    has_any_not_formed = True
+
+                if has_any_formed and has_any_not_formed:
+                    break
+
+            if not has_any_formed or not has_any_not_formed:
                 continue
-            if v not in v_nodes:
-                v_nodes[v] = [z]
-            else:
-                v_nodes[v].append(z)
 
-    if ego_node in second_hop_nodes:
-        second_hop_nodes.remove(ego_node)
+            # dict of lists -> z: [local_in, local_out, global_in, global_out]
+            z_degree_info = {}
 
-    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+            for z in first_hop_nodes:
+                z_preds = set(ego_net_snapshots[i].predecessors(z))
+                z_succs = set(ego_net_snapshots[i].successors(z))
 
+                z_degree_info[z] = [len(z_preds.intersection(first_hop_nodes)),
+                                    len(z_succs.intersection(first_hop_nodes)),
+                                    len(z_preds),
+                                    len(z_succs)]
 
-def batch(iterable, n=1):
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx:min(ndx + n, l)]
+            # ANALYSIS
+            local_formed_z_in_degree = []
+            local_formed_z_out_degree = []
+            local_not_formed_z_in_degree = []
+            local_not_formed_z_out_degree = []
+
+            global_formed_z_in_degree = []
+            global_formed_z_out_degree = []
+            global_not_formed_z_in_degree = []
+            global_not_formed_z_out_degree = []
+
+            for v in v_nodes:
+                local_temp_in_degree = []
+                local_temp_out_degree = []
+
+                global_temp_in_degree = []
+                global_temp_out_degree = []
+
+                for z in v_nodes[v]:
+                    local_temp_in_degree.append(z_degree_info[z][0])
+                    local_temp_out_degree.append(z_degree_info[z][1])
+                    global_temp_in_degree.append(z_degree_info[z][2])
+                    global_temp_out_degree.append(z_degree_info[z][3])
+
+                if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                    local_formed_z_in_degree.append(np.mean(local_temp_in_degree))
+                    local_formed_z_out_degree.append(np.mean(local_temp_out_degree))
+
+                    global_formed_z_in_degree.append(np.mean(global_temp_in_degree))
+                    global_formed_z_out_degree.append(np.mean(global_temp_out_degree))
+
+                else:
+                    local_not_formed_z_in_degree.append(np.mean(local_temp_in_degree))
+                    local_not_formed_z_out_degree.append(np.mean(local_temp_out_degree))
+
+                    global_not_formed_z_in_degree.append(np.mean(global_temp_in_degree))
+                    global_not_formed_z_out_degree.append(np.mean(global_temp_out_degree))
+
+            # normalizing by the number of nodes in the first hop
+            local_snapshots_formed_z_in_degree.append(np.mean(local_formed_z_in_degree) / len_first_hop)
+            local_snapshots_formed_z_out_degree.append(np.mean(local_formed_z_out_degree) / len_first_hop)
+            local_snapshots_not_formed_z_in_degree.append(np.mean(local_not_formed_z_in_degree) / len_first_hop)
+            local_snapshots_not_formed_z_out_degree.append(np.mean(local_not_formed_z_out_degree) / len_first_hop)
+
+            # normalizing by the number of nodes in the entire snapshot
+            global_snapshots_formed_z_in_degree.append(np.mean(global_formed_z_in_degree) / tot_num_nodes)
+            global_snapshots_formed_z_out_degree.append(np.mean(global_formed_z_out_degree) / tot_num_nodes)
+            global_snapshots_not_formed_z_in_degree.append(np.mean(global_not_formed_z_in_degree) / tot_num_nodes)
+            global_snapshots_not_formed_z_out_degree.append(np.mean(global_not_formed_z_out_degree) / tot_num_nodes)
+
+        # Return if there was no V node found
+        if len(local_snapshots_formed_z_in_degree) == 0:
+            continue
+
+        with open(results_base_path + triangle_type + '/' + ego_net_file, 'wb') as f:
+            pickle.dump([np.mean(local_snapshots_formed_z_in_degree),
+                         np.mean(global_snapshots_formed_z_in_degree),
+                         np.mean(local_snapshots_formed_z_out_degree),
+                         np.mean(global_snapshots_formed_z_out_degree),
+                         np.mean(local_snapshots_not_formed_z_in_degree),
+                         np.mean(global_snapshots_not_formed_z_in_degree),
+                         np.mean(local_snapshots_not_formed_z_out_degree),
+                         np.mean(global_snapshots_not_formed_z_out_degree)], f, protocol=-1)
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(results_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+    # remove temp analyze file
+    os.remove(results_base_path + 'temp-analyses-start/' + ego_net_file)
+
+    print("Analyzed ego net {0}".format(ego_net_file))
 
 
 ########## Links formed in triad ratio analysis ##############
@@ -1055,7 +853,7 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
     plt.tight_layout()
     current_fig = plt.gcf()
     plt.xticks(np.arange(1, len(triangle_types) + 1), triangle_types)
-    current_fig.savefig('{0}/triad_fraction_of_formed_edges.pdf'.format(plot_save_path), format='pdf')
+    current_fig.savefig('{0}triad_fraction_of_formed_edges.pdf'.format(plot_save_path), format='pdf')
     plt.clf()
 
     # plotting the edge probability
@@ -1070,6 +868,6 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
     plt.tight_layout()
     current_fig = plt.gcf()
     plt.xticks(np.arange(1, len(triangle_types) + 1), triangle_types)
-    current_fig.savefig('{0}/triad_edge_probability.pdf'.format(plot_save_path), format='pdf')
+    current_fig.savefig('{0}triad_edge_probability.pdf'.format(plot_save_path), format='pdf')
     plt.clf()
 

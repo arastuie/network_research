@@ -9,10 +9,18 @@ from joblib import Parallel, delayed
 
 dataset_file_path = '/shared/DataSets/GooglePlus_Gong2012/raw/imc12/direct_social_structure.txt'
 egonet_files_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/egonets-w-snapshots/'
+nx2_incompatible_egonets_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
 list_of_first_hop_nodes_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/' \
                                     'gplus-nodes-snap-0-list.pckl'
-nx2_incompatible_egonets_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes/'
+
 local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files-1/'
+
+triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
+                                     'triad-link-formed-ratio/pickle-files/'
+triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
+                                   'triad-link-formed-ratio/plots/'
+
+lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files-1/'
 
 
 def read_entire_gplus_network():
