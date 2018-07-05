@@ -8,29 +8,32 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import link_prediction_helpers as dh
 import directed_graphs_helpers as dgh
+import gplus_helpers as gplus
 # import gplus_hop_degree_directed_analysis_cdf as analyzer
 
-# Google+ Empirical Test
-# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/'
-# data_file_base_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/egonet-files/first-hop-nodes'
-# triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
-# top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
-#
-# temp_skipped_files = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/temp'
-# all_egonets = os.listdir(data_file_base_path)
-# np.random.shuffle(all_egonets)
-# Parallel(n_jobs=6)(delayed(analyzer.gplus_run_hop_degree_directed_analysis)(ego_net_file)
-#                    for ego_net_file in all_egonets)
+
+# ************************************************************************* #
+# ******************** Local Degree Empirical Analysis ******************** #
+# ************************************************************************* #
+def run_empirical_local_degree_parallel_analysis(egonet_files_path, results_base_path, num_process):
+    all_egonets = set(os.listdir(egonet_files_path))
+    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
+                                                                                                'skipped_egonets'))
+    egonets_to_analyze = list(all_egonets - analyzed_egonets)
+    np.random.shuffle(egonets_to_analyze)
+
+    print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+
+    Parallel(n_jobs=num_process)(delayed(dgh.run_local_degree_empirical_analysis)
+                                 (ego_net_file, results_base_path, egonet_files_path) for ego_net_file in all_egonets)
 
 
-# Flickr Empirical Test
-# all_egonets = set(os.listdir(flickr.flickr_growth_egonets_path))
-# analyzed_egonets = set(os.listdir(flickr.flickr_growth_empirical_result_path + 'analyzed_egonets')).union(
-#     os.listdir(flickr.flickr_growth_empirical_result_path + 'skipped_egonets'))
-# egonets_to_analyze = list(all_egonets - analyzed_egonets)
-# np.random.shuffle(egonets_to_analyze)
-#
-# Parallel(n_jobs=20)(delayed(flickr.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
+# **** Google+ Local Degree Empirical Test **** #
+run_empirical_local_degree_parallel_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
+
+
+# **** Flickr Local Degree Empirical Test **** #
+# run_empirical_local_degree_parallel_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 20)
 
 
 # # Digg Directed Empirical Test
@@ -42,41 +45,6 @@ import directed_graphs_helpers as dgh
 #
 # Parallel(n_jobs=17)(delayed(digg.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in all_egonets)
 
-
-# Parallel(n_jobs=15)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types)(ego_net_file, top_k_values)
-#                     for ego_net_file in os.listdir(data_file_base_path))
-
-# Parallel(n_jobs=16)(delayed(dh.run_link_prediction_comparison_on_directed_graph_all_types_based_on_empirical)
-#                     (ego_net_file, top_k_values) for ego_net_file in os.listdir(data_file_base_path))
-
-# Parallel(n_jobs=10)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
-#                    (ego_net_file, top_k_values) for ego_net_file in os.listdir(temp_skipped_files))
-
-# all_files = set(os.listdir(data_file_base_path))
-# analyzed_files = set(os.listdir(result_file_base_path + 'analyzed_egonets'))
-# skipped_files = set(os.listdir(result_file_base_path + 'skipped_egonets'))
-#
-# left_files = all_files - analyzed_files
-# left_files = left_files - skipped_files
-#
-# print(len(left_files))
-#
-# Parallel(n_jobs=24)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types)
-#                     (ego_net_file, top_k_values) for ego_net_file in os.listdir(result_file_base_path + 'skipped_egonets'))
-
-
-# res_from_prev_analysis = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-2/results"
-# result_file_base_3 = "/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files/combined/test-3-car-cclp/"
-# all_files = set(os.listdir(res_from_prev_analysis))
-# analyzed_files = set(os.listdir(result_file_base_3 + 'analyzed_egonets'))
-# skipped_files = set(os.listdir(result_file_base_3 + 'skipped_egonets'))
-#
-# left_files = all_files - analyzed_files
-# left_files = list(left_files - skipped_files)
-# np.random.shuffle(left_files)
-#
-# Parallel(n_jobs=6)(delayed(dh.run_link_prediction_comparison_on_directed_graph_combined_types_only_car_and_cclp)
-#                    (ego_net_file, top_k_values) for ego_net_file in left_files)
 
 # Flickr Link prediction
 # top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
