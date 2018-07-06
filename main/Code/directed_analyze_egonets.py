@@ -25,7 +25,7 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 # **** Google+ **** #
-run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 2)
+run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
 
 
 # **** Flickr **** #

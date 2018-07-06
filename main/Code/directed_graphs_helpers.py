@@ -311,9 +311,6 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
     if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
         return
 
-    with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
-        pickle.dump(0, f, protocol=-1)
-
     triangle_type_func = {
         'T01': get_t01_type_nodes,
         'T02': get_t02_type_nodes,
@@ -335,6 +332,9 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
             pickle.dump(0, f, protocol=-1)
 
         return
+
+    with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
 
     for triangle_type in triangle_type_func.keys():
         local_snapshots_formed_z_in_degree = []

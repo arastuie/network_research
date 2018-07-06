@@ -13,6 +13,7 @@ import digg_net_helpers as digg
 import flickr_helpers as flickr
 import link_prediction_helpers as lph
 import facebook_helpers as facebook
+import gplus_helpers as gplus
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -378,7 +379,7 @@ import facebook_helpers as facebook
 
 # digg.extract_all_egonets()
 
-# dh.read_ego_gplus_graph_by_batch_parallelizer(200, 5)
+gplus.read_ego_gplus_graph_by_batch_parallelizer(200, 5)
 
 
 # g = facebook.read_graph()

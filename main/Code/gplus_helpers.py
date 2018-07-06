@@ -189,8 +189,7 @@ def read_ego_gplus_graph(ego_node):
 def read_ego_gplus_graph_by_batch_parallelizer(batch_size, n_process):
     print("Reading in Google+ data...")
 
-    with open(list_of_first_hop_nodes_file_path,
-              'rb') as f:
+    with open(list_of_first_hop_nodes_file_path, 'rb') as f:
         all_nodes = pickle.load(f)
 
     np.random.shuffle(all_nodes)
