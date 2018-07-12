@@ -115,9 +115,8 @@ def get_mean_ci(res, z_value):
 
 
 #### Google + ####
-# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files/' \
-#                         'test-2-no-least-num-nodes/'
-# plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/cdf-plots'
+result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files-1/'
+plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/plots-1/'
 
 
 #### Flickr ####
@@ -126,8 +125,8 @@ def get_mean_ci(res, z_value):
 
 
 #### Digg ####
-result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
-plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/plots'
+# result_file_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
+# plot_save_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/plots'
 
 
 triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']

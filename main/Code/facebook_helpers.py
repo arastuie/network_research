@@ -14,6 +14,8 @@ empirical_pickle_path = '/shared/Results/EgocentricLinkPrediction/main/empirical
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-1/'
 
 pymk_directories = ['before-pymk', 'after-pymk']
+
+
 # ********** Reading facebook data ********** #
 def read_graph():
     print("Reading the original graph...")

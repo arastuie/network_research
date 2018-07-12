@@ -375,11 +375,11 @@ import gplus_helpers as gplus
 # with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'wb') as f:
 #     pickle.dump(first_snap, f, protocol=-1)
 
-# flickr.create_gplus_multiple_egonets(250000, 100, 20)
+flickr.create_multiple_egonets(160000, 500, 4)
 
 # digg.extract_all_egonets()
 
-gplus.read_ego_gplus_graph_by_batch_parallelizer(200, 5)
+# gplus.read_ego_gplus_graph_by_batch_parallelizer(25, 10)
 
 
 # g = facebook.read_graph()

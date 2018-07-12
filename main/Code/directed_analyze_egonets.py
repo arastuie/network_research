@@ -25,7 +25,7 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 # **** Google+ **** #
-run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
+# run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
 
 
 # **** Flickr **** #
@@ -56,19 +56,19 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 # **** Google+ **** #
 # run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path, 6)
-# dh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
-#                                                   gplus.triad_ratio_empirical_plots_path,
-#                                                   gather_individual_results=True)
+dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
+                                                   gplus.triad_ratio_empirical_plots_path,
+                                                   gather_individual_results=True)
 
 # **** Flickr **** #
 # run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 12)
-# dh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
+# dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
 #                                                   flickr.triad_ratio_empirical_plots_path,
 #                                                   gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path, 12)
-# dh.empirical_triad_list_formed_ratio_results_plot(digg.triad_ratio_empirical_results_path,
+# dgh.empirical_triad_list_formed_ratio_results_plot(digg.triad_ratio_empirical_results_path,
 #                                                   digg.triad_ratio_empirical_plots_path,
 #                                                   gather_individual_results=True)
 
