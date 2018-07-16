@@ -11,6 +11,7 @@ egonet_files_path = '/shared/DataSets/FlickrGrowth/egonets/'
 
 local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files' \
                                       '/test1/'
+local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
 
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/' \
                                                   'triad-link-formed-ratio/pickle-files/'

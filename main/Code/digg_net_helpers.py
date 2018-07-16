@@ -11,13 +11,15 @@ egonet_files_path = '/shared/DataSets/Digg2009/egonets/'
 undirected_local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \
                                                  'undirected/'
 directed_local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
-
-lp_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/pickle-files/'
+directed_local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/' \
+                                            'plots/'
 
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \
                                               'triad-link-formed-ratio/pickle-files/'
 triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \
                                                'triad-link-formed-ratio/plots/'
+
+lp_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/pickle-files/'
 
 
 def read_graph():

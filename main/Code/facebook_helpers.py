@@ -4,12 +4,14 @@ import time
 import pickle
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 dataset_file_path = '/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt'
 egonet_files_path = '/shared/DataSets/FacebookViswanath2009/egocentric/all_egonets/'
 
 empirical_pickle_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files-1/'
+empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/plots-1/'
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-1/'
 
@@ -183,6 +185,85 @@ def run_local_degree_empirical_analysis(ego_net_file):
 
     print("Analyzed ego net {0}".format(ego_net_file))
     return
+
+
+def plot_local_degree_empirical_results(gather_individual_results=False):
+    # Plotting info
+    gl_labels = ['local', 'global']
+    gl_labels_plotting = ['Local', 'Global']
+    z = 1.96
+    bar_width = 0.40
+    opacity = 0.6
+    error_config = {'ecolor': '0.3', 'capsize': 4, 'lw': 3, 'capthick': 2}
+    bar_legends = ['Formed', 'Not Formed']
+    dif_results_for_plotting = ['formed', 'not-formed']
+    names = ['Before PYMK', 'After PYMK']
+    bar_color = ['r', 'b']
+
+    # The order must be kept, since the saved pickle files are in the same order
+    result_types = ['local-formed', 'global-formed', 'local-not-formed', 'global-not-formed']
+    for pymk_type in pymk_directories:
+        if gather_individual_results:
+            all_results = {}
+
+            for res_type in result_types:
+                all_results[res_type] = []
+                all_results[res_type + '-err'] = []
+
+            results = []
+
+            for result_file in os.listdir(empirical_pickle_path + pymk_type + '/results'):
+                with open(empirical_pickle_path + pymk_type + '/results/' + result_file, 'rb') as f:
+                    egonet_result = pickle.load(f)
+                    results.append(egonet_result)
+            results = np.array(results)
+
+            for i, res_type in enumerate(result_types):
+                all_results[res_type] = np.mean(results[:, i])
+                all_results[res_type + '-err'] = get_mean_ci(results[:, i], z)
+
+            # Create directory if not exists
+            if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
+                os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
+
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-types-plot.pckl', 'wb') as f:
+                pickle.dump(all_results, f, protocol=-1)
+
+        else:
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-types-plot.pckl', 'rb') as f:
+                all_results = pickle.load(f)
+
+        # plotting
+        plt.rcParams["figure.figsize"] = (8, 10)
+        for i_degree in range(2):
+            plt.rc('legend', fontsize=25)
+            plt.rc('xtick', labelsize=28)
+            plt.rc('ytick', labelsize=14)
+
+            fig, ax = plt.subplots()
+
+            for i_bar in range(len(dif_results_for_plotting)):
+                plt.bar(np.arange(len(names)) + bar_width * i_bar,
+                        all_results[gl_labels[i_degree] + '-' + dif_results_for_plotting[i_bar]],
+                        bar_width,
+                        alpha=opacity,
+                        color=bar_color[i_bar],
+                        yerr=all_results[gl_labels[i_degree] + '-' + dif_results_for_plotting[i_bar] + '-err'],
+                        error_kw=error_config,
+                        label=bar_legends[i_bar])
+
+            plt.ylabel('Mean Normalized {0} Degree'.format(gl_labels_plotting[i_degree]), fontsize=25)
+            plt.xticks(np.arange(len(names)) + bar_width / 2, names)
+            plt.legend(loc='upper left')
+            plt.tight_layout()
+            plt.ylim(ymax=0.4)
+
+            plt.savefig('{0}overall-{1}.pdf'.format(empirical_plot_path, gl_labels[i_degree]), format='pdf')
+            plt.clf()
+
+
+def get_mean_ci(res, z_value):
+    return z_value * np.std(res) / np.sqrt(len(res))
 
 
 # ********** Link prediction analysis ********** #

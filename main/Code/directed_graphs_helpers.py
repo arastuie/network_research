@@ -457,6 +457,11 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
 
 
 def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, gather_individual_results=False):
+    # Results pickle files are in the following order
+    #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
+    #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
+    #   global-not-formed-out-degree
+
     triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
     gl_labels = ['Local', 'Global']
     z = 1.96
@@ -561,6 +566,7 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
 
 def get_mean_ci(res, z_value):
     return z_value * np.std(res) / np.sqrt(len(res))
+
 
 ########## Links formed in triad ratio analysis ##############
 def get_t01_type_second_hop_nodes(ego_net, ego_node):
