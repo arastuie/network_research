@@ -303,9 +303,9 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
     if os.path.isfile(results_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
-    # return if the egonet is on the skipped list
-    if os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
-        return
+    # # return if the egonet is on the skipped list
+    # if os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
+    #     return
 
     # return if the egonet is on the currently being analyzed list
     if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
@@ -326,12 +326,12 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
     with open(egonet_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
-    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
-        with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-            pickle.dump(0, f, protocol=-1)
-
-        return
+    # # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    # if nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
+    #     with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+    #         pickle.dump(0, f, protocol=-1)
+    #
+    #     return
 
     with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
@@ -455,6 +455,112 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
 
     print("Analyzed ego net {0}".format(ego_net_file))
 
+
+def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, gather_individual_results=False):
+    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+    gl_labels = ['Local', 'Global']
+    z = 1.96
+
+    if gather_individual_results:
+        all_results = {
+            'Global': {
+                'id-formed': [],
+                'id-not-formed': [],
+                'od-formed': [],
+                'od-not-formed': [],
+                'id-formed-err': [],
+                'id-not-formed-err': [],
+                'od-formed-err': [],
+                'od-not-formed-err': []
+            },
+            'Local': {
+                'id-formed': [],
+                'id-not-formed': [],
+                'od-formed': [],
+                'od-not-formed': [],
+                'id-formed-err': [],
+                'id-not-formed-err': [],
+                'od-formed-err': [],
+                'od-not-formed-err': []
+            }
+        }
+
+        # grabbing all scores
+        for t in range(len(triangle_types)):
+            results = []
+
+            # loading result data
+            for result_file in os.listdir(result_file_base_path + triangle_types[t]):
+                with open(result_file_base_path + triangle_types[t] + '/' + result_file, 'rb') as f:
+                    egonet_result = pickle.load(f)
+
+                results.append(egonet_result)
+            results = np.array(results)
+
+            for i in range(2):
+                # computing mean
+                all_results[gl_labels[i]]['id-formed'].append(np.mean(results[:, i]))
+                all_results[gl_labels[i]]['id-not-formed'].append(np.mean(results[:, i + 4]))
+                all_results[gl_labels[i]]['od-formed'].append(np.mean(results[:, i + 2]))
+                all_results[gl_labels[i]]['od-not-formed'].append(np.mean(results[:, i + 6]))
+
+                # computing 95% confidence interval
+                all_results[gl_labels[i]]['id-formed-err'].append(get_mean_ci(results[:, i], z))
+                all_results[gl_labels[i]]['id-not-formed-err'].append(get_mean_ci(results[:, i + 4], z))
+                all_results[gl_labels[i]]['od-formed-err'].append(get_mean_ci(results[:, i + 2], z))
+                all_results[gl_labels[i]]['od-not-formed-err'].append(get_mean_ci(results[:, i + 6], z))
+
+            print(triangle_types[t] + ": Done")
+
+        # Create directory if not exists
+        if not os.path.exists(result_file_base_path + 'all-scores'):
+            os.makedirs(result_file_base_path + 'all-scores')
+
+        with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'wb') as f:
+            pickle.dump(all_results, f, protocol=-1)
+
+    else:
+        with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'rb') as f:
+            all_results = pickle.load(f)
+
+    # plotting
+    bar_width = 0.20
+    opacity = 0.6
+    error_config = {'ecolor': '0.3', 'capsize': 1, 'lw': 1, 'capthick': 1}
+    bar_legends = ['In-degree Formed', 'In-degree Not Formed', 'Out-degree Formed', 'Out-degree Not Formed']
+    dif_results = ['id-formed', 'id-not-formed', 'od-formed', 'od-not-formed']
+    bar_color = ['r', 'b', 'g', 'y']
+
+    for i_degree in range(2):
+        plt.rc('legend', fontsize=14)
+        plt.rc('xtick', labelsize=12)
+        plt.rc('ytick', labelsize=14)
+        fig, ax = plt.subplots()
+
+        for i_bar in range(len(dif_results)):
+            plt.bar(np.arange(len(triangle_types)) + bar_width * i_bar,
+                    all_results[gl_labels[i_degree]][dif_results[i_bar]],
+                    bar_width,
+                    alpha=opacity,
+                    color=bar_color[i_bar],
+                    yerr=all_results[gl_labels[i_degree]][dif_results[i_bar] + '-err'],
+                    error_kw=error_config,
+                    label=bar_legends[i_bar])
+
+        plt.xlabel('Triangle Types', fontsize=16)
+        plt.ylabel('Mean Normalized {0} Degree'.format(gl_labels[i_degree]), fontsize=16)
+        plt.xticks(np.arange(len(triangle_types)) + bar_width * 1.5, triangle_types)
+
+        plt.legend(loc='upper left')
+        if i_degree == 0:
+            plt.ylim(ymax=.51)
+        plt.tight_layout()
+        plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
+        plt.clf()
+
+
+def get_mean_ci(res, z_value):
+    return z_value * np.std(res) / np.sqrt(len(res))
 
 ########## Links formed in triad ratio analysis ##############
 def get_t01_type_second_hop_nodes(ego_net, ego_node):
@@ -688,9 +794,9 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
-    # return if the egonet is on the skipped list
-    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-        return
+    # # return if the egonet is on the skipped list
+    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+    #     return
 
     # return if the egonet is on the currently being analyzed list
     if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
@@ -714,12 +820,12 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
     with open(data_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
-    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    if ego_net_snapshots[-1].number_of_nodes() > 100000:
-        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-            pickle.dump(0, f, protocol=-1)
-
-        return
+    # # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    # if ego_net_snapshots[-1].number_of_nodes() > 100000:
+    #     with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+    #         pickle.dump(0, f, protocol=-1)
+    #
+    #     return
 
     results = {
         'T01': {}, 'T02': {}, 'T03': {}, 'T04': {}, 'T05': {}, 'T06': {}, 'T07': {}, 'T08': {}, 'T09': {}

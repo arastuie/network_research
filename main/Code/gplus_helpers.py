@@ -14,6 +14,7 @@ list_of_first_hop_nodes_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocen
                                     'gplus-nodes-snap-0-list.pckl'
 
 local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files-1/'
+local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/plots-1/'
 
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
                                      'triad-link-formed-ratio/pickle-files/'

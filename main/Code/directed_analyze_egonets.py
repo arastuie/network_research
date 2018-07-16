@@ -13,8 +13,11 @@ import directed_graphs_helpers as dgh
 # ************************************************************************* #
 def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base_path, num_process):
     all_egonets = set(os.listdir(egonet_files_path))
-    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
-                                                                                                'skipped_egonets'))
+    # analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
+    #                                                                                             'skipped_egonets'))
+
+    # no 100K limit
+    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets'))
     egonets_to_analyze = list(all_egonets - analyzed_egonets)
     np.random.shuffle(egonets_to_analyze)
 
@@ -29,7 +32,7 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 # **** Flickr **** #
-# run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 20)
+# run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 6)
 
 
 # **** Digg **** #
@@ -42,8 +45,11 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # ************************************************************************* #
 def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_process):
     all_egonets = set(os.listdir(egonet_files_path))
-    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
-                                                                                                'skipped_egonets'))
+    # analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
+    #                                                                                                'skipped_egonets'))
+
+    # No 100K limit
+    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets'))
     egonets_to_analyze = list(all_egonets - analyzed_egonets)
     np.random.shuffle(egonets_to_analyze)
 
@@ -55,13 +61,13 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 
 # **** Google+ **** #
-# run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path, 6)
-dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
-                                                   gplus.triad_ratio_empirical_plots_path,
-                                                   gather_individual_results=True)
+run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path, 4)
+# dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
+#                                                    gplus.triad_ratio_empirical_plots_path,
+#                                                    gather_individual_results=True)
 
 # **** Flickr **** #
-# run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 12)
+run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 4)
 # dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
 #                                                   flickr.triad_ratio_empirical_plots_path,
 #                                                   gather_individual_results=True)
