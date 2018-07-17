@@ -3,6 +3,7 @@ import math
 import time
 import pickle
 import numpy as np
+import helpers as h
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -207,8 +208,8 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
             all_results = {}
 
             for res_type in result_types:
-                all_results[res_type] = []
-                all_results[res_type + '-err'] = []
+                all_results[res_type] = 0
+                all_results[res_type + '-err'] = 0
 
             results = []
 
@@ -220,17 +221,17 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
 
             for i, res_type in enumerate(result_types):
                 all_results[res_type] = np.mean(results[:, i])
-                all_results[res_type + '-err'] = get_mean_ci(results[:, i], z)
+                all_results[res_type + '-err'] = h.get_mean_ci(results[:, i], z)
 
             # Create directory if not exists
             if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
                 os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
 
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-types-plot.pckl', 'wb') as f:
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'wb') as f:
                 pickle.dump(all_results, f, protocol=-1)
 
         else:
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-types-plot.pckl', 'rb') as f:
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'rb') as f:
                 all_results = pickle.load(f)
 
         # plotting
@@ -258,12 +259,58 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
             plt.tight_layout()
             plt.ylim(ymax=0.4)
 
-            plt.savefig('{0}overall-{1}.pdf'.format(empirical_plot_path, gl_labels[i_degree]), format='pdf')
+            plt.savefig('{0}barplot-{1}.pdf'.format(empirical_plot_path, gl_labels[i_degree]), format='pdf')
             plt.clf()
 
 
-def get_mean_ci(res, z_value):
-    return z_value * np.std(res) / np.sqrt(len(res))
+def plot_local_degree_empirical_ecdf(gather_individual_results=False):
+    # The order must be kept, since the saved pickle files are in the same order
+    result_types = ['local-formed', 'global-formed', 'local-not-formed', 'global-not-formed']
+    for pymk_type in pymk_directories:
+        if gather_individual_results:
+            all_results = {}
+
+            for res_type in result_types:
+                all_results[res_type] = []
+
+            results = []
+
+            for result_file in os.listdir(empirical_pickle_path + pymk_type + '/results'):
+                with open(empirical_pickle_path + pymk_type + '/results/' + result_file, 'rb') as f:
+                    egonet_result = pickle.load(f)
+                    results.append(egonet_result)
+            results = np.array(results)
+
+            for i, res_type in enumerate(result_types):
+                all_results[res_type] = results[:, i]
+
+            # Create directory if not exists
+            if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
+                os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
+
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-ecdf.pckl', 'wb') as f:
+                pickle.dump(all_results, f, protocol=-1)
+
+        else:
+            with open(empirical_pickle_path + pymk_type + '/all-scores/all-ecdf.pckl', 'rb') as f:
+                all_results = pickle.load(f)
+
+        for dt in ['Global', 'Local']:
+            plt.rc('legend', fontsize=20)
+            plt.rc('xtick', labelsize=15)
+            plt.rc('ytick', labelsize=15)
+
+            h.add_ecdf_with_band_plot_undirected(all_results[dt.lower() + '-formed'], 'Formed', 'r')
+
+            h.add_ecdf_with_band_plot_undirected(all_results[dt.lower() + '-not-formed'], 'Not Formed', 'b')
+
+            plt.ylabel('Empirical CDF', fontsize=20)
+            plt.xlabel('Mean Normalized {0} Degree'.format(dt), fontsize=20)
+            plt.legend(loc='lower right')
+            plt.tight_layout()
+            current_fig = plt.gcf()
+            current_fig.savefig('{0}ecdf-{1}-{2}.pdf'.format(empirical_plot_path, pymk_type, dt), format='pdf')
+            plt.clf()
 
 
 # ********** Link prediction analysis ********** #

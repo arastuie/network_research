@@ -358,3 +358,7 @@ def add_ecdf_with_band_plot_undirected(data, label, color):
     plt.plot(data, lb, '--', color=color, alpha=0.4)
     plt.plot(data, ub, '--', color=color, alpha=0.4)
     plt.fill_between(data, lb, ub, facecolor=color, alpha=0.2)
+
+
+def get_mean_ci(res, z_value):
+    return z_value * np.std(res) / np.sqrt(len(res))

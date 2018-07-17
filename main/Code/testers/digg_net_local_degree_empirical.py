@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import networkx as nx
-import digg_net_helpers as digg
+import digg_helpers as digg
 
 # u -> z -> v
 

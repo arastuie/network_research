@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import networkx as nx
 from functools import partial
-import digg_net_helpers as digg
+import digg_helpers as digg
 import link_prediction_helpers as lp_helpers
 from multiprocessing import Pool, Manager
 

@@ -1,6 +1,7 @@
 import math
 import pickle
 import numpy as np
+import helpers as h
 import networkx as nx
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
@@ -81,10 +82,6 @@ def divide_to_snapshots(graph, length_of_snapshots_in_days, directed=True):
     return orig_snapshots
 
 
-def get_mean_ci(res, z_value):
-    return z_value * np.std(res) / np.sqrt(len(res))
-
-
 def extract_empirical_overall_plotter_data(all_results, z_value):
     plot_results = {
         'global-formed': [],
@@ -143,10 +140,10 @@ def extract_empirical_overall_plotter_data(all_results, z_value):
 
     # getting confidence interval over all degrees of all ego-node means
 
-    plot_results['error']['local-formed'] = get_mean_ci(plot_results['local-formed'], z_value)
-    plot_results['error']['local-not-formed'] = get_mean_ci(plot_results['local-not-formed'], z_value)
-    plot_results['error']['global-formed'] = get_mean_ci(plot_results['global-formed'], z_value)
-    plot_results['error']['global-not-formed'] = get_mean_ci(plot_results['global-not-formed'], z_value)
+    plot_results['error']['local-formed'] = h.get_mean_ci(plot_results['local-formed'], z_value)
+    plot_results['error']['local-not-formed'] = h.get_mean_ci(plot_results['local-not-formed'], z_value)
+    plot_results['error']['global-formed'] = h.get_mean_ci(plot_results['global-formed'], z_value)
+    plot_results['error']['global-not-formed'] = h.get_mean_ci(plot_results['global-not-formed'], z_value)
 
     plot_results['local-formed'] = np.mean(plot_results['local-formed'])
     plot_results['local-not-formed'] = np.mean(plot_results['local-not-formed'])

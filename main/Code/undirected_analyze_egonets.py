@@ -21,7 +21,8 @@ import link_prediction_helpers as lph
 # Parallel(n_jobs=24)(delayed(fb.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in egonets_to_analyze)
 
 # Plotting
-# fb.plot_local_degree_empirical_results(gather_individual_results=True)
+fb.plot_local_degree_empirical_results(gather_individual_results=True)
+fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
 
 # ************************************************************************* #
 # ************************ Link Prediction Analysis *********************** #

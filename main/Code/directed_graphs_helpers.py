@@ -6,6 +6,7 @@ import time
 import pickle
 import random
 import numpy as np
+import helpers as h
 import networkx as nx
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
@@ -510,10 +511,10 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
                 all_results[gl_labels[i]]['od-not-formed'].append(np.mean(results[:, i + 6]))
 
                 # computing 95% confidence interval
-                all_results[gl_labels[i]]['id-formed-err'].append(get_mean_ci(results[:, i], z))
-                all_results[gl_labels[i]]['id-not-formed-err'].append(get_mean_ci(results[:, i + 4], z))
-                all_results[gl_labels[i]]['od-formed-err'].append(get_mean_ci(results[:, i + 2], z))
-                all_results[gl_labels[i]]['od-not-formed-err'].append(get_mean_ci(results[:, i + 6], z))
+                all_results[gl_labels[i]]['id-formed-err'].append(h.get_mean_ci(results[:, i], z))
+                all_results[gl_labels[i]]['id-not-formed-err'].append(h.get_mean_ci(results[:, i + 4], z))
+                all_results[gl_labels[i]]['od-formed-err'].append(h.get_mean_ci(results[:, i + 2], z))
+                all_results[gl_labels[i]]['od-not-formed-err'].append(h.get_mean_ci(results[:, i + 6], z))
 
             print(triangle_types[t] + ": Done")
 
@@ -562,10 +563,6 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
         plt.tight_layout()
         plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
         plt.clf()
-
-
-def get_mean_ci(res, z_value):
-    return z_value * np.std(res) / np.sqrt(len(res))
 
 
 ########## Links formed in triad ratio analysis ##############

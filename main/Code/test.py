@@ -9,7 +9,7 @@ from multiprocessing import Pool
 # import os
 # import sys
 import directed_graphs_helpers as dh
-import digg_net_helpers as digg
+import digg_helpers as digg
 import flickr_helpers as flickr
 import link_prediction_helpers as lph
 import facebook_helpers as facebook

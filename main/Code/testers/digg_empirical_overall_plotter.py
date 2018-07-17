@@ -1,8 +1,8 @@
 import pickle
 import numpy as np
+import digg_helpers as dh
 import matplotlib.pyplot as plt
-import digg_net_helpers as dh
-# import digg_net_helpers as dh
+
 
 plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/plots'
 path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/pickle-files'
