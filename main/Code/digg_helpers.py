@@ -227,7 +227,6 @@ def extract_empirical_overall_plotter_data_test(all_results):
 #################################
 ####         Directed        ####
 #################################
-
 def read_graph_as_directed():
     print("Reading the original directed Digg graph...")
 

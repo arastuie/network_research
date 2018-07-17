@@ -67,9 +67,9 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 # **** Google+ **** #
 # run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path, 4)
-# dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
-#                                                    gplus.triad_ratio_empirical_plots_path,
-#                                                    gather_individual_results=True)
+dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
+                                                   gplus.triad_ratio_empirical_plots_path,
+                                                   gather_individual_results=True)
 
 # **** Flickr **** #
 # run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 4)

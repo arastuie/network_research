@@ -2,15 +2,8 @@ import pickle
 import numpy as np
 from joblib import Parallel, delayed
 import os
-import Code.degree_based_analysis as a1
-import Code.num_cluster_per_cn_analysis as a2
-import Code.tot_num_cluster_of_all_cn_analysis as a3
-import Code.tot_num_cluster_based_num_cn_analysis as a4
-import Code.percent_of_cn_belonging_to_same_cluster as a5
-import Code.hop_degree_analysis as a6
+import Code.testers.hop_degree_analysis as a6
 #import Code.gplus_hop_degree_directed_analysis_t06 as a7
-import Code.gplus_hop_degree_directed_analysis as a7
-import Code.adamic_adar_analysis as a8
 import matplotlib.pyplot as plt
 
 print("Analysing ego centric networks...")
