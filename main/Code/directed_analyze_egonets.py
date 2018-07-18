@@ -5,7 +5,7 @@ import flickr_helpers as flickr
 import digg_helpers as digg
 from joblib import Parallel, delayed
 import directed_graphs_helpers as dgh
-import link_prediction_helpers as dlph
+import link_prediction_evaluator as lpe
 
 
 # ************************************************************************* #
@@ -31,15 +31,15 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
 # dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_path,
 #                                         gplus.local_degree_empirical_plot_path, gather_individual_results=False)
-dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_path, gplus.local_degree_empirical_plot_path,
-                                    triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
+# dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_path, gplus.local_degree_empirical_plot_path,
+#                                     triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
 
 # **** Flickr **** #
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 6)
 # dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_path,
 #                                         flickr.local_degree_empirical_plot_path, gather_individual_results=True)
-dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path, flickr.local_degree_empirical_plot_path,
-                                    triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
+# dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path, flickr.local_degree_empirical_plot_path,
+#                                     triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
@@ -47,9 +47,9 @@ dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path, 
 # dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_results_path,
 #                                         digg.directed_local_degree_empirical_plot_path,
 #                                         gather_individual_results=True)
-dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_results_path,
-                                    digg.directed_local_degree_empirical_plot_path, triangle_types='all',
-                                    separete_in_out_degree=False, gather_individual_results=True)
+# dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_results_path,
+#                                     digg.directed_local_degree_empirical_plot_path, triangle_types='all',
+#                                     separete_in_out_degree=False, gather_individual_results=True)
 
 
 # ************************************************************************* #
@@ -97,28 +97,39 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, num_process):
     top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
     all_egonets = set(os.listdir(egonet_files_path))
-    analyzed_egonets = set(os.listdir(egonet_files_path + 'analyzed_egonets')).union(os.listdir(egonet_files_path +
-                                                                                                'skipped_egonets'))
+    # analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
+    #                                                                                             'skipped_egonets'))
+
+    # No 100K limit
+    analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets'))
     egonets_to_analyze = list(all_egonets - analyzed_egonets)
     np.random.shuffle(egonets_to_analyze)
 
     print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 
-    Parallel(n_jobs=num_process)(delayed(dlph.run_directed_link_prediction)
+    Parallel(n_jobs=num_process)(delayed(dgh.run_directed_link_prediction)
                                  (ego_net_file, top_k_values, egonet_files_path, results_base_path)
                                  for ego_net_file in egonets_to_analyze)
 
 
+# The methods to be compared for improvements plots
+comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
+
 # **** Google+ **** #
-# run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 5)
-# dlph.calculate_lp_performance(gplus.lp_results_path, gather_individual_lp_results=True)
+run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 11)
+# lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
+lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
+                              gather_individual_results=True)
 
 # **** Flickr **** #
-# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 24)
-# dlph.calculate_lp_performance(flickr.lp_results_path, gather_individual_lp_results=True)
+run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 11)
+# lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)
+lpe.plot_percent_improvements(flickr.lp_results_path, flickr.lp_plots_path, comparison_pairs,
+                              gather_individual_results=True)
 
 # **** Digg **** #
-# run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 24)
-# dlph.calculate_lp_performance(digg.lp_results_file_path, gather_individual_lp_results=False)
-
+# run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 6)
+# lpe.calculate_lp_performance(digg.lp_results_file_path, gather_individual_results=False)
+lpe.plot_percent_improvements(digg.lp_results_file_path, digg.lp_plots_path, comparison_pairs,
+                              gather_individual_results=True)
 

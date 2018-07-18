@@ -21,6 +21,7 @@ triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/mai
                                                'triad-link-formed-ratio/plots/'
 
 lp_results_file_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/pickle-files/'
+lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/digg/directed/plots/'
 
 
 def read_graph():

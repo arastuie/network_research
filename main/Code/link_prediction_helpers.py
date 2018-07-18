@@ -134,56 +134,56 @@ def evaluate_prediction_result(y_true, y_scores, lp_result):
     return
 
 
-# def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
-#     scores = []
-# 
-#     for u, v in non_edges:
-#         first_hop_degrees = []
-#         # other_degrees = []
-#         common_neighbors = nx.common_neighbors(ego_net, u, v)
-#         v_node_neighbors = set(nx.neighbors(ego_net, v))
-# 
-#         for c in common_neighbors:
-#             cn_neighbors = set(nx.neighbors(ego_net, c))
-#             # x = len(cn_neighbors.intersection(first_hop_nodes))
-# 
-#             # total degree
-#             t = len(cn_neighbors)
-# 
-#             # local degree
-#             x = len(cn_neighbors.intersection(first_hop_nodes))
-# 
-#             # total degree - local degree
-#             y = t - x
-# 
-#             if x == 0:
-#                 x = 1
-# 
-#             # if y == 0:
-#             #     y = 0.5
-# 
-#             # score = (x ** 3 + y ** 3) / (x * y)
-#             # print(x, y, len(cn_neighbors))
-#             # if score <= 1:
-#             #     print(score)
-# 
-#             # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
-# 
-#             first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
-#             # other_degrees.append(len(cn_neighbors))
-# 
-#         # for i in range(len(first_hop_degrees)):
-#         #     if first_hop_degrees[i] == 0:
-#         #         first_hop_degrees[i] = 1.33
-#         #     elif first_hop_degrees[i] == 1:
-#         #         first_hop_degrees[i] = 1.66
-# 
-#         # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
-#         first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
-#         # first_hop_degree_index = sum(first_hop_degrees)
-#         scores.append(first_hop_degree_index)
-# 
-#     return scores
+def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    for u, v in non_edges:
+        first_hop_degrees = []
+        # other_degrees = []
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        v_node_neighbors = set(nx.neighbors(ego_net, v))
+
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+            # x = len(cn_neighbors.intersection(first_hop_nodes))
+
+            # total degree
+            t = len(cn_neighbors)
+
+            # local degree
+            x = len(cn_neighbors.intersection(first_hop_nodes))
+
+            # total degree - local degree
+            y = t - x
+
+            if x == 0:
+                x = 1
+
+            # if y == 0:
+            #     y = 0.5
+
+            # score = (x ** 3 + y ** 3) / (x * y)
+            # print(x, y, len(cn_neighbors))
+            # if score <= 1:
+            #     print(score)
+
+            # first_hop_degrees.append(x ** 2 / (len(cn_neighbors) * len(first_hop_nodes)))
+
+            first_hop_degrees.append((x * (1 - x / t)) + (y * (t / x)))
+            # other_degrees.append(len(cn_neighbors))
+
+        # for i in range(len(first_hop_degrees)):
+        #     if first_hop_degrees[i] == 0:
+        #         first_hop_degrees[i] = 1.33
+        #     elif first_hop_degrees[i] == 1:
+        #         first_hop_degrees[i] = 1.66
+
+        # other_degrees_index = sum((math.log(d) * -1) for d in other_degrees)
+        first_hop_degree_index = sum(1 / math.log(d) for d in first_hop_degrees)
+        # first_hop_degree_index = sum(first_hop_degrees)
+        scores.append(first_hop_degree_index)
+
+    return scores
 
 
 def lp_test_method(ego_net, non_edges, first_hop_nodes):
@@ -203,73 +203,73 @@ def lp_test_method(ego_net, non_edges, first_hop_nodes):
 
     return scores
 
-#
-# def cclp(ego_net, non_edges):
-#     scores = []
-#
-#     for u, v in non_edges:
-#         common_neighbors = nx.common_neighbors(ego_net, u, v)
-#         score = 0
-#
-#         for c in common_neighbors:
-#             c_tri = nx.triangles(ego_net, c)
-#             c_deg = ego_net.degree(c)
-#
-#             score += c_tri / (c_deg * (c_deg - 1) / 2)
-#
-#         scores.append(score)
-#
-#     return scores
-#
-#
-# def car(ego_net, non_edges):
-#     scores = []
-#
-#     for u, v in non_edges:
-#         common_neighbors = list(nx.common_neighbors(ego_net, u, v))
-#         cc_sub_g = ego_net.subgraph(common_neighbors)
-#
-#         scores.append(len(common_neighbors) * cc_sub_g.number_of_edges())
-#
-#     return scores
-#
 
-# def common_neighbors_index(ego_net, non_edges):
-#     scores = []
-#
-#     for u, v in non_edges:
-#         scores.append(len(list(nx.common_neighbors(ego_net, u, v))))
-#
-#     return scores
+def cclp(ego_net, non_edges):
+    scores = []
+
+    for u, v in non_edges:
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        score = 0
+
+        for c in common_neighbors:
+            c_tri = nx.triangles(ego_net, c)
+            c_deg = ego_net.degree(c)
+
+            score += c_tri / (c_deg * (c_deg - 1) / 2)
+
+        scores.append(score)
+
+    return scores
 
 
-# def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes):
-#     scores = []
-# 
-#     for u, v in non_edges:
-#         first_hop_degrees = []
-#         common_neighbors = nx.common_neighbors(ego_net, u, v)
-#         # v_node_neighbors = set(nx.neighbors(ego_net, v))
-# 
-#         for c in common_neighbors:
-#             cn_neighbors = set(nx.neighbors(ego_net, c))
-# 
-#             # total degree
-#             # t = len(cn_neighbors)
-# 
-#             # local degree
-#             x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
-# 
-#             # # total degree - local degree
-#             # y = t - x
-# 
-#             first_hop_degrees.append(math.log(x))
-# 
-#         first_hop_degree_index = sum(first_hop_degrees)
-# 
-#         scores.append(first_hop_degree_index)
-# 
-#     return scores
+def car(ego_net, non_edges):
+    scores = []
+
+    for u, v in non_edges:
+        common_neighbors = list(nx.common_neighbors(ego_net, u, v))
+        cc_sub_g = ego_net.subgraph(common_neighbors)
+
+        scores.append(len(common_neighbors) * cc_sub_g.number_of_edges())
+
+    return scores
+
+
+def common_neighbors_index(ego_net, non_edges):
+    scores = []
+
+    for u, v in non_edges:
+        scores.append(len(list(nx.common_neighbors(ego_net, u, v))))
+
+    return scores
+
+
+def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    for u, v in non_edges:
+        first_hop_degrees = []
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        # v_node_neighbors = set(nx.neighbors(ego_net, v))
+
+        for c in common_neighbors:
+            cn_neighbors = set(nx.neighbors(ego_net, c))
+
+            # total degree
+            # t = len(cn_neighbors)
+
+            # local degree
+            x = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+
+            # # total degree - local degree
+            # y = t - x
+
+            first_hop_degrees.append(math.log(x))
+
+        first_hop_degree_index = sum(first_hop_degrees)
+
+        scores.append(first_hop_degree_index)
+
+    return scores
 
 
 def degree_corrected_jaccard_coefficient_index(ego_net, non_edges, first_hop_nodes):
@@ -557,68 +557,68 @@ def run_adamic_adar_on_ego_net_ranking_with_cclp_and_car(ego_snapshots, ego_node
     return percent_cclp, percent_dcaa, percent_car, percent_dccn
 
 
-# def run_link_prediction_parallel(ego_snapshots, ego_node, top_k_values, snap_range, scores_list):
-#     percent_scores = {}
-#     for score in scores_list:
-#         percent_scores[score] = {}
-#         for k in top_k_values:
-#             percent_scores[score][k] = []
-#
-#     for i in snap_range:
-#         first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
-#
-#         if len(first_hop_nodes) == 0:
-#             continue
-#
-#         second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
-#         second_hop_nodes.remove(ego_node)
-#
-#         formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
-#
-#         if len(formed_nodes) == 0:
-#             continue
-#
-#         non_edges = []
-#         y_true = []
-#
-#         for n in second_hop_nodes:
-#             # adding node with no edge as tuple
-#             non_edges.append((ego_node, n))
-#
-#             if n in formed_nodes:
-#                 y_true.append(1)
-#             else:
-#                 y_true.append(0)
-#
-#         # numpy array is needed for sorting purposes
-#         y_true = np.array(y_true)
-#
-#         # evaluating different link prediction methods
-#         if 'cn' in percent_scores:
-#             y_scores = common_neighbors_index(ego_snapshots[i], non_edges)
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
-#
-#         if 'aa' in percent_scores:
-#             y_scores = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
-#
-#         if 'dccn' in percent_scores:
-#             y_scores = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
-#
-#         if 'dcaa' in percent_scores:
-#             y_scores = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dcaa'])
-#
-#         if 'car' in percent_scores:
-#             y_scores = car(ego_snapshots[i], non_edges)
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
-#
-#         if 'cclp' in percent_scores:
-#             y_scores = cclp(ego_snapshots[i], non_edges)
-#             calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
-#
-#     return percent_scores
+def run_link_prediction_parallel(ego_snapshots, ego_node, top_k_values, snap_range, scores_list):
+    percent_scores = {}
+    for score in scores_list:
+        percent_scores[score] = {}
+        for k in top_k_values:
+            percent_scores[score][k] = []
+
+    for i in snap_range:
+        first_hop_nodes = set(ego_snapshots[i].neighbors(ego_node))
+
+        if len(first_hop_nodes) == 0:
+            continue
+
+        second_hop_nodes = set(ego_snapshots[i].nodes()) - first_hop_nodes
+        second_hop_nodes.remove(ego_node)
+
+        formed_nodes = second_hop_nodes.intersection(ego_snapshots[i + 1].neighbors(ego_node))
+
+        if len(formed_nodes) == 0:
+            continue
+
+        non_edges = []
+        y_true = []
+
+        for n in second_hop_nodes:
+            # adding node with no edge as tuple
+            non_edges.append((ego_node, n))
+
+            if n in formed_nodes:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
+
+        # evaluating different link prediction methods
+        if 'cn' in percent_scores:
+            y_scores = common_neighbors_index(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
+
+        if 'aa' in percent_scores:
+            y_scores = [p for u, v, p in nx.adamic_adar_index(ego_snapshots[i], non_edges)]
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
+
+        if 'dccn' in percent_scores:
+            y_scores = degree_corrected_common_neighbors_index(ego_snapshots[i], non_edges, first_hop_nodes)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
+
+        if 'dcaa' in percent_scores:
+            y_scores = degree_corrected_adamic_adar_index(ego_snapshots[i], non_edges, first_hop_nodes)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dcaa'])
+
+        if 'car' in percent_scores:
+            y_scores = car(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
+
+        if 'cclp' in percent_scores:
+            y_scores = cclp(ego_snapshots[i], non_edges)
+            calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
+
+    return percent_scores
 
 
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
@@ -1560,274 +1560,3 @@ def car_and_cclp_directed_lp_indices_combined(ego_net, v_nodes_list, v_nodes_z):
         scores[v_i, 1] = temp_cclp
 
     return scores
-
-
-###### Directed LP on combined triads Latest version #######
-def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path):
-    start_time = datetime.now()
-
-    # return if the egonet is on the analyzed list
-    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
-        return
-
-    # return if the egonet is on the skipped list
-    if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-        return
-
-    score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
-    percent_scores = {}
-
-    for score in score_list:
-        percent_scores[score] = {}
-        for k in top_k_values:
-            percent_scores[score][k] = []
-
-    with open(data_file_base_path + ego_net_file, 'rb') as f:
-        ego_node, ego_net_snapshots = pickle.load(f)
-
-    total_y_true = 0
-
-    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
-    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
-    if num_nodes >= 100000:
-        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-            pickle.dump(0, f, protocol=-1)
-        return
-
-    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
-    for i in range(len(ego_net_snapshots) - 1):
-        first_hop_nodes, second_hop_nodes, v_nodes = dh.get_combined_type_nodes(ego_net_snapshots[i], ego_node)
-
-        v_nodes_list = list(v_nodes.keys())
-        y_true = []
-
-        for v_i in range(0, len(v_nodes_list)):
-            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
-                y_true.append(1)
-            else:
-                y_true.append(0)
-
-        # continue of no edge was formed
-        if np.sum(y_true) == 0:
-            continue
-
-        total_y_true += np.sum(y_true)
-
-        # numpy array is needed for sorting purposes
-        y_true = np.array(y_true)
-
-        # getting scores for cn, dccn, aa, dcaa
-        lp_scores = aa_cn_dc_lp_scores_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
-        for s in lp_scores.keys():
-            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
-
-        # getting scores for car and cclp
-        lp_scores = car_and_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
-        for s in lp_scores.keys():
-            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
-
-    # skip if no snapshot returned a score
-    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
-        # getting the mean of all snapshots for each score
-        for s in percent_scores:
-            for k in top_k_values:
-                percent_scores[s][k] = np.mean(percent_scores[s][k])
-
-        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
-            pickle.dump(percent_scores, f, protocol=-1)
-
-        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
-              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
-
-    # save an empty file in analyzed_egonets to know which ones were analyzed
-    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
-        pickle.dump(0, f, protocol=-1)
-
-
-def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
-    # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
-
-    scores = {
-        'cn': [],
-        'dccn': [],
-        'aa': [],
-        'dcaa': []
-    }
-
-    # a dict of info on z nodes. Every key points to a list [dccn, aa, dcaa]
-    z_info = {}
-
-    for z in first_hop_nodes:
-        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
-
-        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
-        z_global_degree = len(z_neighbors)
-
-        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
-
-        y = z_global_degree - z_local_degree
-
-        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
-        if y == 1:
-            continue
-
-        z_info[z] = []
-        # dccn
-        # temp_dccn = (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
-        z_info[z].append(math.log(z_local_degree + 2))
-
-        # aa
-        z_info[z].append(1 / math.log(z_global_degree))
-
-        # dcaa
-        z_local_degree += 1
-        dcaa = 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
-                            (y * (z_global_degree / z_local_degree)))
-
-        z_info[z].append(dcaa)
-
-    for v_i in range(len(v_nodes_list)):
-        # cn score
-        scores['cn'].append(len(v_nodes_z[v_nodes_list[v_i]]))
-
-        temp_dccn = 0
-        temp_aa = 0
-        temp_dcaa = 0
-
-        for z in v_nodes_z[v_nodes_list[v_i]]:
-            temp_dccn += z_info[z][0]
-            temp_aa += z_info[z][1]
-            temp_dcaa += z_info[z][2]
-
-        scores['dccn'].append(temp_dccn)
-        scores['aa'].append(temp_aa)
-        scores['dcaa'].append(temp_dcaa)
-
-    return scores
-
-
-def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
-    # exact same as `car_and_cclp_directed_lp_indices_combined`, but this returns a dict instead
-
-    scores = {
-        'car': [],
-        'cclp': []
-    }
-
-    undirected_ego_net = ego_net.to_undirected()
-
-    z_cclp = {}
-
-    for z in first_hop_nodes:
-        z_deg = undirected_ego_net.degree(z)
-
-        # if z_deg = 1, then the z node has no neighbor in the second hop, thus no need to compute
-        if z_deg == 1:
-            continue
-
-        z_tri = nx.triangles(undirected_ego_net, z)
-
-        z_cclp[z] = z_tri / (z_deg * (z_deg - 1) / 2)
-
-    for v_i in range(0, len(v_nodes_list)):
-        num_cn = len(v_nodes_z[v_nodes_list[v_i]])
-        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
-
-        # car score
-        scores['car'].append(num_cn * lcl)
-
-        temp_cclp = 0
-
-        for z in v_nodes_z[v_nodes_list[v_i]]:
-            temp_cclp += z_cclp[z]
-
-        # cclp score
-        scores['cclp'].append(temp_cclp)
-
-    return scores
-
-
-
-###### Calculating Performance #########
-def get_conf(list):
-    m = np.mean(list) * 100
-    err = 100 * np.std(list) / np.sqrt(len(list))
-
-    # up = round(m + err, 2)
-    # down = round(m - err, 2)
-    # return "({0}, {1})".format(down, up)
-    return "{0}^{1}".format(round(m, 2), round(err, 2))
-
-
-def calculate_lp_performance(lp_results_base_file_path, gather_individual_lp_results=False):
-    top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
-
-    if gather_individual_lp_results:
-        car = {}
-        cclp = {}
-        aa = {}
-        dcaa = {}
-        cn = {}
-        dccn = {}
-
-        for k in top_k_values:
-            car[k] = []
-            cclp[k] = []
-            aa[k] = []
-            dcaa[k] = []
-            cn[k] = []
-            dccn[k] = []
-
-        # loading result data
-        for result_file in os.listdir(lp_results_base_file_path + 'results'):
-
-            with open(lp_results_base_file_path + 'results/' + result_file, 'rb') as f:
-                egonet_lp_results = pickle.load(f)
-
-            for k in top_k_values:
-                car[k].append(egonet_lp_results['car'][k])
-                cclp[k].append(egonet_lp_results['cclp'][k])
-                aa[k].append(egonet_lp_results['aa'][k])
-                dcaa[k].append(egonet_lp_results['dcaa'][k])
-                cn[k].append(egonet_lp_results['cn'][k])
-                dccn[k].append(egonet_lp_results['dccn'][k])
-
-        # Write data into a single file
-        with open(lp_results_base_file_path + "cumulated_results/all-6-methods-results.pckle", 'wb') as f:
-            pickle.dump([car, cclp, aa, dcaa, cn, dccn], f, protocol=-1)
-    else:
-        with open(lp_results_base_file_path + "cumulated_results/all-6-methods-results.pckle", 'rb') as f:
-            car, cclp, aa, dcaa, cn, dccn = pickle.load(f)
-
-    print("Number of egonets analyzed: {0}".format(len(cn[top_k_values[0]])))
-    print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
-
-    print("CAR& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(car[k]), end='&')
-    print("")
-
-    print("CCLP& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(cclp[k]), end='&')
-    print("")
-
-    print("CN& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(cn[k]), end='&')
-    print("")
-
-    print("LD-CN& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(dccn[k]), end='&')
-    print("")
-
-    print("AA& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(aa[k]), end='&')
-    print("")
-
-    print("LD-AA& ", end=' \t')
-    for k in top_k_values:
-        print(get_conf(dcaa[k]), end='&')
-    print("")

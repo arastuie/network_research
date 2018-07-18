@@ -2,7 +2,6 @@ import os
 import numpy as np
 import facebook_helpers as fb
 from joblib import Parallel, delayed
-import link_prediction_helpers as lph
 
 
 # ************************************************************************* #
@@ -21,8 +20,8 @@ import link_prediction_helpers as lph
 # Parallel(n_jobs=24)(delayed(fb.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in egonets_to_analyze)
 
 # Plotting
-fb.plot_local_degree_empirical_results(gather_individual_results=True)
-fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
+# fb.plot_local_degree_empirical_results(gather_individual_results=True)
+# fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
 
 # ************************************************************************* #
 # ************************ Link Prediction Analysis *********************** #
@@ -42,5 +41,7 @@ fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
 #                     for ego_net_file in egonets_to_analyze)
 
 # Result Calculation
-# lph.calculate_lp_performance(fb.lp_results_path + 'before-pymk/', gather_individual_lp_results=True)
-# lph.calculate_lp_performance(fb.lp_results_path + 'after-pymk/', gather_individual_lp_results=True)
+# fb.calculate_lp_performance(gather_individual_results=True)
+
+comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
+fb.plot_percent_improvements(comparison_pairs, gather_individual_results=True)

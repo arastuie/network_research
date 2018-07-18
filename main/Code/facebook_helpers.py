@@ -6,6 +6,7 @@ import numpy as np
 import helpers as h
 import networkx as nx
 import matplotlib.pyplot as plt
+import link_prediction_evaluator as lpe
 
 
 dataset_file_path = '/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt'
@@ -15,6 +16,7 @@ empirical_pickle_path = '/shared/Results/EgocentricLinkPrediction/main/empirical
 empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/plots-1/'
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-1/'
+lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-1/'
 
 pymk_directories = ['before-pymk', 'after-pymk']
 
@@ -539,3 +541,14 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
         with open(lp_results_path + pymk_type + '/analyzed_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 
+
+def plot_percent_improvements(comparison_pairs, gather_individual_results=False):
+    for pymk_type in pymk_directories:
+        lpe.plot_percent_improvements(lp_results_path + pymk_type + '/', lp_plots_path, comparison_pairs,
+                                      gather_individual_results, facebook_pymk_type=pymk_type)
+
+
+def calculate_lp_performance(scores=None, gather_individual_results=False):
+    for pymk_type in pymk_directories:
+        print(pymk_type)
+        lpe.calculate_lp_performance(lp_results_path + pymk_type + '/', scores, gather_individual_results)
