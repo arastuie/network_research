@@ -30,12 +30,16 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # **** Google+ **** #
 # run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path, gplus.local_degree_empirical_results_path, 6)
 # dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_path,
-#                                         gplus.local_degree_empirical_plot_path, gather_individual_results=True)
+#                                         gplus.local_degree_empirical_plot_path, gather_individual_results=False)
+dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_path, gplus.local_degree_empirical_plot_path,
+                                    triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
 
 # **** Flickr **** #
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 6)
 # dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_path,
 #                                         flickr.local_degree_empirical_plot_path, gather_individual_results=True)
+dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path, flickr.local_degree_empirical_plot_path,
+                                    triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
@@ -43,6 +47,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_results_path,
 #                                         digg.directed_local_degree_empirical_plot_path,
 #                                         gather_individual_results=True)
+dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_results_path,
+                                    digg.directed_local_degree_empirical_plot_path, triangle_types='all',
+                                    separete_in_out_degree=False, gather_individual_results=True)
 
 
 # ************************************************************************* #
@@ -73,9 +80,9 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 # **** Flickr **** #
 # run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 4)
-dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
-                                                   flickr.triad_ratio_empirical_plots_path,
-                                                   gather_individual_results=True)
+# dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
+#                                                    flickr.triad_ratio_empirical_plots_path,
+#                                                    gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path, 12)
