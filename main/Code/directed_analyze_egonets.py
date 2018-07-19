@@ -32,14 +32,16 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_path,
 #                                         gplus.local_degree_empirical_plot_path, gather_individual_results=False)
 # dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_path, gplus.local_degree_empirical_plot_path,
-#                                     triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
+#                                     triangle_types='all', separete_in_out_degree=False,
+#                                     gather_individual_results=True)
 
 # **** Flickr **** #
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 6)
 # dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_path,
 #                                         flickr.local_degree_empirical_plot_path, gather_individual_results=True)
-# dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path, flickr.local_degree_empirical_plot_path,
-#                                     triangle_types='all', separete_in_out_degree=False, gather_individual_results=True)
+# dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path,
+#                                     flickr.local_degree_empirical_plot_path, triangle_types='all',
+#                                     separete_in_out_degree=False, gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
@@ -118,18 +120,17 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 # **** Google+ **** #
 run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 11)
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
-lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
-                              gather_individual_results=True)
+# lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
+#                               gather_individual_results=True)
 
 # **** Flickr **** #
 run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 11)
 # lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)
-lpe.plot_percent_improvements(flickr.lp_results_path, flickr.lp_plots_path, comparison_pairs,
-                              gather_individual_results=True)
+# lpe.plot_percent_improvements(flickr.lp_results_path, flickr.lp_plots_path, comparison_pairs,
+#                               gather_individual_results=True)
 
 # **** Digg **** #
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 6)
 # lpe.calculate_lp_performance(digg.lp_results_file_path, gather_individual_results=False)
-lpe.plot_percent_improvements(digg.lp_results_file_path, digg.lp_plots_path, comparison_pairs,
-                              gather_individual_results=True)
-
+# lpe.plot_percent_improvements(digg.lp_results_file_path, digg.lp_plots_path, comparison_pairs,
+#                               gather_individual_results=True)

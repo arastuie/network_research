@@ -1,8 +1,6 @@
 import os
-import math
 import pickle
 import numpy as np
-import helpers as h
 import matplotlib.pyplot as plt
 
 score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
