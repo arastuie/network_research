@@ -271,14 +271,14 @@ def get_t09_type_nodes(ego_net, ego_node):
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
-def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path):
+def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path, skip_over_100k=True):
     # return if the egonet is on the analyzed list
     if os.path.isfile(results_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
-    # # return if the egonet is on the skipped list
-    # if os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
-    #     return
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
     # return if the egonet is on the currently being analyzed list
     if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
@@ -299,12 +299,12 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
     with open(egonet_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
-    # # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    # if nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
-    #     with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-    #         pickle.dump(0, f, protocol=-1)
-    #
-    #     return
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if skip_over_100k and nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
+        with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+
+        return
 
     with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
@@ -878,14 +878,14 @@ def get_t09_type_second_hop_nodes(ego_net, ego_node):
     return second_hop_nodes, num_nodes
 
 
-def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result_file_base_path):
+def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result_file_base_path, skip_over_100k=True):
     # return if the egonet is on the analyzed list
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
-    # # return if the egonet is on the skipped list
-    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-    #     return
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
     # return if the egonet is on the currently being analyzed list
     if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
@@ -909,12 +909,12 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
     with open(data_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
-    # # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
-    # if ego_net_snapshots[-1].number_of_nodes() > 100000:
-    #     with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-    #         pickle.dump(0, f, protocol=-1)
-    #
-    #     return
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if skip_over_100k and ego_net_snapshots[-1].number_of_nodes() > 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+
+        return
 
     results = {
         'T01': {}, 'T02': {}, 'T03': {}, 'T04': {}, 'T05': {}, 'T06': {}, 'T07': {}, 'T08': {}, 'T09': {}
@@ -1099,16 +1099,17 @@ def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
         percent_score[k].append(sum(top_preds[:k]) / k)
 
 
-def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path):
+def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path,
+                                 skip_over_100k=True):
     start_time = datetime.now()
 
     # return if the egonet is on the analyzed list
     if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
         return
 
-    # # return if the egonet is on the skipped list
-    # if os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
-    #     return
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
 
     score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
     percent_scores = {}
@@ -1124,11 +1125,11 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
     total_y_true = 0
 
     num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
-    # # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
-    # if num_nodes >= 100000:
-    #     with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
-    #         pickle.dump(0, f, protocol=-1)
-    #     return
+    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
+    if skip_over_100k and num_nodes >= 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
 
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
@@ -1283,3 +1284,75 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     return scores
 
 
+########## Link Prediction on Test Method ##############
+def run_directed_link_prediciton_on_test_method(method_pointer, method_name, ego_net_file, top_k_values,
+                                                data_file_base_path, result_file_base_path, skip_over_100k=True):
+    start_time = datetime.now()
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
+    # score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
+    percent_scores = dict
+    percent_scores[method_name] = {}
+    for k in top_k_values:
+        percent_scores[method_name][k] = []
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net_snapshots = pickle.load(f)
+
+    total_y_true = 0
+
+    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
+    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
+    if skip_over_100k and num_nodes >= 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # continue of no edge was formed
+        if np.sum(y_true) == 0:
+            continue
+
+        total_y_true += np.sum(y_true)
+
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
+
+        # getting scores
+        lp_scores = method_pointer(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        calc_top_k_scores(lp_scores, y_true, top_k_values, percent_scores[method_name])
+
+    # skip if no snapshot returned a score
+    if len(percent_scores[method_name][top_k_values[0]]) > 0:
+        # getting the mean of all snapshots for each score
+        for k in top_k_values:
+            percent_scores[method_name][k] = np.mean(percent_scores[method_name][k])
+
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
+              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)

@@ -44,4 +44,4 @@ from joblib import Parallel, delayed
 # fb.calculate_lp_performance(gather_individual_results=False)
 
 comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
-fb.plot_percent_improvements(comparison_pairs, gather_individual_results=True)
+fb.plot_percent_improvements(comparison_pairs, gather_individual_results=False)
