@@ -9,16 +9,19 @@ score_names = {'cn': 'CN', 'dccn': 'LD-CN', 'aa': 'AA', 'dcaa': 'LD-AA', 'car': 
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
 
-def get_all_results(result_file_base_path, gather_individual_results):
+def get_all_results(result_file_base_path, gather_individual_results, scores=None):
     if not gather_individual_results:
         with open(result_file_base_path + "cumulated_results/all-methods-results.pckle", 'rb') as f:
             all_scores = pickle.load(f)
 
         return all_scores
 
+    if scores is None:
+        scores = score_list
+
     all_scores = {}
 
-    for score in score_list:
+    for score in scores:
         all_scores[score] = {}
         for k in top_k_values:
             all_scores[score][k] = []
@@ -29,7 +32,7 @@ def get_all_results(result_file_base_path, gather_individual_results):
             egonet_lp_results = pickle.load(f)
 
         for k in top_k_values:
-            for score in score_list:
+            for score in scores:
                 all_scores[score][k].append(egonet_lp_results[score][k])
 
         # Create directory if not exists
@@ -122,20 +125,28 @@ def get_conf(lp_scores):
     return "{0}^{1}".format(round(m, 2), round(err, 2))
 
 
-def calculate_lp_performance(lp_results_base_file_path, scores=None, gather_individual_results=False):
+def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, gather_individual_results=False):
     # Scores is a list of scores to be evaluated ['aa', 'dccn']. If None, all will be evaluated.
 
-    # loading result data
-    all_scores = get_all_results(lp_results_base_file_path, gather_individual_results)
+    if is_test:
+        lp_results_base_file_path = lp_results_base_file_path + 'test-methods/' + scores[0] + '/pickle-files/'
 
     if scores is None:
         scores = score_list
+
+    # loading result data
+    all_scores = get_all_results(lp_results_base_file_path, gather_individual_results, scores=scores)
 
     print("Number of egonets analyzed: {0}".format(len(all_scores[scores[0]][top_k_values[0]])))
     print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
 
     for score in scores:
-        print(score_names[score] + "& ", end=' \t')
+        score_name = score
+        if score in score_names.keys():
+            score_name = score_names[score]
+
+        print(score_name + "& ", end=' \t')
+
         for k in top_k_values:
             print(get_conf(all_scores[score][k]), end='&')
         print("")

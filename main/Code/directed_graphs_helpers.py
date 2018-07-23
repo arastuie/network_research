@@ -959,7 +959,8 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
     print("Analyzed ego net {0}".format(ego_net_file))
 
 
-def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_save_path, gather_individual_results=False):
+def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_save_path,
+                                                   gather_individual_results=False):
     triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
 
     if gather_individual_results:
@@ -1297,8 +1298,7 @@ def run_directed_link_prediciton_on_test_method(method_pointer, method_name, ego
     if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
         return
 
-    # score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
-    percent_scores = dict
+    percent_scores = {}
     percent_scores[method_name] = {}
     for k in top_k_values:
         percent_scores[method_name][k] = []
@@ -1356,3 +1356,41 @@ def run_directed_link_prediciton_on_test_method(method_pointer, method_name, ego
     # save an empty file in analyzed_egonets to know which ones were analyzed
     with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
+
+
+def test1_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # Method description:
+
+    scores = []
+    # a dict of info on z nodes. Every key points to the test score
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_local_degree += 1
+        test_method = 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+                            (y * (z_global_degree / z_local_degree)))
+
+        z_info[z] = test_method
+
+    for v_i in range(len(v_nodes_list)):
+        temp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            temp += z_info[z]
+
+        scores.append(temp)
+
+    return scores

@@ -22,6 +22,7 @@ triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/mai
                                    'triad-link-formed-ratio/plots/'
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files-1/'
+lp_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/'
 lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots-1/'
 
 def read_entire_gplus_network():

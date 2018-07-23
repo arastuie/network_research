@@ -20,6 +20,7 @@ triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/mai
 
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/pickle-files/'
+lp_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/'
 lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/plots/'
 
 def read_graph():
