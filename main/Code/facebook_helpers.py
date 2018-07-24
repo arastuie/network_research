@@ -193,7 +193,6 @@ def run_local_degree_empirical_analysis(ego_net_file):
 def plot_local_degree_empirical_results(gather_individual_results=False):
     # Plotting info
     gl_labels = ['local', 'global']
-    gl_labels_plotting = ['Local', 'Global']
     z = 1.96
     bar_width = 0.40
     opacity = 0.6
@@ -205,13 +204,15 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
 
     # The order must be kept, since the saved pickle files are in the same order
     result_types = ['local-formed', 'global-formed', 'local-not-formed', 'global-not-formed']
+
+    all_results = {'before-pymk': {}, 'after-pymk': {}}
+
     for pymk_type in pymk_directories:
         if gather_individual_results:
-            all_results = {}
 
             for res_type in result_types:
-                all_results[res_type] = 0
-                all_results[res_type + '-err'] = 0
+                all_results[pymk_type][res_type] = 0
+                all_results[pymk_type][res_type + '-err'] = 0
 
             results = []
 
@@ -222,47 +223,49 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
             results = np.array(results)
 
             for i, res_type in enumerate(result_types):
-                all_results[res_type] = np.mean(results[:, i])
-                all_results[res_type + '-err'] = h.get_mean_ci(results[:, i], z)
+                all_results[pymk_type][res_type] = np.mean(results[:, i])
+                all_results[pymk_type][res_type + '-err'] = h.get_mean_ci(results[:, i], z)
 
             # Create directory if not exists
             if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
                 os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
 
             with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'wb') as f:
-                pickle.dump(all_results, f, protocol=-1)
+                pickle.dump(all_results[pymk_type], f, protocol=-1)
 
         else:
             with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'rb') as f:
-                all_results = pickle.load(f)
+                all_results[pymk_type] = pickle.load(f)
 
-        # plotting
-        plt.rcParams["figure.figsize"] = (8, 10)
-        for i_degree in range(2):
-            plt.rc('legend', fontsize=25)
-            plt.rc('xtick', labelsize=28)
-            plt.rc('ytick', labelsize=14)
+    # plotting
+    plt.rcParams["figure.figsize"] = (8, 10)
+    for i_degree in gl_labels:
+        plt.rc('legend', fontsize=25)
+        plt.rc('xtick', labelsize=28)
+        plt.rc('ytick', labelsize=14)
 
-            fig, ax = plt.subplots()
+        fig, ax = plt.subplots()
 
-            for i_bar in range(len(dif_results_for_plotting)):
-                plt.bar(np.arange(len(names)) + bar_width * i_bar,
-                        all_results[gl_labels[i_degree] + '-' + dif_results_for_plotting[i_bar]],
-                        bar_width,
-                        alpha=opacity,
-                        color=bar_color[i_bar],
-                        yerr=all_results[gl_labels[i_degree] + '-' + dif_results_for_plotting[i_bar] + '-err'],
-                        error_kw=error_config,
-                        label=bar_legends[i_bar])
+        for i_bar in range(len(dif_results_for_plotting)):
+            plt.bar(np.arange(len(names)) + bar_width * i_bar,
+                    [all_results['before-pymk'][i_degree + '-' + dif_results_for_plotting[i_bar]],
+                     all_results['after-pymk'][i_degree + '-' + dif_results_for_plotting[i_bar]]],
+                    bar_width,
+                    alpha=opacity,
+                    color=bar_color[i_bar],
+                    yerr=[all_results['before-pymk'][i_degree + '-' + dif_results_for_plotting[i_bar] + '-err'],
+                          all_results['after-pymk'][i_degree + '-' + dif_results_for_plotting[i_bar] + '-err']],
+                    error_kw=error_config,
+                    label=bar_legends[i_bar])
 
-            plt.ylabel('Mean Normalized {0} Degree'.format(gl_labels_plotting[i_degree]), fontsize=25)
-            plt.xticks(np.arange(len(names)) + bar_width / 2, names)
-            plt.legend(loc='upper left')
-            plt.tight_layout()
-            plt.ylim(ymax=0.4)
+        plt.ylabel('Mean Normalized {0} Degree'.format(i_degree.capitalize()), fontsize=25)
+        plt.xticks(np.arange(len(names)) + bar_width / 2, names)
+        plt.legend(loc='upper left')
+        plt.tight_layout()
+        # plt.ylim(ymax=0.4)
 
-            plt.savefig('{0}barplot-{1}.pdf'.format(empirical_plot_path, gl_labels[i_degree]), format='pdf')
-            plt.clf()
+        plt.savefig('{0}barplot-{1}.pdf'.format(empirical_plot_path, i_degree), format='pdf')
+        plt.clf()
 
 
 def plot_local_degree_empirical_ecdf(gather_individual_results=False):

@@ -20,7 +20,7 @@ from joblib import Parallel, delayed
 # Parallel(n_jobs=24)(delayed(fb.run_local_degree_empirical_analysis)(ego_net_file) for ego_net_file in egonets_to_analyze)
 
 # Plotting
-# fb.plot_local_degree_empirical_results(gather_individual_results=True)
+fb.plot_local_degree_empirical_results(gather_individual_results=False)
 # fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
 
 # ************************************************************************* #
@@ -43,5 +43,5 @@ from joblib import Parallel, delayed
 # Result Calculation
 # fb.calculate_lp_performance(gather_individual_results=False)
 
-comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
-fb.plot_percent_improvements(comparison_pairs, gather_individual_results=False)
+# comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
+# fb.plot_percent_improvements(comparison_pairs, gather_individual_results=False)
