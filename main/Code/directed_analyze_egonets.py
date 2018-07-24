@@ -41,6 +41,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                     triangle_types='all', separete_in_out_degree=False,
 #                                     gather_individual_results=True)
 
+dgh.local_degree_empirical_result_comparison(gplus.local_degree_empirical_results_path,
+                                             gather_individual_results=False)
+
 
 # **** Flickr **** #
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path, flickr.local_degree_empirical_results_path, 6,
@@ -52,6 +55,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_path,
 #                                     flickr.local_degree_empirical_plot_path, triangle_types='all',
 #                                     separete_in_out_degree=False, gather_individual_results=True)
+
+dgh.local_degree_empirical_result_comparison(flickr.local_degree_empirical_results_path,
+                                             gather_individual_results=False)
 
 
 # **** Digg **** #
@@ -66,6 +72,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_results_path,
 #                                     digg.directed_local_degree_empirical_plot_path, triangle_types='all',
 #                                     separete_in_out_degree=False, gather_individual_results=True)
+
+dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_results_path,
+                                             gather_individual_results=False)
 
 
 # ************************************************************************* #
@@ -142,8 +151,8 @@ def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, 
 comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 
 # **** Google+ **** #
-run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 6, skip_over_100k=False)
-run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 6, skip_over_100k=False)
+# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 6, skip_over_100k=False)
+# run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 6, skip_over_100k=False)
 
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
 

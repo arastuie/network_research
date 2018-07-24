@@ -429,7 +429,7 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
     print("Analyzed ego net {0}".format(ego_net_file))
 
 
-def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, gather_individual_results=False):
+def get_all_empirical_resutls(result_file_base_path, gather_individual_results):
     # Results pickle files are in the following order
     #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
     #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
@@ -500,6 +500,20 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
     else:
         with open(result_file_base_path + 'all-scores/all-types-plot.pckle', 'rb') as f:
             all_results = pickle.load(f)
+
+    return  all_results
+
+
+def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, gather_individual_results=False):
+    # Results pickle files are in the following order
+    #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
+    #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
+    #   global-not-formed-out-degree
+
+    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+    gl_labels = ['Local', 'Global']
+
+    all_results = get_all_empirical_resutls(result_file_base_path, gather_individual_results)
 
     # plotting
     bar_width = 0.20
@@ -649,6 +663,53 @@ def plot_local_degree_empirical_cdf(result_file_base_path, plot_save_path, trian
 
         print("Done!")
 
+
+def local_degree_empirical_result_comparison(result_file_base_path, gather_individual_results=False):
+    # Results pickle files are in the following order
+    #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
+    #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
+    #   global-not-formed-out-degree
+    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+
+    all_results = get_all_empirical_resutls(result_file_base_path, gather_individual_results)
+    print()
+    # The print out is optimized for excel
+    print('Global')
+    for t_type in triangle_types:
+        print(t_type, end=',')
+        print(t_type, end=',')
+    print()
+    for _ in triangle_types:
+        print('In-degree', end=',')
+        print('out-degree', end=',')
+    print()
+    for i in range(len(triangle_types)):
+        # difference for in degree
+        print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-not-formed-err'][i] -
+              all_results['Global']['id-formed'][i] - all_results['Global']['id-formed-err'][i], end=',')
+
+        # difference for in degree
+        print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-not-formed-err'][i] -
+              all_results['Global']['od-formed'][i] - all_results['Global']['od-formed-err'][i], end=',')
+
+    print()
+    print('Local')
+    for t_type in triangle_types:
+        print(t_type, end=',')
+        print(t_type, end=',')
+    print()
+    for _ in triangle_types:
+        print('In-degree', end=',')
+        print('out-degree', end=',')
+    print()
+    for i in range(len(triangle_types)):
+        # difference for in degree
+        print(all_results['Local']['id-formed'][i] - all_results['Local']['id-formed-err'][i] -
+              all_results['Local']['id-not-formed'][i] - all_results['Local']['id-not-formed-err'][i], end=',')
+
+        # difference for in degree
+        print(all_results['Local']['od-formed'][i] - all_results['Local']['od-formed-err'][i] -
+              all_results['Local']['od-not-formed'][i] - all_results['Local']['od-not-formed-err'][i], end=',')
 
 
 ########## Links formed in triad ratio analysis ##############
