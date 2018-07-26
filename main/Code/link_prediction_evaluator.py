@@ -125,13 +125,17 @@ def get_conf(lp_scores):
     return "{0}^{1}".format(round(m, 2), round(err, 2))
 
 
-def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, gather_individual_results=False):
+def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, specific_triads_only=False,
+                             gather_individual_results=False):
     # Scores is a list of scores to be evaluated ['aa', 'dccn']. If None, all will be evaluated.
 
-    if is_test:
+    if specific_triads_only:
+        lp_results_base_file_path = lp_results_base_file_path + 'test-methods/specific-triads/' + \
+                                    scores[0] + '/pickle-files/'
+    elif is_test:
         lp_results_base_file_path = lp_results_base_file_path + 'test-methods/' + scores[0] + '/pickle-files/'
 
-    if scores is None:
+    if not is_test:
         scores = score_list
 
     # loading result data

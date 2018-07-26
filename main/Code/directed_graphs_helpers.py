@@ -1154,6 +1154,44 @@ def get_combined_type_nodes(ego_net, ego_node):
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
+def get_specific_type_nodes(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        # allowing types T01 and T02
+        if ego_net.has_edge(z, ego_node):
+            for v in temp_v_nodes:
+                if v == ego_node or ego_net.has_edge(ego_node, v) or not ego_net.has_edge(z, v):
+                    continue
+
+                if v not in v_nodes:
+                    v_nodes[v] = [z]
+                else:
+                    v_nodes[v].append(z)
+        # allowing type T03
+        else:
+            for v in temp_v_nodes:
+                if v == ego_node or ego_net.has_edge(ego_node, v) or \
+                        not (ego_net.has_edge(z, v) and ego_net.has_edge(v, z)):
+                    continue
+
+                if v not in v_nodes:
+                    v_nodes[v] = [z]
+                else:
+                    v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+
+
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
     index_of_top_k_scores = np.argsort(y_scores)[::-1][:top_k_values[-1]]
     top_preds = y_true[index_of_top_k_scores]
@@ -1162,7 +1200,7 @@ def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
 
 
 def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path,
-                                 skip_over_100k=True):
+                                 specific_triads_only=False, skip_over_100k=True):
     start_time = datetime.now()
 
     # return if the egonet is on the analyzed list
@@ -1195,7 +1233,10 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
 
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
-        first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+        if specific_triads_only:
+            first_hop_nodes, second_hop_nodes, v_nodes = get_specific_type_nodes(ego_net_snapshots[i], ego_node)
+        else:
+            first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
 
         v_nodes_list = list(v_nodes.keys())
         y_true = []
