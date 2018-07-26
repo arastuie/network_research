@@ -25,6 +25,7 @@ lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle
 lp_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/'
 lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/plots-1/'
 
+
 def read_entire_gplus_network():
     gplus_net = nx.DiGraph()
 

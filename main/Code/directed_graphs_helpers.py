@@ -664,7 +664,8 @@ def plot_local_degree_empirical_cdf(result_file_base_path, plot_save_path, trian
         print("Done!")
 
 
-def local_degree_empirical_result_comparison(result_file_base_path, gather_individual_results=False):
+def local_degree_empirical_result_comparison(result_file_base_path, include_conf_intervals,
+                                             gather_individual_results=False):
     # Results pickle files are in the following order
     #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
     #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
@@ -683,14 +684,22 @@ def local_degree_empirical_result_comparison(result_file_base_path, gather_indiv
         print('In-degree', end=',')
         print('out-degree', end=',')
     print()
-    for i in range(len(triangle_types)):
-        # difference for in degree
-        print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-not-formed-err'][i] -
-              all_results['Global']['id-formed'][i] - all_results['Global']['id-formed-err'][i], end=',')
+    if include_conf_intervals:
+        for i in range(len(triangle_types)):
+            # difference for in degree
+            print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-not-formed-err'][i] -
+                  all_results['Global']['id-formed'][i] - all_results['Global']['id-formed-err'][i], end=',')
 
-        # difference for in degree
-        print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-not-formed-err'][i] -
-              all_results['Global']['od-formed'][i] - all_results['Global']['od-formed-err'][i], end=',')
+            # difference for in degree
+            print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-not-formed-err'][i] -
+                  all_results['Global']['od-formed'][i] - all_results['Global']['od-formed-err'][i], end=',')
+    else:
+        for i in range(len(triangle_types)):
+            # difference for in degree
+            print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-formed'][i], end=',')
+
+            # difference for in degree
+            print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-formed'][i], end=',')
 
     print()
     print('Local')
@@ -702,14 +711,22 @@ def local_degree_empirical_result_comparison(result_file_base_path, gather_indiv
         print('In-degree', end=',')
         print('out-degree', end=',')
     print()
-    for i in range(len(triangle_types)):
-        # difference for in degree
-        print(all_results['Local']['id-formed'][i] - all_results['Local']['id-formed-err'][i] -
-              all_results['Local']['id-not-formed'][i] - all_results['Local']['id-not-formed-err'][i], end=',')
+    if include_conf_intervals:
+        for i in range(len(triangle_types)):
+            # difference for in degree
+            print(all_results['Local']['id-formed'][i] - all_results['Local']['id-formed-err'][i] -
+                  all_results['Local']['id-not-formed'][i] - all_results['Local']['id-not-formed-err'][i], end=',')
 
-        # difference for in degree
-        print(all_results['Local']['od-formed'][i] - all_results['Local']['od-formed-err'][i] -
-              all_results['Local']['od-not-formed'][i] - all_results['Local']['od-not-formed-err'][i], end=',')
+            # difference for in degree
+            print(all_results['Local']['od-formed'][i] - all_results['Local']['od-formed-err'][i] -
+                  all_results['Local']['od-not-formed'][i] - all_results['Local']['od-not-formed-err'][i], end=',')
+    else:
+        for i in range(len(triangle_types)):
+            # difference for in degree
+            print(all_results['Local']['id-formed'][i] - all_results['Local']['id-not-formed'][i], end=',')
+
+            # difference for in degree
+            print(all_results['Local']['od-formed'][i] - all_results['Local']['od-not-formed'][i], end=',')
 
 
 ########## Links formed in triad ratio analysis ##############
