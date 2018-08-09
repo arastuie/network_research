@@ -26,6 +26,9 @@ def get_all_results(result_file_base_path, gather_individual_results, scores=Non
         for k in top_k_values:
             all_scores[score][k] = []
 
+    num_files = len(os.listdir(result_file_base_path + 'results'))
+
+    cnt = 0
     # loading result data
     for result_file in os.listdir(result_file_base_path + 'results'):
         with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
@@ -35,13 +38,18 @@ def get_all_results(result_file_base_path, gather_individual_results, scores=Non
             for score in scores:
                 all_scores[score][k].append(egonet_lp_results[score][k])
 
-        # Create directory if not exists
-        if not os.path.exists(result_file_base_path + 'cumulated_results'):
-            os.makedirs(result_file_base_path + 'cumulated_results')
+        cnt += 1
 
-        # Write data into a single file
-        with open(result_file_base_path + "cumulated_results/all-methods-results.pckle", 'wb') as f:
-            pickle.dump(all_scores, f, protocol=-1)
+        print("{:3.2f}% loaded.".format(cnt / num_files * 100), end='\r')
+
+    print()
+    # Create directory if not exists
+    if not os.path.exists(result_file_base_path + 'cumulated_results'):
+        os.makedirs(result_file_base_path + 'cumulated_results')
+
+    # Write data into a single file
+    with open(result_file_base_path + "cumulated_results/all-methods-results.pckle", 'wb') as f:
+        pickle.dump(all_scores, f, protocol=-1)
 
     return all_scores
 
@@ -122,7 +130,7 @@ def get_conf(lp_scores):
     # up = round(m + err, 2)
     # down = round(m - err, 2)
     # return "({0}, {1})".format(down, up)
-    return "{0}^{1}".format(round(m, 2), round(err, 2))
+    return "{0},{1}".format(round(m, 2), round(err, 2))
 
 
 def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, specific_triads_only=False,
@@ -149,8 +157,34 @@ def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=Fal
         if score in score_names.keys():
             score_name = score_names[score]
 
-        print(score_name + "& ", end=' \t')
+        print(score_name, end=',')
 
         for k in top_k_values:
-            print(get_conf(all_scores[score][k]), end='&')
+            print(get_conf(all_scores[score][k]), end=',')
+        print("")
+
+
+def calculate_lp_performance_on_personalized_triads(lp_results_base_file_path, test_name, gather_individual_results=False):
+    # Scores is a list of scores to be evaluated ['aa', 'dccn']. If None, all will be evaluated.
+
+    lp_results_base_file_path = lp_results_base_file_path + 'test-methods/specific-triads/personalized/' + \
+                                test_name + '/pickle-files/'
+
+    scores = ['cn', 'aa', 'car', 'cclp']
+
+    # loading result data
+    all_scores = get_all_results(lp_results_base_file_path, gather_individual_results, scores=scores)
+
+    print("Number of egonets analyzed: {0}".format(len(all_scores[scores[0]][top_k_values[0]])))
+    print("K:,\t 1,\t 3,\t 5,\t 10,\t 15,\t 20,\t 25,\t 30")
+
+    for score in scores:
+        score_name = score
+        if score in score_names.keys():
+            score_name = score_names[score]
+
+        print(score_name, end=',')
+
+        for k in top_k_values:
+            print(get_conf(all_scores[score][k]), end=',')
         print("")

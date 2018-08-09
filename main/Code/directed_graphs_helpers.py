@@ -1513,3 +1513,258 @@ def test1_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         scores.append(temp)
 
     return scores
+
+
+def get_combined_type_nodes_with_triad_ratio(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node))
+    second_hop_nodes = set()
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
+        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
+
+        for v in temp_v_nodes:
+            if v == ego_node or ego_net.has_edge(ego_node, v):
+                continue
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    if ego_node in second_hop_nodes:
+        second_hop_nodes.remove(ego_node)
+
+    # triads are the same as all, but ending with 0 and 1 is with and without an edge from v to u.
+    triad_radio = {'T010': 0, 'T011': 0, 'T020': 0, 'T021': 0, 'T030': 0, 'T031': 0, 'T040': 0, 'T041': 0, 'T050': 0,
+                   'T051': 0, 'T060': 0, 'T061': 0}
+
+    for z1 in first_hop_nodes:
+        for z2 in first_hop_nodes:
+            if z1 == z2:
+                continue
+
+            if ego_net.has_edge(z1, ego_node):
+                if ego_net.has_edge(z1, z2):
+                    if ego_net.has_edge(z2, z1):
+                        if ego_net.has_edge(z2, ego_node):
+                            triad_radio['T011'] += 1
+                        else:
+                            triad_radio['T010'] += 1
+                    else:
+                        if ego_net.has_edge(z2, ego_node):
+                            triad_radio['T021'] += 1
+                        else:
+                            triad_radio['T020'] += 1
+                else:
+                    if ego_net.has_edge(z2, ego_node):
+                        triad_radio['T051'] += 1
+                    else:
+                        triad_radio['T050'] += 1
+            else:
+                if ego_net.has_edge(z1, z2):
+                    if ego_net.has_edge(z2, z1):
+                        if ego_net.has_edge(z2, ego_node):
+                            triad_radio['T031'] += 1
+                        else:
+                            triad_radio['T030'] += 1
+                    else:
+                        if ego_net.has_edge(z2, ego_node):
+                            triad_radio['T041'] += 1
+                        else:
+                            triad_radio['T040'] += 1
+                else:
+                    if ego_net.has_edge(z2, ego_node):
+                        triad_radio['T061'] += 1
+                    else:
+                        triad_radio['T060'] += 1
+
+    total = 0
+    for t_type in triad_radio.keys():
+        total += triad_radio[t_type]
+
+    if total != 0:
+        for t_type in triad_radio.keys():
+            if triad_radio[t_type] == 0:
+                triad_radio[t_type] = 0.01
+                continue
+
+            triad_radio[t_type] = triad_radio[t_type] / total
+    else:
+        for t_type in triad_radio.keys():
+            triad_radio[t_type] = 1
+
+    return first_hop_nodes, second_hop_nodes, v_nodes, triad_radio
+
+
+def cn_aa_car_cclp_on_triad_ratio(ego_net, ego_node, v_nodes_list, v_nodes_z, first_hop_nodes, triad_radio):
+    # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
+
+    scores = {
+        'cn': [],
+        'aa': [],
+        'car': [],
+        'cclp': []
+    }
+
+    undirected_ego_net = ego_net.to_undirected()
+
+    # a dict of info on z nodes. Every key points to a list [aa, cclp]
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_info[z] = []
+
+        z_neighbors = set(ego_net.predecessors(z)).union(ego_net.successors(z))
+        z_global_degree = len(z_neighbors)
+
+        # if global degree is 1, then z node has no neighbor in the second hop
+        if z_global_degree == 1:
+            continue
+        # aa
+        z_info[z].append(1 / math.log(z_global_degree))
+
+        z_deg = undirected_ego_net.degree(z)
+        z_tri = nx.triangles(undirected_ego_net, z)
+
+        #cclp
+        z_info[z].append(z_tri / (z_deg * (z_deg - 1) / 2))
+
+    for v_i in range(len(v_nodes_list)):
+        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+        v = v_nodes_list[v_i]
+
+        temp_cn = 0
+        temp_aa = 0
+        temp_cclp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            triad_ratio_multiplier = -1
+            if ego_net.has_edge(z, ego_node):
+                if ego_net.has_edge(z, v):
+                    if ego_net.has_edge(v, z):
+                        if ego_net.has_edge(v, ego_node):
+                            triad_ratio_multiplier = triad_radio['T011']
+                        else:
+                            triad_ratio_multiplier = triad_radio['T010']
+                    else:
+                        if ego_net.has_edge(v, ego_node):
+                            triad_ratio_multiplier = triad_radio['T021']
+                        else:
+                            triad_ratio_multiplier = triad_radio['T020']
+                else:
+                    if ego_net.has_edge(v, ego_node):
+                        triad_ratio_multiplier = triad_radio['T051']
+                    else:
+                        triad_ratio_multiplier = triad_radio['T050']
+            else:
+                if ego_net.has_edge(z, v):
+                    if ego_net.has_edge(v, z):
+                        if ego_net.has_edge(v, ego_node):
+                            triad_ratio_multiplier = triad_radio['T031']
+                        else:
+                            triad_ratio_multiplier = triad_radio['T030']
+                    else:
+                        if ego_net.has_edge(v, ego_node):
+                            triad_ratio_multiplier = triad_radio['T041']
+                        else:
+                            triad_ratio_multiplier = triad_radio['T040']
+                else:
+                    if ego_net.has_edge(v, ego_node):
+                        triad_ratio_multiplier = triad_radio['T061']
+                    else:
+                        triad_ratio_multiplier = triad_radio['T060']
+
+            if triad_ratio_multiplier == -1:
+                print("triad ratio is wrong")
+
+            temp_cn += triad_ratio_multiplier
+            temp_aa += z_info[z][0] * triad_ratio_multiplier
+            temp_cclp += z_info[z][1] * triad_ratio_multiplier
+
+        scores['cn'].append(temp_cn)
+        scores['aa'].append(temp_aa)
+        scores['car'].append(temp_cn * lcl)
+        scores['cclp'].append(temp_cclp)
+
+    return scores
+
+
+def run_directed_link_prediction_on_personalized_tirad(ego_net_file, top_k_values, data_file_base_path,
+                                                       result_file_base_path, skip_over_100k=True):
+    start_time = datetime.now()
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
+    score_list = ['cn', 'aa', 'car', 'cclp']
+    percent_scores = {}
+
+    for score in score_list:
+        percent_scores[score] = {}
+        for k in top_k_values:
+            percent_scores[score][k] = []
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net_snapshots = pickle.load(f)
+
+    total_y_true = 0
+
+    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
+    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
+    if skip_over_100k and num_nodes >= 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        first_hop_nodes, second_hop_nodes, v_nodes, triad_ratio = \
+            get_combined_type_nodes_with_triad_ratio(ego_net_snapshots[i], ego_node)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # continue of no edge was formed
+        if np.sum(y_true) == 0:
+            continue
+
+        total_y_true += np.sum(y_true)
+
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
+
+        # getting scores for cn, aa, car, cclp
+        lp_scores = cn_aa_car_cclp_on_triad_ratio(ego_net_snapshots[i], ego_node, v_nodes_list, v_nodes,
+                                                  first_hop_nodes, triad_ratio)
+        for s in lp_scores.keys():
+            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
+
+    # skip if no snapshot returned a score
+    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
+            for k in top_k_values:
+                percent_scores[s][k] = np.mean(percent_scores[s][k])
+
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
+              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
