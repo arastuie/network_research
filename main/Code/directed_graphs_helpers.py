@@ -1191,22 +1191,22 @@ def get_specific_type_nodes(ego_net, ego_node):
                     v_nodes[v] = [z]
                 else:
                     v_nodes[v].append(z)
-        # allowing type T03
-        else:
-            for v in temp_v_nodes:
-                if v == ego_node or ego_net.has_edge(ego_node, v) or \
-                        not (ego_net.has_edge(z, v) and ego_net.has_edge(v, z)):
-                    continue
-
-                if v not in v_nodes:
-                    v_nodes[v] = [z]
-                else:
-                    v_nodes[v].append(z)
+        # # allowing type T03
+        # else:
+        #     for v in temp_v_nodes:
+        #         if v == ego_node or ego_net.has_edge(ego_node, v) or \
+        #                 not (ego_net.has_edge(z, v) and ego_net.has_edge(v, z)):
+        #             continue
+        #
+        #         if v not in v_nodes:
+        #             v_nodes[v] = [z]
+        #         else:
+        #             v_nodes[v].append(z)
 
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
 
-    return list(first_hop_nodes), list(second_hop_nodes), v_nodes
+    return first_hop_nodes, second_hop_nodes, v_nodes
 
 
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
