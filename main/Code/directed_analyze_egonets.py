@@ -237,10 +237,22 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 #                                                      gplus.lp_results_base_path, num_samples=20, num_process=6,
 #                                                      skip_over_100k=False, wipe_older_results=True)
 
+# LD-CAR
+# run_parallel_link_prediction_analysis_on_test_method(dgh.dccar_test1, 'dccar-test1', gplus.egonet_files_path,
+#                                                      gplus.lp_results_base_path, num_samples=50000, num_process=6,
+#                                                      skip_over_100k=False, wipe_older_results=True)
+#
+# lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['dccar-test1'], is_test=True,
+#                              gather_individual_results=True)
+
+
 # run_parallel_link_prediction_analysis_on_test_method('', 'first-two-triads', gplus.egonet_files_path,
 #                                                      gplus.lp_results_base_path, num_process=6, skip_over_100k=True,
 #                                                      num_samples=50000, specific_triads_only=True,
 #                                                      wipe_older_results=False)
+
+lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['first-two-triads'], is_test=False,
+                             specific_triads_only=True, gather_individual_results=True)
 
 # lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['test1'], is_test=True,
 #                              gather_individual_results=True)
@@ -252,6 +264,14 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 # run_parallel_link_prediction_analysis_on_test_method(dgh.test1_lp_scores_directed, 'test1', flickr.egonet_files_path,
 #                                                      flickr.lp_results_base_path, num_samples=1000, num_process=6,
 #                                                      skip_over_100k=False, wipe_older_results=False)
+
+# LD-CAR
+# run_parallel_link_prediction_analysis_on_test_method(dgh.dccar_test1, 'dccar-test1', flickr.egonet_files_path,
+#                                                      flickr.lp_results_base_path, num_samples=100000, num_process=6,
+#                                                      skip_over_100k=False, wipe_older_results=False)
+#
+# lpe.calculate_lp_performance(flickr.lp_results_base_path, scores=['dccar-test1'], is_test=True,
+#                              gather_individual_results=True)
 
 # run_parallel_link_prediction_analysis_on_test_method('', 'first-two-triads', flickr.egonet_files_path,
 #                                                      flickr.lp_results_base_path, num_process=6, skip_over_100k=True,
@@ -269,10 +289,21 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 #                                                      digg.lp_results_file_base_path, num_samples=1000, num_process=6,
 #                                                      skip_over_100k=False, wipe_older_results=False)
 
+# LD-CAR
+# run_parallel_link_prediction_analysis_on_test_method(dgh.dccar_test1, 'dccar-test1', digg.egonet_files_path,
+#                                                      digg.lp_results_file_base_path, num_samples=0, num_process=20,
+#                                                      skip_over_100k=False, wipe_older_results=False)
+
+# lpe.calculate_lp_performance(digg.lp_results_file_base_path, scores=['dccar-test1'], is_test=True,
+#                              gather_individual_results=True)
+
 # run_parallel_link_prediction_analysis_on_test_method('', 'first-two-triads', digg.egonet_files_path,
 #                                                      digg.lp_results_file_base_path, num_process=18,
 #                                                      skip_over_100k=True, specific_triads_only=True,
 #                                                      wipe_older_results=False)
+#
+# lpe.calculate_lp_performance(digg.lp_results_file_base_path, scores=['first-two-triads'], is_test=False,
+#                              specific_triads_only=True, gather_individual_results=True)
 
 # lpe.calculate_lp_performance(digg.lp_results_file_base_path, scores=['test1'], is_test=True,
 #                              gather_individual_results=True)

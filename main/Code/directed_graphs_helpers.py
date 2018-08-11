@@ -1404,6 +1404,62 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     return scores
 
 
+def dc_car_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+
+    scores = {
+        'dccar': [],
+        'dccclp': []
+    }
+
+    undirected_ego_net = ego_net.to_undirected()
+
+    # a dict of info on z nodes. Every key points to a list [dccar, dccclp]
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_info[z] = []
+        # dccar
+        z_info[z].append(math.log(z_local_degree + 2))
+
+        # aa
+        z_info[z].append(1 / math.log(z_global_degree))
+
+        # dcaa
+        z_local_degree += 1
+        dcaa = 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+                            (y * (z_global_degree / z_local_degree)))
+
+        z_info[z].append(dcaa)
+
+    for v_i in range(len(v_nodes_list)):
+        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+
+        temp_dccar = 0
+        temp_dccclp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            temp_dccar += z_info[z][0]
+            temp_dccclp += z_info[z][1]
+
+        scores['dccar'].append(temp_dccar * lcl)
+        scores['dccclp'].append(temp_dccclp)
+
+    return scores
+
+
 ########## Link Prediction on Test Method ##############
 def run_directed_link_prediciton_on_test_method(method_pointer, method_name, ego_net_file, top_k_values,
                                                 data_file_base_path, result_file_base_path, skip_over_100k=True):
@@ -1511,6 +1567,35 @@ def test1_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
             temp += z_info[z]
 
         scores.append(temp)
+
+    return scores
+
+
+def dccar_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    scores = []
+
+    undirected_ego_net = ego_net.to_undirected()
+
+    # a dict of info on z nodes. Every key points to the z nodes dccn value
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+        # dccn for dccar
+        z_info[z] = math.log(z_local_degree + 2)
+
+    for v_i in range(len(v_nodes_list)):
+        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+
+        temp_dccar = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            temp_dccar += z_info[z]
+
+        scores.append(temp_dccar * lcl)
 
     return scores
 
