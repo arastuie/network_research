@@ -1574,7 +1574,7 @@ def test1_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
 def dccar_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     scores = []
 
-    undirected_ego_net = ego_net.to_undirected()
+    # undirected_ego_net = ego_net.to_undirected()
 
     # a dict of info on z nodes. Every key points to the z nodes dccn value
     z_info = {}
@@ -1588,7 +1588,16 @@ def dccar_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         z_info[z] = math.log(z_local_degree + 2)
 
     for v_i in range(len(v_nodes_list)):
-        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+        lcl = 0
+
+        if len(v_nodes_z[v_nodes_list[v_i]]) > 1:
+            for zz_i in range(len(v_nodes_z[v_nodes_list[v_i]]) - 1):
+                for zzz_i in range(zz_i + 1, len(v_nodes_z[v_nodes_list[v_i]])):
+                    if ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zz_i], v_nodes_z[v_nodes_list[v_i]][zzz_i]) or \
+                            ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zzz_i], v_nodes_z[v_nodes_list[v_i]][zz_i]):
+                        lcl += 1
+
+        # lcl2 = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
 
         temp_dccar = 0
 
@@ -1596,6 +1605,48 @@ def dccar_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
             temp_dccar += z_info[z]
 
         scores.append(temp_dccar * lcl)
+
+    return scores
+
+
+def dccclp_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    scores = []
+
+    undirected_ego_net = ego_net.to_undirected()
+
+    z_cclp = {}
+
+    for z in first_hop_nodes:
+        z_deg = undirected_ego_net.degree(z)
+
+        # if z_deg = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if z_deg == 1:
+            continue
+
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_tri = nx.triangles(undirected_ego_net, z)
+
+        z_cclp[z] = ((z_tri + z_local_degree) / ((z_deg * (z_deg - 1) / 2)) + len(first_hop_nodes))
+
+    for v_i in range(0, len(v_nodes_list)):
+        temp_cclp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            temp_cclp += z_cclp[z]
+
+        scores.append(temp_cclp)
 
     return scores
 
