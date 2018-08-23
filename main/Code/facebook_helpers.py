@@ -367,7 +367,7 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         # total degree
         g = len(cn_neighbors)
         # local degree
-        l = len(cn_neighbors.intersection(first_hop_nodes)) + 1
+        l = len(cn_neighbors.intersection(first_hop_nodes))
 
         y = g - l
 
@@ -463,7 +463,7 @@ def dccclp(ego_net, non_edges, first_hop_nodes):
         # total degree
         z_deg = len(cn_neighbors)
         # local degree
-        z_local_deg = len(cn_neighbors.intersection(first_hop_nodes)) + 1
+        z_local_deg = len(cn_neighbors.intersection(first_hop_nodes))
 
         # if True, z does not have an edge with v nodes
         if z_deg - z_local_deg == 1:
