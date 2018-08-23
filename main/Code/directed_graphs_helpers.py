@@ -1181,27 +1181,29 @@ def get_specific_type_nodes(ego_net, ego_node):
         temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
         second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
-        # allowing types T01 and T02
+        # allowing types T01 and T02 and T05
         if ego_net.has_edge(z, ego_node):
             for v in temp_v_nodes:
-                if v == ego_node or ego_net.has_edge(ego_node, v) or not ego_net.has_edge(z, v):
+                # this excludes #5
+                # if v == ego_node or ego_net.has_edge(ego_node, v) or not ego_net.has_edge(z, v):
+                if v == ego_node or ego_net.has_edge(ego_node, v):
                     continue
 
                 if v not in v_nodes:
                     v_nodes[v] = [z]
                 else:
                     v_nodes[v].append(z)
-        # # allowing type T03
-        # else:
-        #     for v in temp_v_nodes:
-        #         if v == ego_node or ego_net.has_edge(ego_node, v) or \
-        #                 not (ego_net.has_edge(z, v) and ego_net.has_edge(v, z)):
-        #             continue
-        #
-        #         if v not in v_nodes:
-        #             v_nodes[v] = [z]
-        #         else:
-        #             v_nodes[v].append(z)
+        # allowing type T03
+        else:
+            for v in temp_v_nodes:
+                if v == ego_node or ego_net.has_edge(ego_node, v) or \
+                        not (ego_net.has_edge(z, v) and ego_net.has_edge(v, z)):
+                    continue
+
+                if v not in v_nodes:
+                    v_nodes[v] = [z]
+                else:
+                    v_nodes[v].append(z)
 
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
@@ -1388,7 +1390,14 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
 
     for v_i in range(0, len(v_nodes_list)):
         num_cn = len(v_nodes_z[v_nodes_list[v_i]])
-        lcl = undirected_ego_net.subgraph(v_nodes_z[v_nodes_list[v_i]]).number_of_edges()
+        lcl = 0
+
+        if num_cn > 1:
+            for zz_i in range(num_cn - 1):
+                for zzz_i in range(zz_i + 1, num_cn):
+                    if ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zz_i], v_nodes_z[v_nodes_list[v_i]][zzz_i]) or \
+                            ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zzz_i], v_nodes_z[v_nodes_list[v_i]][zz_i]):
+                        lcl += 1
 
         # car score
         scores['car'].append(num_cn * lcl)
@@ -1636,9 +1645,17 @@ def dccclp_test1(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         if y == 1:
             continue
 
+        # dcaa
         z_tri = nx.triangles(undirected_ego_net, z)
+        z_cclp[z] = (z_tri + z_local_degree + 1) / (((z_deg + len(first_hop_nodes)) * (z_deg + len(first_hop_nodes) - 1) / 2))
 
-        z_cclp[z] = ((z_tri + z_local_degree) / ((z_deg * (z_deg - 1) / 2)) + len(first_hop_nodes))
+        # z_cclp[z] = z_tri / ((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+        #                      (y * (z_global_degree / z_local_degree)))
+
+
+        # z_tri = nx.triangles(undirected_ego_net, z)
+        # z_y = z_deg - z_local_degree
+        # z_cclp[z] = z_tri / (z_y * (z_y - 1) / 2)
 
     for v_i in range(0, len(v_nodes_list)):
         temp_cclp = 0
