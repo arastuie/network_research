@@ -369,11 +369,14 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         # local degree
         l = len(cn_neighbors.intersection(first_hop_nodes)) + 1
 
-        # if g == l, z does not have an edge with v nodes
-        if g == l:
+        y = g - l
+
+        # if y == 1, z does not have an edge with v nodes
+        if y == 1:
             continue
 
-        z_dcaa[z] = 1 / math.log((l * (1 - l / g)) + ((g - l) * (g / l)))
+        l += 1
+        z_dcaa[z] = 1 / math.log((l * (1 - l / g)) + (y * (g / l)))
 
     for u, v in non_edges:
         dcaa_score = 0
@@ -425,6 +428,62 @@ def car(ego_net, non_edges):
     return scores
 
 
+def dccar(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    z_dccn = {}
+    for z in first_hop_nodes:
+        cn_neighbors = set(nx.neighbors(ego_net, z))
+
+        # local degree
+        l = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+        z_dccn[z] = math.log(l)
+
+    for u, v in non_edges:
+        dccn_score = 0
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        cc_sub_g = ego_net.subgraph(common_neighbors)
+
+        for z in common_neighbors:
+            dccn_score += z_dccn[z]
+
+        scores.append(dccn_score * cc_sub_g.number_of_edges())
+
+    return scores
+
+
+def dccclp(ego_net, non_edges, first_hop_nodes):
+    scores = []
+
+    z_dccclp = {}
+    for z in first_hop_nodes:
+        z_tri = nx.triangles(ego_net, z)
+
+        cn_neighbors = set(nx.neighbors(ego_net, z))
+        # total degree
+        z_deg = len(cn_neighbors)
+        # local degree
+        z_local_deg = len(cn_neighbors.intersection(first_hop_nodes)) + 1
+
+        # if True, z does not have an edge with v nodes
+        if z_deg - z_local_deg == 1:
+            continue
+
+        z_dccclp[z] = (z_tri + z_local_deg + 1) / \
+                      ((z_deg + len(first_hop_nodes)) * ((z_deg + len(first_hop_nodes)) - 1) / 2)
+
+    for u, v in non_edges:
+        dccclp_score = 0
+        common_neighbors = nx.common_neighbors(ego_net, u, v)
+
+        for z in common_neighbors:
+            dccclp_score += z_dccclp[z]
+
+        scores.append(dccclp_score)
+
+    return scores
+
+
 def run_link_prediction_analysis(ego_net_file, top_k_values):
     start_time = time.time()
 
@@ -459,7 +518,7 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
             start = after_pymk_starting_snap
             end = num_snaps - 1
 
-        score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
+        score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
         percent_scores = {}
 
         for score in score_list:
@@ -507,13 +566,13 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
                 y_scores = common_neighbors_index(ego_net_snapshots[i], non_edges)
                 calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cn'])
 
-            if 'aa' in percent_scores:
-                y_scores = [p for u, v, p in nx.adamic_adar_index(ego_net_snapshots[i], non_edges)]
-                calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
-
             if 'dccn' in percent_scores:
                 y_scores = degree_corrected_common_neighbors_index(ego_net_snapshots[i], non_edges, first_hop_nodes)
                 calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccn'])
+
+            if 'aa' in percent_scores:
+                y_scores = [p for u, v, p in nx.adamic_adar_index(ego_net_snapshots[i], non_edges)]
+                calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['aa'])
 
             if 'dcaa' in percent_scores:
                 y_scores = degree_corrected_adamic_adar_index(ego_net_snapshots[i], non_edges, first_hop_nodes)
@@ -523,9 +582,17 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
                 y_scores = car(ego_net_snapshots[i], non_edges)
                 calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['car'])
 
+            if 'dccar' in percent_scores:
+                y_scores = dccar(ego_net_snapshots[i], non_edges, first_hop_nodes)
+                calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccar'])
+
             if 'cclp' in percent_scores:
                 y_scores = cclp(ego_net_snapshots[i], non_edges, first_hop_nodes)
                 calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['cclp'])
+
+            if 'dccclp' in percent_scores:
+                y_scores = dccclp(ego_net_snapshots[i], non_edges, first_hop_nodes)
+                calc_top_k_scores(y_scores, y_true, top_k_values, percent_scores['dccclp'])
 
         # skip if no snapshot returned a score
         if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:

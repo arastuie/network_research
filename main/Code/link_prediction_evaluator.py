@@ -31,8 +31,11 @@ def get_all_results(result_file_base_path, gather_individual_results, scores=Non
     cnt = 0
     # loading result data
     for result_file in os.listdir(result_file_base_path + 'results'):
-        with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
-            egonet_lp_results = pickle.load(f)
+        try:
+            with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+                egonet_lp_results = pickle.load(f)
+        except EOFError:
+            os.remove(result_file_base_path + 'results/' + result_file)
 
         for k in top_k_values:
             for score in scores:
