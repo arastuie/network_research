@@ -37,11 +37,12 @@ np.random.shuffle(egonets_to_analyze)
 
 print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 
-Parallel(n_jobs=6)(delayed(fb.run_link_prediction_analysis)(ego_net_file, top_k_values)
-                   for ego_net_file in egonets_to_analyze)
+Parallel(n_jobs=18)(delayed(fb.run_link_prediction_analysis)(ego_net_file, top_k_values)
+                    for ego_net_file in egonets_to_analyze)
 
 # Result Calculation
-# fb.calculate_lp_performance(gather_individual_results=False)
+# score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
+# fb.calculate_lp_performance(scores=score_list, gather_individual_results=True)
 
 # comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 # fb.plot_percent_improvements(comparison_pairs, gather_individual_results=False)

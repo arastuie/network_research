@@ -441,7 +441,7 @@ def dccar(ego_net, non_edges, first_hop_nodes):
 
     for u, v in non_edges:
         dccn_score = 0
-        common_neighbors = nx.common_neighbors(ego_net, u, v)
+        common_neighbors = list(nx.common_neighbors(ego_net, u, v))
         cc_sub_g = ego_net.subgraph(common_neighbors)
 
         for z in common_neighbors:
@@ -621,4 +621,5 @@ def plot_percent_improvements(comparison_pairs, gather_individual_results=False)
 def calculate_lp_performance(scores=None, gather_individual_results=False):
     for pymk_type in pymk_directories:
         print(pymk_type)
-        lpe.calculate_lp_performance(lp_results_path + pymk_type + '/', scores, gather_individual_results)
+        lpe.calculate_lp_performance(lp_results_path + pymk_type + '/', scores=scores, is_fb=True,
+                                     gather_individual_results=gather_individual_results)

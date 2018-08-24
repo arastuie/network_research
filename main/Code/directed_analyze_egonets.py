@@ -297,11 +297,11 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 
 # ** LD-CCLP
 # run_parallel_link_prediction_analysis_on_test_method(dgh.dccclp_test1, 'dccclp-test1', flickr.egonet_files_path,
-#                                                      flickr.lp_results_base_path, num_samples=0, num_process=15,
+#                                                      flickr.lp_results_base_path, num_samples=0, num_process=6,
 #                                                      skip_over_100k=True, wipe_older_results=False)
 
-# lpe.calculate_lp_performance(flickr.lp_results_base_path, scores=['dccclp-test1'], is_test=True,
-#                              gather_individual_results=True)
+lpe.calculate_lp_performance(flickr.lp_results_base_path, scores=['dccclp-test1'], is_test=True,
+                             gather_individual_results=True)
 
 # ** First Two Triads
 # run_parallel_link_prediction_analysis_on_test_method('', 'first-two-triads', flickr.egonet_files_path,

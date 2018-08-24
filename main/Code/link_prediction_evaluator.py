@@ -137,7 +137,7 @@ def get_conf(lp_scores):
 
 
 def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, specific_triads_only=False,
-                             gather_individual_results=False):
+                             gather_individual_results=False, is_fb=False):
     # Scores is a list of scores to be evaluated ['aa', 'dccn']. If None, all will be evaluated.
 
     if specific_triads_only:
@@ -146,7 +146,7 @@ def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=Fal
     elif is_test:
         lp_results_base_file_path = lp_results_base_file_path + 'test-methods/' + scores[0] + '/pickle-files/'
 
-    if not is_test:
+    if not is_test and not is_fb:
         scores = score_list
 
     # loading result data
