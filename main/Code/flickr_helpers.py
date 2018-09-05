@@ -17,7 +17,10 @@ triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/m
                                                   'triad-link-formed-ratio/pickle-files/'
 triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/' \
                                                        'flickr/triad-link-formed-ratio/plots/'
-
+triad_ratio_empirical_results_path_1 = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/' \
+                                                  'triad-link-formed-ratio-1/pickle-files/'
+triad_ratio_empirical_plots_path_1 = '/shared/Results/EgocentricLinkPrediction/main/empirical/' \
+                                                       'flickr/triad-link-formed-ratio-1/plots/'
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/pickle-files/'
 lp_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/flickr/'

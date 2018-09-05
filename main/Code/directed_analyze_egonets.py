@@ -99,29 +99,29 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 
 # **** Google+ **** #
-# run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path, 4,
-#                                   skip_over_100k=False)
+# run_parallel_triad_ratio_analysis(gplus.egonet_files_path, gplus.triad_ratio_empirical_results_path_1, 6,
+#                                   skip_over_100k=True)
 
-# dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path,
-#                                                    gplus.triad_ratio_empirical_plots_path,
+# dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path_1,
+#                                                    gplus.triad_ratio_empirical_plots_path_1,
 #                                                    gather_individual_results=True)
 
 
 # **** Flickr **** #
-# run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path, 4,
-#                                   skip_over_100k=False)
+# run_parallel_triad_ratio_analysis(flickr.egonet_files_path, flickr.triad_ratio_empirical_results_path_1, 6,
+#                                   skip_over_100k=True)
 
-# dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path,
-#                                                    flickr.triad_ratio_empirical_plots_path,
+# dgh.empirical_triad_list_formed_ratio_results_plot(flickr.triad_ratio_empirical_results_path_1,
+#                                                    flickr.triad_ratio_empirical_plots_path_1,
 #                                                    gather_individual_results=True)
 
 
 # **** Digg **** #
-# run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path, 12,
-#                                   skip_over_100k=False)
+run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path_1, 20,
+                                  skip_over_100k=True)
 
-# dgh.empirical_triad_list_formed_ratio_results_plot(digg.triad_ratio_empirical_results_path,
-#                                                    digg.triad_ratio_empirical_plots_path,
+# dgh.empirical_triad_list_formed_ratio_results_plot(digg.triad_ratio_empirical_results_path_1,
+#                                                    digg.triad_ratio_empirical_plots_path_1,
 #                                                    gather_individual_results=True)
 
 

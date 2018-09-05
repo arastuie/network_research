@@ -745,8 +745,11 @@ def get_t01_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -770,8 +773,11 @@ def get_t02_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -795,8 +801,11 @@ def get_t03_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -820,8 +829,11 @@ def get_t04_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -845,8 +857,11 @@ def get_t05_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -870,8 +885,11 @@ def get_t06_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -895,8 +913,11 @@ def get_t07_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -920,8 +941,11 @@ def get_t08_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -945,8 +969,11 @@ def get_t09_type_second_hop_nodes(ego_net, ego_node):
     # remove nodes in the second hop which are already in the first hop
     second_hop_nodes = second_hop_nodes - first_hop_nodes
 
-    # remove all nodes in the second hop that have any edge with the ego
-    second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+    # # remove all nodes in the second hop that have any edge with the ego
+    # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
+
+    # remove all nodes in the second hop that ego already follows.
+    second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
