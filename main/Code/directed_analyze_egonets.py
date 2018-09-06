@@ -104,7 +104,7 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 # dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path_2,
 #                                                    gplus.triad_ratio_empirical_plots_path_2,
-#                                                    gather_individual_results=True)
+#                                                    gather_individual_results=False)
 
 
 # **** Flickr **** #
@@ -266,12 +266,21 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 #                              specific_triads_only=True, gather_individual_results=True)
 
 # ** First Three Triads with Five
-# run_parallel_link_prediction_analysis_on_test_method('', 'first-three-w-five-triads', gplus.egonet_files_path,
-#                                                      gplus.lp_results_base_path, num_process=6, skip_over_100k=True,
-#                                                      num_samples=50000, specific_triads_only=True,
-#                                                      wipe_older_results=False)
+# # run_parallel_link_prediction_analysis_on_test_method('', 'first-three-w-five-triads', gplus.egonet_files_path,
+# #                                                      gplus.lp_results_base_path, num_process=6, skip_over_100k=True,
+# #                                                      num_samples=50000, specific_triads_only=True,
+# #                                                      wipe_older_results=False)
+#
+# # lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['first-three-w-five-triads'], is_test=False,
+# #                              specific_triads_only=True, gather_individual_results=True)
 
-# lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['first-three-w-five-triads'], is_test=False,
+# ** one, two, six, seven and nine
+run_parallel_link_prediction_analysis_on_test_method('', 'one-two-six-seven-nine', gplus.egonet_files_path,
+                                                     gplus.lp_results_base_path, num_process=10, skip_over_100k=True,
+                                                     num_samples=50000, specific_triads_only=True,
+                                                     wipe_older_results=False)
+
+# lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['one-two-six-seven-nine'], is_test=False,
 #                              specific_triads_only=True, gather_individual_results=True)
 
 

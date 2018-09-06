@@ -1172,13 +1172,21 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
     plot_edge_prob_results = []
     plot_edge_prob_results_err = []
     for t_type in triangle_types:
-        plot_fraction_results.append(np.mean(fraction_of_all_formed_edges[t_type]))
-        plot_fraction_results_err.append(np.std(fraction_of_all_formed_edges[t_type]) /
-                                         np.sqrt(len(fraction_of_all_formed_edges[t_type])))
+        if len(fraction_of_all_formed_edges[t_type]) > 0:
+            plot_fraction_results.append(np.mean(fraction_of_all_formed_edges[t_type]))
+            plot_fraction_results_err.append(np.std(fraction_of_all_formed_edges[t_type]) /
+                                             np.sqrt(len(fraction_of_all_formed_edges[t_type])))
+        else:
+            plot_fraction_results.append(0)
+            plot_fraction_results_err.append(0)
 
-        plot_edge_prob_results.append(np.mean(edge_probability[t_type]))
-        plot_edge_prob_results_err.append(np.std(edge_probability[t_type]) /
-                                          np.sqrt(len(edge_probability[t_type])))
+        if len(edge_probability[t_type]) > 0:
+            plot_edge_prob_results.append(np.mean(edge_probability[t_type]))
+            plot_edge_prob_results_err.append(np.std(edge_probability[t_type]) /
+                                              np.sqrt(len(edge_probability[t_type])))
+        else:
+            plot_edge_prob_results.append(0)
+            plot_edge_prob_results_err.append(0)
 
     # plotting the fraction of edges
     plt.figure()
@@ -1237,13 +1245,11 @@ def get_combined_type_nodes(ego_net, ego_node):
 
 def get_specific_type_nodes(ego_net, ego_node):
     first_hop_nodes = set(ego_net.successors(ego_node))
-    second_hop_nodes = set()
 
     v_nodes = {}
 
     for z in first_hop_nodes:
         temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
-        second_hop_nodes = second_hop_nodes.union(temp_v_nodes)
 
         # allowing types T01 and T02 and T05
         if ego_net.has_edge(z, ego_node):
@@ -1269,10 +1275,53 @@ def get_specific_type_nodes(ego_net, ego_node):
                 else:
                     v_nodes[v].append(z)
 
-    if ego_node in second_hop_nodes:
-        second_hop_nodes.remove(ego_node)
+    return first_hop_nodes, v_nodes
 
-    return first_hop_nodes, second_hop_nodes, v_nodes
+
+def get_specific_type_nodes_gplus(ego_net, ego_node):
+    first_hop_nodes = set(ego_net.successors(ego_node))
+
+    v_nodes = {}
+
+    for z in first_hop_nodes:
+        temp_v_nodes = (set(ego_net.successors(z)).union(ego_net.predecessors(z))) - first_hop_nodes
+
+        # allowing types T01 and T02
+        if ego_net.has_edge(z, ego_node):
+            for v in temp_v_nodes:
+                if v == ego_node or ego_net.has_edge(ego_node, v) or not ego_net.has_edge(z, v):
+                    continue
+
+                if v not in v_nodes:
+                    v_nodes[v] = [z]
+                else:
+                    v_nodes[v].append(z)
+        # allowing type T06
+        else:
+            for v in temp_v_nodes:
+                if v == ego_node or ego_net.has_edge(ego_node, v) or ego_net.has_edge(z, v):
+                    continue
+
+                if v not in v_nodes:
+                    v_nodes[v] = [z]
+                else:
+                    v_nodes[v].append(z)
+
+    # allowing types T07 and T09
+    second_z_set = set(ego_net.predecessors(ego_node)) - first_hop_nodes
+    for z in second_z_set:
+        temp_v_nodes = set(ego_net.successors(z)) - first_hop_nodes
+
+        for v in temp_v_nodes:
+            if v == ego_node or ego_net.has_edge(ego_node, v):
+                continue
+
+            if v not in v_nodes:
+                v_nodes[v] = [z]
+            else:
+                v_nodes[v].append(z)
+
+    return first_hop_nodes, v_nodes
 
 
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
@@ -1317,7 +1366,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
         if specific_triads_only:
-            first_hop_nodes, second_hop_nodes, v_nodes = get_specific_type_nodes(ego_net_snapshots[i], ego_node)
+            first_hop_nodes, v_nodes = get_specific_type_nodes_gplus(ego_net_snapshots[i], ego_node)
         else:
             first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
 
@@ -1409,6 +1458,7 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
 
         z_info[z].append(dcaa)
 
+
     for v_i in range(len(v_nodes_list)):
         # cn score
         scores['cn'].append(len(v_nodes_z[v_nodes_list[v_i]]))
@@ -1418,6 +1468,9 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
         temp_dcaa = 0
 
         for z in v_nodes_z[v_nodes_list[v_i]]:
+            if z not in z_info:
+                z_info[z] = aa_dc_lp_scores_directed_for_single_node(ego_net, z, first_hop_nodes)
+
             temp_dccn += z_info[z][0]
             temp_aa += z_info[z][1]
             temp_dcaa += z_info[z][2]
@@ -1427,6 +1480,38 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
         scores['dcaa'].append(temp_dcaa)
 
     return scores
+
+def aa_dc_lp_scores_directed_for_single_node(ego_net, z, first_hop_nodes):
+    single_z_info = []
+
+    z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+
+    # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+    z_global_degree = len(z_neighbors)
+
+    z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+
+    y = z_global_degree - z_local_degree
+
+    # # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+    # if y == 1:
+    #     continue
+
+    # dccn
+    # temp_dccn = (z_local_degree + len(v_nodes_z[v_nodes_list[v_i]]))
+    single_z_info.append(math.log(z_local_degree + 2))
+
+    # aa
+    single_z_info.append(1 / math.log(z_global_degree))
+
+    # dcaa
+    z_local_degree += 1
+    dcaa = 1 / math.log((z_local_degree * (1 - (z_local_degree / z_global_degree))) +
+                        (y * (z_global_degree / z_local_degree)))
+
+    single_z_info.append(dcaa)
+
+    return single_z_info
 
 
 def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
@@ -1469,12 +1554,29 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         temp_cclp = 0
 
         for z in v_nodes_z[v_nodes_list[v_i]]:
+            if z not in z_cclp:
+                z_cclp[z] = cclp_directed_lp_single_node(undirected_ego_net, z)
+
             temp_cclp += z_cclp[z]
 
         # cclp score
         scores['cclp'].append(temp_cclp)
 
     return scores
+
+
+def cclp_directed_lp_single_node(undirected_ego_net, z):
+    z_deg = undirected_ego_net.degree(z)
+
+    # # if z_deg = 1, then the z node has no neighbor in the second hop, thus no need to compute
+    # if z_deg == 1:
+    #     continue
+
+    z_tri = nx.triangles(undirected_ego_net, z)
+
+    z_single_cclp = z_tri / (z_deg * (z_deg - 1) / 2)
+
+    return z_single_cclp
 
 
 def dc_car_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
