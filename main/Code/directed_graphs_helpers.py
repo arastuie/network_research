@@ -1077,8 +1077,11 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
             edge_probability[t] = []
 
         for result_file in os.listdir(result_file_base_path + 'results'):
-            with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
-                egonet_results = pickle.load(f)
+            try:
+                with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+                    egonet_results = pickle.load(f)
+            except EOFError:
+                os.remove(result_file_base_path + 'results/' + result_file)
 
             # Calculating fraction ratio
             temp_snapshot_total_edges_formed = []
