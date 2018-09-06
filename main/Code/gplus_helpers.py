@@ -16,14 +16,21 @@ list_of_first_hop_nodes_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocen
 local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files-1/'
 local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/plots-1/'
 
+# This test, forces v nodes not to follow the ego
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
                                      'triad-link-formed-ratio/pickle-files/'
 triad_ratio_empirical_plots_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
                                    'triad-link-formed-ratio/plots/'
+# This test does not have any constraint on v following the ego
 triad_ratio_empirical_results_path_1 = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
                                      'triad-link-formed-ratio-1/pickle-files/'
 triad_ratio_empirical_plots_path_1 = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
                                    'triad-link-formed-ratio-1/plots/'
+# This test forces the v node to follow the ego
+triad_ratio_empirical_results_path_2 = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
+                                     'triad-link-formed-ratio-2/pickle-files/'
+triad_ratio_empirical_plots_path_2 = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \
+                                   'triad-link-formed-ratio-2/plots/'
 
 lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/pickle-files-1/'
 lp_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/lp/gplus/'

@@ -749,7 +749,10 @@ def get_t01_type_second_hop_nodes(ego_net, ego_node):
     # second_hop_nodes = second_hop_nodes - (successors_of_the_ego.union(predecessors_of_the_ego))
 
     # remove all nodes in the second hop that ego already follows.
-    second_hop_nodes = second_hop_nodes - successors_of_the_ego
+    second_hop_nodes = (second_hop_nodes - successors_of_the_ego)
+
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -779,6 +782,9 @@ def get_t02_type_second_hop_nodes(ego_net, ego_node):
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
+
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
@@ -806,6 +812,9 @@ def get_t03_type_second_hop_nodes(ego_net, ego_node):
 
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
+
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -835,6 +844,9 @@ def get_t04_type_second_hop_nodes(ego_net, ego_node):
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
+
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
@@ -862,6 +874,9 @@ def get_t05_type_second_hop_nodes(ego_net, ego_node):
 
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
+
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -891,6 +906,9 @@ def get_t06_type_second_hop_nodes(ego_net, ego_node):
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
+
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
@@ -918,6 +936,9 @@ def get_t07_type_second_hop_nodes(ego_net, ego_node):
 
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
+
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -947,6 +968,9 @@ def get_t08_type_second_hop_nodes(ego_net, ego_node):
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
 
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
+
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
         second_hop_nodes.remove(ego_node)
@@ -974,6 +998,9 @@ def get_t09_type_second_hop_nodes(ego_net, ego_node):
 
     # remove all nodes in the second hop that ego already follows.
     second_hop_nodes = second_hop_nodes - successors_of_the_ego
+
+    # only allow nodes in the second hop that follow the ego
+    second_hop_nodes = second_hop_nodes.intersection(predecessors_of_the_ego)
 
     # remove the ego node from the second hop
     if ego_node in second_hop_nodes:
@@ -1019,6 +1046,10 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
         with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 
+        # remove temp analyze file
+        if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
+            os.remove(result_file_base_path + 'temp-analyses-start/' + ego_net_file)
+
         return
 
     results = {
@@ -1059,7 +1090,8 @@ def empirical_triad_links_formed_ratio(ego_net_file, data_file_base_path, result
         pickle.dump(0, f, protocol=-1)
 
     # remove temp analyze file
-    os.remove(result_file_base_path + 'temp-analyses-start/' + ego_net_file)
+    if os.path.isfile(result_file_base_path + 'temp-analyses-start/' + ego_net_file):
+        os.remove(result_file_base_path + 'temp-analyses-start/' + ego_net_file)
 
     print("Analyzed ego net {0}".format(ego_net_file))
 
