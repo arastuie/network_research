@@ -1094,10 +1094,11 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
                     if temp_snapshot_total_edges_formed[i] != 0:
                         temp_fraction.append(egonet_results[t_type]['num_edges_formed'][i] /
                                              temp_snapshot_total_edges_formed[i])
-                    else:
-                        temp_fraction.append(0)
+                    # else:
+                    #     temp_fraction.append(0)
 
-                fraction_of_all_formed_edges[t_type].append(np.mean(temp_fraction))
+                if len(temp_fraction) > 0:
+                    fraction_of_all_formed_edges[t_type].append(np.mean(temp_fraction))
 
 
             # Calculating edge probability
@@ -1107,10 +1108,11 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
                     if egonet_results[t_type]['num_second_hop_nodes'][i] != 0:
                         temp_prob.append(egonet_results[t_type]['num_edges_formed'][i] /
                                          egonet_results[t_type]['num_second_hop_nodes'][i])
-                    else:
-                        temp_prob.append(0)
+                    # else:
+                    #     temp_prob.append(0)
 
-                edge_probability[t_type].append(np.mean(temp_prob))
+                if len(temp_prob) > 0:
+                    edge_probability[t_type].append(np.mean(temp_prob))
 
         # Create directory if not exists
         if not os.path.exists(result_file_base_path + "cumulated_results"):
@@ -1122,7 +1124,7 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
 
         # Write data into a single file for edge probability
         with open(result_file_base_path + "cumulated_results/edge_probability.pckle", 'wb') as f:
-            pickle.dump(fraction_of_all_formed_edges, f, protocol=-1)
+            pickle.dump(edge_probability, f, protocol=-1)
     else:
         with open(result_file_base_path + "cumulated_results/fraction_of_all_formed_edges.pckle", 'rb') as f:
             fraction_of_all_formed_edges = pickle.load(f)
