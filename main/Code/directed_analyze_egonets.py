@@ -104,7 +104,7 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 # dgh.empirical_triad_list_formed_ratio_results_plot(gplus.triad_ratio_empirical_results_path_2,
 #                                                    gplus.triad_ratio_empirical_plots_path_2,
-#                                                    gather_individual_results=False)
+#                                                    gather_individual_results=True)
 
 
 # **** Flickr **** #
@@ -117,7 +117,7 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 
 
 # **** Digg **** #
-# run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path_2, 20,
+# run_parallel_triad_ratio_analysis(digg.egonet_files_path, digg.triad_ratio_empirical_results_path_2, 10,
 #                                   skip_over_100k=True)
 
 # dgh.empirical_triad_list_formed_ratio_results_plot(digg.triad_ratio_empirical_results_path_2,
@@ -275,10 +275,10 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 # #                              specific_triads_only=True, gather_individual_results=True)
 
 # ** one, two, six, seven and nine
-run_parallel_link_prediction_analysis_on_test_method('', 'one-two-six-seven-nine', gplus.egonet_files_path,
-                                                     gplus.lp_results_base_path, num_process=10, skip_over_100k=True,
-                                                     num_samples=50000, specific_triads_only=True,
-                                                     wipe_older_results=False)
+# run_parallel_link_prediction_analysis_on_test_method('', 'one-two-six-seven-nine', gplus.egonet_files_path,
+#                                                      gplus.lp_results_base_path, num_process=10, skip_over_100k=True,
+#                                                      num_samples=50000, specific_triads_only=True,
+#                                                      wipe_older_results=False)
 
 # lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['one-two-six-seven-nine'], is_test=False,
 #                              specific_triads_only=True, gather_individual_results=True)
@@ -453,3 +453,56 @@ def run_parallel_link_prediction_analysis_on_personalized_triads(method_name, eg
 
 # lpe.calculate_lp_performance_on_personalized_triads(digg.lp_results_file_base_path, 'test1',
 #                                                     gather_individual_results=True)
+
+
+# ******************************************************************************** #
+# **************** Link Prediction Analysis for Machine Learning ***************** #
+# ******************************************************************************** #
+def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base_path, num_process, skip_over_100k,
+                                                 wipe_older_results=False):
+    results_base_path = results_base_path + 'ml/'
+
+    # wipe older data if needed
+    if os.path.exists(results_base_path) and wipe_older_results:
+        shutil.rmtree(results_base_path)
+
+    if not os.path.exists(results_base_path):
+        os.makedirs(results_base_path)
+        os.makedirs(results_base_path + '/pickle-files')
+        os.makedirs(results_base_path + '/pickle-files/analyzed_egonets')
+        os.makedirs(results_base_path + '/pickle-files/results')
+        os.makedirs(results_base_path + '/pickle-files/skipped_egonets')
+
+    results_base_path = results_base_path + '/pickle-files/'
+
+    all_egonets = set(os.listdir(egonet_files_path))
+    if skip_over_100k:
+        analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets')).union(os.listdir(results_base_path +
+                                                                                                    'skipped_egonets'))
+    else:
+        analyzed_egonets = set(os.listdir(results_base_path + 'analyzed_egonets'))
+
+    egonets_to_analyze = list(all_egonets - analyzed_egonets)
+
+    np.random.shuffle(egonets_to_analyze)
+
+    print("{} egonets selected to analyze!".format(len(egonets_to_analyze)))
+
+    Parallel(n_jobs=num_process)(delayed(dgh.evaluate_lp_measures)
+                                 (ego_net_file, egonet_files_path, results_base_path, skip_over_100k)
+                                 for ego_net_file in egonets_to_analyze)
+
+
+# **** Google+ **** #
+# run_parallel_link_prediction_analysis_for_ml(gplus.egonet_files_path, gplus.lp_results_base_path, num_process=6,
+#                                              skip_over_100k=True, wipe_older_results=False)
+
+
+# **** Flickr **** #
+# run_parallel_link_prediction_analysis_for_ml(flickr.egonet_files_path, flickr.lp_results_base_path, num_process=7,
+#                                              skip_over_100k=True, wipe_older_results=False)
+
+
+# **** Digg **** #
+# run_parallel_link_prediction_analysis_for_ml(digg.egonet_files_path, digg.lp_results_file_base_path, num_process=20,
+#                                              skip_over_100k=True, wipe_older_results=False)
