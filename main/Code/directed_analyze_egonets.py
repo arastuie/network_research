@@ -7,6 +7,7 @@ import digg_helpers as digg
 from joblib import Parallel, delayed
 import directed_graphs_helpers as dgh
 import link_prediction_evaluator as lpe
+import directed_ml_helpers as dmlh
 
 
 # ************************************************************************* #
@@ -488,7 +489,7 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 
     print("{} egonets selected to analyze!".format(len(egonets_to_analyze)))
 
-    Parallel(n_jobs=num_process)(delayed(dgh.evaluate_lp_measures)
+    Parallel(n_jobs=num_process)(delayed(dmlh.evaluate_lp_measures)
                                  (ego_net_file, egonet_files_path, results_base_path, skip_over_100k)
                                  for ego_net_file in egonets_to_analyze)
 
@@ -496,13 +497,17 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 # **** Google+ **** #
 # run_parallel_link_prediction_analysis_for_ml(gplus.egonet_files_path, gplus.lp_results_base_path, num_process=6,
 #                                              skip_over_100k=True, wipe_older_results=False)
-
+# dmlh.combine_all_egonet_data(gplus.lp_results_base_path + 'ml/pickle-files/', 2261949652)
+# dmlh.split_data_based_on_snapshot(gplus.lp_results_base_path + 'ml/pickle-files/')
 
 # **** Flickr **** #
 # run_parallel_link_prediction_analysis_for_ml(flickr.egonet_files_path, flickr.lp_results_base_path, num_process=7,
 #                                              skip_over_100k=True, wipe_older_results=False)
-
+# dmlh.combine_all_egonet_data(flickr.lp_results_base_path + 'ml/pickle-files/', 2407523156)
+# dmlh.split_data_based_on_snapshot(flickr.lp_results_base_path + 'ml/pickle-files/')
 
 # **** Digg **** #
 # run_parallel_link_prediction_analysis_for_ml(digg.egonet_files_path, digg.lp_results_file_base_path, num_process=20,
 #                                              skip_over_100k=True, wipe_older_results=False)
+# dmlh.combine_all_egonet_data(digg.lp_results_file_base_path + 'ml/pickle-files/', 875298799)
+dmlh.split_data_based_on_snapshot(digg.lp_results_file_base_path + 'ml/pickle-files/')

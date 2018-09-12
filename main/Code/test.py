@@ -375,7 +375,7 @@ import gplus_helpers as gplus
 # with open('/shared/DataSets/FlickrGrowth/first_snap_nodes_list.pckl', 'wb') as f:
 #     pickle.dump(first_snap, f, protocol=-1)
 
-flickr.create_multiple_egonets(160000, 500, 6)
+# flickr.create_multiple_egonets(160000, 500, 6)
 
 # digg.extract_all_egonets()
 
@@ -384,3 +384,4 @@ flickr.create_multiple_egonets(160000, 500, 6)
 
 # g = facebook.read_graph()
 # facebook.extract_all_ego_centric_networks_in_fb(g)
+
