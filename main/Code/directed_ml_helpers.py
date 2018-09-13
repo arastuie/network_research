@@ -1,6 +1,7 @@
 import os
 import glob
 import math
+import time
 import pickle
 import numpy as np
 import networkx as nx
@@ -8,9 +9,13 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import directed_graphs_helpers as dgh
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import precision_recall_fscore_support
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
+feature_names = ['CN', 'AA', 'CAR', 'CCLP', 'LD Undirectd', 'LD In-degree', 'LD Out-degree', '# first hop nodes',
+                 '# second hop nodes', '# of edges']
 
 def evaluate_lp_measures(ego_net_file, data_file_base_path, result_file_base_path, skip_over_100k=True):
     # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop,
@@ -144,16 +149,24 @@ def evaluate_lp_measures(ego_net_file, data_file_base_path, result_file_base_pat
     return
 
 
-def combine_all_egonet_data(result_base_path, num_rows=0):
+def combine_all_egonet_data(result_base_path, num_rows=0, num_samples=0):
     combined_result_path = result_base_path + 'combined/'
     result_base_path = result_base_path + 'results/'
-    num_egonets = len(os.listdir(result_base_path))
+
+    egonet_list = list(os.listdir(result_base_path))
+
+    if num_samples != 0:
+        egonet_list = np.random.choice(egonet_list, size=num_samples, replace=False)
+
+    num_egonets = len(egonet_list)
+
+    print("Number of data samples selected: {}".format(num_egonets))
 
     # count number of rows if not passed
     cnt = 0
     if num_rows == 0:
         print("Count the total number of rows.")
-        for egonet_data_file_name in os.listdir(result_base_path):
+        for egonet_data_file_name in egonet_list:
             egonet_data = np.load(result_base_path + egonet_data_file_name)
             num_rows += np.shape(egonet_data)[0]
             print("{:3.2f}%".format(100 * cnt / num_egonets), end='\r')
@@ -165,7 +178,7 @@ def combine_all_egonet_data(result_base_path, num_rows=0):
     nxt_row_start_index = 0
     dataset = np.zeros((num_rows, 14))
     print("Start combining the egonet files...")
-    for egonet_data_file_name in os.listdir(result_base_path):
+    for egonet_data_file_name in egonet_list:
         egonet_data = np.load(result_base_path + egonet_data_file_name)
 
         data_length = np.shape(egonet_data)[0]
@@ -180,62 +193,111 @@ def combine_all_egonet_data(result_base_path, num_rows=0):
     if not os.path.exists(combined_result_path):
         os.makedirs(combined_result_path)
 
-    np.save(combined_result_path + "all.npy", dataset)
+    if num_samples == 0:
+        np.save(combined_result_path + "all.npy", dataset)
+    else:
+        np.save("{}random_{}k.npy".format(combined_result_path, int(num_samples / 1000)), dataset)
     print("Done.")
     return
 
 
-def split_data_based_on_snapshot(result_base_path):
+def split_data_based_on_snapshot(result_base_path, combined_file_name='all.npy'):
     # this method splits the data into snapshot 1, snapshot 2, and rest of them
     combined_result_path = result_base_path + 'combined/'
-    if not os.path.exists(combined_result_path + 'all.npy'):
+    if not os.path.exists(combined_result_path + combined_file_name):
         print("Combined results not found!")
         return
 
     print("Loading the dataset...")
-    dataset = np.load(combined_result_path + 'all.npy')
+    dataset = np.load(combined_result_path + combined_file_name)
     print("Dataset loaded.")
 
     # snapshot 0
     split_dataset = dataset[np.where(dataset[:, 9] == 0)[0], :]
-    np.save("{}snapshot-{}-all.npy".format(combined_result_path, 0), split_dataset)
+    np.save("{}snapshot-{}-{}".format(combined_result_path, 0, combined_file_name), split_dataset)
     del split_dataset
     print("Snapshot 0 done.")
 
     # snapshot 1
     split_dataset = dataset[np.where(dataset[:, 9] == 1)[0], :]
-    np.save("{}snapshot-{}-all.npy".format(combined_result_path, 1), split_dataset)
+    np.save("{}snapshot-{}-{}".format(combined_result_path, 1, combined_file_name), split_dataset)
     del split_dataset
     print("Snapshot 1 done.")
 
     # snapshots > 1
     split_dataset = dataset[np.where(dataset[:, 9] > 1)[0], :]
-    np.save("{}snapshots-after-1-all.npy".format(combined_result_path), split_dataset)
+    np.save("{}snapshots-after-1-{}".format(combined_result_path, combined_file_name), split_dataset)
     del split_dataset
     print("Snapshots after 1 done.")
 
     return
 
-# def testt1(result_base_path):
-#     result_base_path = result_base_path + 'results/'
-#     files_list = list(glob.glob(result_base_path + "*.txt"))
-#     print(len(files_list))
-#     Parallel(n_jobs=10)(delayed(testt)(egonet_data_file_path)
-#                         for egonet_data_file_path in files_list)
-#
-#
-# def testt(egonet_data_file_path):
-#     try:
-#         with open(egonet_data_file_path, 'rb') as f:
-#             egonet_data = np.loadtxt(f, delimiter=',')
-#     except ValueError:
-#         os.remove(egonet_data_file_path)
-#         return
-#
-#     if len(np.shape(egonet_data)) == 1:
-#         egonet_data = np.reshape(egonet_data, (1, 14))
-#
-#     np.save(egonet_data_file_path[:-4] + ".npy", egonet_data)
-#     os.remove(egonet_data_file_path)
-#
-#     return
+
+def preprocessing(result_base_path, data_set_file_name):
+    combined_result_path = result_base_path + 'combined/'
+    print("Loading the dataset...")
+    dataset = np.load(combined_result_path + data_set_file_name)
+    print("Dataset loaded.")
+
+    np.random.shuffle(dataset)
+
+    y = dataset[:, -1].astype(int)
+    x = dataset[:, [2, 3, 4, 5, 6, 7, 8, 10, 11, 12]]
+
+    del dataset
+
+    return x, y
+
+
+def train_random_forest(result_base_path, train_set_file_name, model_name, n_jobs=6):
+    x_train, y_train = preprocessing(result_base_path, train_set_file_name)
+
+    # Training the classifier
+    print("\nStart model fitting with {} samples. {:2.3f}% positive examples.".format(len(y_train), 100 * sum(y_train)
+                                                                                      / len(y_train)))
+
+    clf = RandomForestClassifier(n_estimators=50, max_features='sqrt', max_depth=20, n_jobs=n_jobs, criterion='gini')
+
+    start = time.time()
+    clf = clf.fit(x_train, y_train)
+    end = time.time()
+    print("Training took {:10.3f} min".format((end - start) / 60))
+
+    print_rf_feature_importance(clf)
+
+    if not os.path.exists(result_base_path + 'trained_models'):
+        os.makedirs(result_base_path + 'trained_models')
+
+    with open("{}trained_models/RF-{}.pickle".format(result_base_path, model_name), 'wb') as f:
+        pickle.dump(clf, f, protocol=-1)
+
+
+def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name):
+    x_test, y_test = preprocessing(result_base_path, test_set_file_name)
+
+    with open("{}trained_models/{}".format(result_base_path, trained_model_file_name), 'rb') as f:
+        clf = pickle.load(f)
+
+    print_rf_feature_importance(clf)
+
+    # predicting
+    print("\nStart predicting {} samples. {:2.3f}% positive examples.".format(len(y_test), 100 * sum(y_test)
+                                                                              / len(y_test)))
+    start = time.time()
+    y_pred = clf.predict(x_test)
+    end = time.time()
+    print("Prediction took {:10.3f} min".format((end - start) / 60))
+
+    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
+    print("precision: {}, recall: {}, f1_score: {}".format(precision, recall, f1_score))
+
+    return
+
+
+def print_rf_feature_importance(clf):
+    feature_importance = clf.feature_importances_
+    print("Feature Importance:")
+    for i in range(len(feature_importance)):
+        print("{}: {:1.4f}".format(feature_names[i], feature_importance[i]), end=' - ')
+
+    return
