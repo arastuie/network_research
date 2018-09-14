@@ -14,8 +14,8 @@ from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
-feature_names = ['CN', 'AA', 'CAR', 'CCLP', 'LD Undirectd', 'LD In-degree', 'LD Out-degree', '# first hop nodes',
-                 '# second hop nodes', '# of edges']
+feature_names = ['Egonet Id', 'V Node Id', 'CN', 'AA', 'CAR', 'CCLP', 'LD Undirectd', 'LD In-degree', 'LD Out-degree',
+                 'Snapshot Index', '# first hop nodes', '# second hop nodes', '# of edges', 'Formed?']
 
 def evaluate_lp_measures(ego_net_file, data_file_base_path, result_file_base_path, skip_over_100k=True):
     # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop,
@@ -233,24 +233,27 @@ def split_data_based_on_snapshot(result_base_path, combined_file_name='all.npy')
     return
 
 
-def preprocessing(result_base_path, data_set_file_name):
+def preprocessing(result_base_path, data_set_file_name, feature_indices):
     combined_result_path = result_base_path + 'combined/'
-    print("Loading the dataset...")
+    print("Loading the dataset: {}combined/{}".format(result_base_path, data_set_file_name))
     dataset = np.load(combined_result_path + data_set_file_name)
     print("Dataset loaded.")
 
     np.random.shuffle(dataset)
 
     y = dataset[:, -1].astype(int)
-    x = dataset[:, [2, 3, 4, 5, 6, 7, 8, 10, 11, 12]]
+    # x = dataset[:, [2, 3, 4, 5, 6, 7, 8, 10, 11, 12]]
+    # x = dataset[:, [2, 3, 4, 5, 10, 11, 12]]
+    x = dataset[:, feature_indices]
 
     del dataset
 
     return x, y
 
 
-def train_random_forest(result_base_path, train_set_file_name, model_name, n_jobs=6):
-    x_train, y_train = preprocessing(result_base_path, train_set_file_name)
+def train_random_forest(result_base_path, train_set_file_name, model_name, feature_indices, n_jobs=6,
+                        test_set_file_name=''):
+    x_train, y_train = preprocessing(result_base_path, train_set_file_name, feature_indices)
 
     # Training the classifier
     print("\nStart model fitting with {} samples. {:2.3f}% positive examples.".format(len(y_train), 100 * sum(y_train)
@@ -263,22 +266,28 @@ def train_random_forest(result_base_path, train_set_file_name, model_name, n_job
     end = time.time()
     print("Training took {:10.3f} min".format((end - start) / 60))
 
-    print_rf_feature_importance(clf)
+    print_rf_feature_importance(clf, feature_indices)
 
     if not os.path.exists(result_base_path + 'trained_models'):
         os.makedirs(result_base_path + 'trained_models')
 
-    with open("{}trained_models/RF-{}.pickle".format(result_base_path, model_name), 'wb') as f:
+    trained_model_file_name = "RF-{}.pickle".format(model_name)
+    with open("{}trained_models/{}".format(result_base_path, trained_model_file_name), 'wb') as f:
         pickle.dump(clf, f, protocol=-1)
 
+    if test_set_file_name != '':
+        test_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices)
 
-def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name):
-    x_test, y_test = preprocessing(result_base_path, test_set_file_name)
+    return
+
+
+def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices):
+    x_test, y_test = preprocessing(result_base_path, test_set_file_name, feature_indices)
 
     with open("{}trained_models/{}".format(result_base_path, trained_model_file_name), 'rb') as f:
         clf = pickle.load(f)
 
-    print_rf_feature_importance(clf)
+    print_rf_feature_importance(clf, feature_indices)
 
     # predicting
     print("\nStart predicting {} samples. {:2.3f}% positive examples.".format(len(y_test), 100 * sum(y_test)
@@ -298,10 +307,10 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     return
 
 
-def print_rf_feature_importance(clf):
+def print_rf_feature_importance(clf, feature_indices):
     feature_importance = clf.feature_importances_
     print("Feature Importance:")
     for i in range(len(feature_importance)):
-        print("{}: {:1.4f}".format(feature_names[i], feature_importance[i]), end=' - ')
+        print("{}: {:1.4f}".format(feature_names[feature_indices[i]], feature_importance[i]), end=' - ')
 
     return

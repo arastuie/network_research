@@ -502,7 +502,8 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 # dmlh.split_data_based_on_snapshot(gplus.lp_results_base_path + 'ml/pickle-files/', combined_file_name='random_20k.npy')
 
 
-# dmlh.train_random_forest(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2')
+# dmlh.train_random_forest(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
+# dmlh.train_random_forest(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '3', [2, 3, 4, 5, 10, 11, 12], test_set_file_name='snapshot-1-random_20k.npy')
 # dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle")
 
 # **** Flickr **** #
@@ -512,7 +513,8 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 # dmlh.combine_all_egonet_data(flickr.lp_results_base_path + 'ml/pickle-files/', num_samples=20000)
 # dmlh.split_data_based_on_snapshot(flickr.lp_results_base_path + 'ml/pickle-files/', combined_file_name='random_20k.npy')
 
-# dmlh.train_random_forest(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2')
+# dmlh.train_random_forest(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
+# dmlh.train_random_forest(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '3', [2, 3, 4, 5, 10, 11, 12], test_set_file_name='snapshot-1-random_20k.npy')
 # dmlh.test_trained_model(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle")
 
 
@@ -523,5 +525,6 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 # dmlh.combine_all_egonet_data(digg.lp_results_file_base_path + 'ml/pickle-files/', num_samples=20000)
 # dmlh.split_data_based_on_snapshot(digg.lp_results_file_base_path + 'ml/pickle-files/', combined_file_name='random_20k.npy')
 
-# dmlh.train_random_forest(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2', n_jobs=22)
+# dmlh.train_random_forest(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], n_jobs=22)
+dmlh.train_random_forest(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '3', [2, 3, 4, 5, 10, 11, 12], test_set_file_name='snapshot-1-random_20k.npy', n_jobs=22)
 # dmlh.test_trained_model(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle")
