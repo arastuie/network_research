@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import directed_graphs_helpers as dgh
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
@@ -256,7 +256,7 @@ def train_random_forest(result_base_path, train_set_file_name, model_name, n_job
     print("\nStart model fitting with {} samples. {:2.3f}% positive examples.".format(len(y_train), 100 * sum(y_train)
                                                                                       / len(y_train)))
 
-    clf = RandomForestClassifier(n_estimators=50, max_features='sqrt', max_depth=20, n_jobs=n_jobs, criterion='gini')
+    clf = RandomForestClassifier(n_estimators=300, max_features='sqrt', max_depth=80, n_jobs=n_jobs, criterion='gini')
 
     start = time.time()
     clf = clf.fit(x_train, y_train)
@@ -290,6 +290,10 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
 
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
     print("precision: {}, recall: {}, f1_score: {}".format(precision, recall, f1_score))
+
+    cnf_matrix = confusion_matrix(y_test, y_pred)
+    print("Confusion Matrix:")
+    print(cnf_matrix)
 
     return
 
