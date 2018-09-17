@@ -352,6 +352,15 @@ import gplus_helpers as gplus
 # digg_graph = digg.read_graph_as_directed()
 # print(digg_graph.number_of_nodes())
 # print(digg_graph.number_of_edges())
+# first, last = digg.get_first_and_last_timestamps(digg_graph)
+# print("first: ", first, "last: ", last)
+# digg.extract_all_egonets()
+
+# with open('/shared/DataSets/Digg2009/egonets/187850.pckl', 'rb') as f:
+#     ego_node, ego_net_snapshots = pickle.load(f)
+#
+# print(len(ego_net_snapshots))
+
 # digg_snapshots = digg.divide_to_snapshots(digg_graph, 90)
 # print(len(digg_snapshots))
 

@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import directed_graphs_helpers as dgh
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix, precision_recall_curve
+from sklearn.metrics import average_precision_score, auc
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
@@ -303,6 +304,44 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     cnf_matrix = confusion_matrix(y_test, y_pred)
     print("Confusion Matrix:")
     print(cnf_matrix)
+
+    return
+
+
+def aupr_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices, plot_name,
+                       get_feature_importance=False):
+    x_test, y_test = preprocessing(result_base_path + 'pickle-files/', test_set_file_name, feature_indices)
+
+    with open("{}trained_models/{}".format(result_base_path + 'pickle-files/', trained_model_file_name), 'rb') as f:
+        clf = pickle.load(f)
+
+    if get_feature_importance:
+        print_rf_feature_importance(clf, feature_indices)
+
+    # predicting
+    print("\nStart predicting {} samples. {:2.3f}% positive examples.".format(len(y_test), 100 * sum(y_test)
+                                                                              / len(y_test)))
+    start = time.time()
+    y_pred = clf.predict_proba(x_test)[:, 1]
+    end = time.time()
+    print("Prediction took {:10.3f} min".format((end - start) / 60))
+
+    precision, recall, _ = precision_recall_curve(y_test, y_pred)
+    average_precision = average_precision_score(y_test, y_pred)
+    aupr = auc(y_test, y_pred)
+
+    plt.step(recall, precision, color='b', alpha=0.2, where='post')
+    plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
+    plt.title('{} Precision-Recall curve: AP={:0.4f}, AUPR={:0.4f}'.format(plot_name, average_precision,
+                                                                           aupr))
+    current_fig = plt.gcf()
+    current_fig.savefig("{}plots/{}-aupr.pdf".format(result_base_path, plot_name), format='pdf')
+    plt.clf()
 
     return
 
