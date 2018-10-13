@@ -234,7 +234,7 @@ def split_data_based_on_snapshot(result_base_path, combined_file_name='all.npy')
     return
 
 
-def preprocessing(result_base_path, data_set_file_name, feature_indices):
+def preprocessing(result_base_path, data_set_file_name, feature_indices, for_testing=False):
     combined_result_path = result_base_path + 'combined/'
     print("Loading the dataset: {}combined/{}".format(result_base_path, data_set_file_name))
     dataset = np.load(combined_result_path + data_set_file_name)
@@ -247,9 +247,12 @@ def preprocessing(result_base_path, data_set_file_name, feature_indices):
     # x = dataset[:, [2, 3, 4, 5, 10, 11, 12]]
     x = dataset[:, feature_indices]
 
-    del dataset
+    if not for_testing:
+        del dataset
+        return x, y
 
-    return x, y
+    x_ego_snap = dataset[:, [0, 9]]
+    return x, y, x_ego_snap
 
 
 def train_random_forest(result_base_path, train_set_file_name, model_name, feature_indices, n_jobs=6,
@@ -283,7 +286,7 @@ def train_random_forest(result_base_path, train_set_file_name, model_name, featu
 
 
 def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices):
-    x_test, y_test = preprocessing(result_base_path, test_set_file_name, feature_indices)
+    x_test, y_test, x_ego_snap = preprocessing(result_base_path, test_set_file_name, feature_indices, for_testing=True)
 
     with open("{}trained_models/{}".format(result_base_path, trained_model_file_name), 'rb') as f:
         clf = pickle.load(f)
@@ -294,18 +297,55 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     print("\nStart predicting {} samples. {:2.3f}% positive examples.".format(len(y_test), 100 * sum(y_test)
                                                                               / len(y_test)))
     start = time.time()
-    y_pred = clf.predict(x_test)
+    y_pred = clf.predict_proba(x_test)
+    # y_pred = clf.predict(x_test)
     end = time.time()
     print("Prediction took {:10.3f} min".format((end - start) / 60))
 
-    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
-    print("precision: {}, recall: {}, f1_score: {}".format(precision, recall, f1_score))
+    # putting all data together. egonet_id, snapshot_id, y_test, y_pred
+    predicted_data = np.concatenate((x_ego_snap, np.reshape(x_test, (len(y_test), 1)),
+                                     np.reshape(y_pred, (len(y_pred), 1))), axis=1)
 
-    cnf_matrix = confusion_matrix(y_test, y_pred)
-    print("Confusion Matrix:")
-    print(cnf_matrix)
+    res = calc_percision_at_k(predicted_data)
+    print(res)
+    # precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
+    # print("precision: {}, recall: {}, f1_score: {}".format(precision, recall, f1_score))
+    #
+    # cnf_matrix = confusion_matrix(y_test, y_pred)
+    # print("Confusion Matrix:")
+    # print(cnf_matrix)
 
     return
+
+
+def calc_percision_at_k(predicted_data, k_values=[1, 3, 5, 10, 15, 20, 25, 30]):
+    # predicted_data must be in the following format: egonet_id, snapshot_id, y_test, y_pred
+    unique_egos = np.unique(predicted_data[:, 0])
+    top_k_res = {}
+    for k in k_values:
+        top_k_res[k] = []
+
+    for ego in unique_egos:
+        temp_top_k_res = {}
+        for k in k_values:
+            temp_top_k_res[k] = []
+        ego_data = predicted_data[np.where(predicted_data[:, 0] == ego), :]
+        unique_snapshots = np.unique(ego_data[:, 1])
+        for snap in unique_snapshots:
+            ego_snap_data = ego_data[np.where(ego_data[:, 1] == snap), :]
+            res = ego_snap_data[np.argsort(ego_snap_data[:, 3]), 2]
+
+            for k in k_values:
+                if len(res) >= k:
+                    temp_top_k_res[k].append(sum(res[:k]) / k)
+
+        for k in k_values:
+            top_k_res[k].append(np.mean(temp_top_k_res[k]))
+
+    for k in k_values:
+        top_k_res[k] = np.mean(top_k_res[k])
+
+    return top_k_res
 
 
 def aupr_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices, plot_name,
@@ -328,15 +368,15 @@ def aupr_trained_model(result_base_path, test_set_file_name, trained_model_file_
 
     precision, recall, _ = precision_recall_curve(y_test, y_pred)
     average_precision = average_precision_score(y_test, y_pred)
-    aupr = auc(y_test, y_pred)
+    aupr = auc(precision, recall, reorder=True)
 
     plt.step(recall, precision, color='b', alpha=0.2, where='post')
     plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.ylim([0.0, 1.05])
-    plt.xlim([0.0, 1.0])
+    # plt.ylim([0.0, 1.05])
+    # plt.xlim([0.0, 1.0])
     plt.title('{} Precision-Recall curve: AP={:0.4f}, AUPR={:0.4f}'.format(plot_name, average_precision,
                                                                            aupr))
     current_fig = plt.gcf()
