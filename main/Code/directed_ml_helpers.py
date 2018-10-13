@@ -303,7 +303,7 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     print("Prediction took {:10.3f} min".format((end - start) / 60))
 
     # putting all data together. egonet_id, snapshot_id, y_test, y_pred
-    predicted_data = np.concatenate((x_ego_snap, np.reshape(x_test, (len(y_test), 1)),
+    predicted_data = np.concatenate((x_ego_snap, np.reshape(y_test, (len(y_test), 1)),
                                      np.reshape(y_pred, (len(y_pred), 1))), axis=1)
 
     res = calc_percision_at_k(predicted_data)
