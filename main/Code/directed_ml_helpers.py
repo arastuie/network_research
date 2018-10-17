@@ -285,7 +285,8 @@ def train_random_forest(result_base_path, train_set_file_name, model_name, featu
     return
 
 
-def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices):
+def test_trained_model(result_base_path, test_set_file_name, trained_model_file_name, feature_indices,
+                       predictions_file_name):
     x_test, y_test, x_ego_snap = preprocessing(result_base_path, test_set_file_name, feature_indices, for_testing=True)
 
     with open("{}trained_models/{}".format(result_base_path, trained_model_file_name), 'rb') as f:
@@ -297,7 +298,7 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     print("\nStart predicting {} samples. {:2.3f}% positive examples.".format(len(y_test), 100 * sum(y_test)
                                                                               / len(y_test)))
     start = time.time()
-    y_pred = clf.predict_proba(x_test)
+    y_pred = clf.predict_proba(x_test)[:, 1]
     # y_pred = clf.predict(x_test)
     end = time.time()
     print("Prediction took {:10.3f} min".format((end - start) / 60))
@@ -306,8 +307,8 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     predicted_data = np.concatenate((x_ego_snap, np.reshape(y_test, (len(y_test), 1)),
                                      np.reshape(y_pred, (len(y_pred), 1))), axis=1)
 
-    res = calc_percision_at_k(predicted_data)
-    print(res)
+    np.save("{}predictions/{}".format(result_base_path, predictions_file_name), predicted_data)
+
     # precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
     # print("precision: {}, recall: {}, f1_score: {}".format(precision, recall, f1_score))
     #
@@ -318,9 +319,12 @@ def test_trained_model(result_base_path, test_set_file_name, trained_model_file_
     return
 
 
-def calc_percision_at_k(predicted_data, k_values=[1, 3, 5, 10, 15, 20, 25, 30]):
+def calc_percision_at_k(result_base_path, predicted_data_file_path, k_values=[1, 3, 5, 10, 15, 20, 25, 30]):
+    predicted_data = np.load("{}predictions/{}".format(result_base_path, predicted_data_file_path))
+
     # predicted_data must be in the following format: egonet_id, snapshot_id, y_test, y_pred
     unique_egos = np.unique(predicted_data[:, 0])
+
     top_k_res = {}
     for k in k_values:
         top_k_res[k] = []
@@ -329,22 +333,26 @@ def calc_percision_at_k(predicted_data, k_values=[1, 3, 5, 10, 15, 20, 25, 30]):
         temp_top_k_res = {}
         for k in k_values:
             temp_top_k_res[k] = []
-        ego_data = predicted_data[np.where(predicted_data[:, 0] == ego), :]
+        ego_data_indices = np.where(predicted_data[:, 0] == ego, True, False)
+        ego_data = predicted_data[ego_data_indices, :]
+        predicted_data = predicted_data[~ego_data_indices, :]
         unique_snapshots = np.unique(ego_data[:, 1])
         for snap in unique_snapshots:
-            ego_snap_data = ego_data[np.where(ego_data[:, 1] == snap), :]
-            res = ego_snap_data[np.argsort(ego_snap_data[:, 3]), 2]
+            ego_snap_data = ego_data[np.where(ego_data[:, 1] == snap)[0], :]
+            res = ego_snap_data[np.argsort(-ego_snap_data[:, 3]), 2]
 
             for k in k_values:
                 if len(res) >= k:
                     temp_top_k_res[k].append(sum(res[:k]) / k)
 
         for k in k_values:
-            top_k_res[k].append(np.mean(temp_top_k_res[k]))
+            if len(temp_top_k_res[k]) > 0:
+                top_k_res[k].append(np.mean(temp_top_k_res[k]))
 
     for k in k_values:
         top_k_res[k] = np.mean(top_k_res[k])
 
+    print(top_k_res)
     return top_k_res
 
 

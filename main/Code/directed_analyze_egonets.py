@@ -504,7 +504,12 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 
 # dmlh.train_random_forest(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '2', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
 # dmlh.train_random_forest(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-0-random_20k.npy', '3', [2, 3, 4, 5, 10, 11, 12], test_set_file_name='snapshot-1-random_20k.npy')
-dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
+# dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "RF-2-snap-1-random-20k")
+# dmlh.calc_percision_at_k(gplus.lp_results_base_path + 'ml/pickle-files/', "RF-2-snap-1-random-20k.pickle.npy")
+
+# dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "RF-3-snap-1-random-20k")
+# dmlh.calc_percision_at_k(gplus.lp_results_base_path + 'ml/pickle-files/', "RF-3-snap-1-random-20k.npy")
+
 # dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle")
 # dmlh.aupr_trained_model(gplus.lp_results_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "G+ Test 2")
 # dmlh.aupr_trained_model(gplus.lp_results_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "G+ Test 3")
@@ -522,6 +527,12 @@ dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapsh
 # dmlh.aupr_trained_model(flickr.lp_results_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "Flickr Test 2")
 # dmlh.aupr_trained_model(flickr.lp_results_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "Flickr Test 3")
 
+# dmlh.test_trained_model(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "RF-2-snap-1-random-20k")
+# dmlh.calc_percision_at_k(flickr.lp_results_base_path + 'ml/pickle-files/', "RF-2-snap-1-random-20k.npy")
+#
+# dmlh.test_trained_model(flickr.lp_results_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "RF-3-snap-1-random-20k")
+# dmlh.calc_percision_at_k(flickr.lp_results_base_path + 'ml/pickle-files/', "RF-3-snap-1-random-20k.npy")
+
 # **** Digg **** #
 # run_parallel_link_prediction_analysis_for_ml(digg.egonet_files_path, digg.lp_results_file_base_path, num_process=20,
 #                                              skip_over_100k=True, wipe_older_results=False)
@@ -534,3 +545,9 @@ dmlh.test_trained_model(gplus.lp_results_base_path + 'ml/pickle-files/', 'snapsh
 # dmlh.test_trained_model(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle")
 # dmlh.aupr_trained_model(digg.lp_results_file_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "Digg Test 2")
 # dmlh.aupr_trained_model(digg.lp_results_file_base_path + 'ml/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "Digg Test 3")
+
+dmlh.test_trained_model(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-2.pickle", [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], "RF-2-snap-1-random-20k")
+dmlh.calc_percision_at_k(digg.lp_results_file_base_path + 'ml/pickle-files/', "RF-2-snap-1-random-20k.npy")
+
+dmlh.test_trained_model(digg.lp_results_file_base_path + 'ml/pickle-files/', 'snapshot-1-random_20k.npy', "RF-3.pickle", [2, 3, 4, 5, 10, 11, 12], "RF-3-snap-1-random-20k")
+dmlh.calc_percision_at_k(digg.lp_results_file_base_path + 'ml/pickle-files/', "RF-3-snap-1-random-20k.npy")
