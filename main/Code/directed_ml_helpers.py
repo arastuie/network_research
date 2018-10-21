@@ -18,6 +18,7 @@ from sklearn.metrics import average_precision_score, auc
 feature_names = ['Egonet Id', 'V Node Id', 'CN', 'AA', 'CAR', 'CCLP', 'LD Undirectd', 'LD In-degree', 'LD Out-degree',
                  'Snapshot Index', '# first hop nodes', '# second hop nodes', '# of edges', 'Formed?']
 
+
 def evaluate_lp_measures(ego_net_file, data_file_base_path, result_file_base_path, skip_over_100k=True):
     # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop,
     # #_nodes_second_hop, #_of_edges_in_egonet, formed?
@@ -396,8 +397,164 @@ def aupr_trained_model(result_base_path, test_set_file_name, trained_model_file_
 
 def print_rf_feature_importance(clf, feature_indices):
     feature_importance = clf.feature_importances_
-    print("Feature Importance:")
+    print("\tFeature Importance:\n\t", end='')
     for i in range(len(feature_importance)):
         print("{}: {:1.4f}".format(feature_names[feature_indices[i]], feature_importance[i]), end=' - ')
+
+    return
+
+
+############ Roller Learner ##############
+def preprocessing_5_to_1_train(train_set, feature_indices):
+    print("\tStart preprocessing...")
+    # down sample negative examples, 1 positive to 5 negative
+    num_positive_ex = np.sum(train_set[:, 13])
+    # Number of negative examples to del is the total number of examples - pos_ex - pos_ex * 5 which is 1 - 5 ratio
+    num_negatives_to_del = int(np.shape(train_set)[0] - num_positive_ex * 6)
+
+    # This if is not going to happen, so let everything fail, is it does.
+    if num_negatives_to_del < 0:
+        print("\tThere are not enough negative examples to down-sample.")
+
+    neg_indices_to_del = np.random.choice(np.where(train_set[:, 13] == 0)[0], size=num_negatives_to_del, replace=False)
+    train_set = np.delete(train_set, neg_indices_to_del, 0)
+    print("\tDown-sampling done.")
+
+    np.random.shuffle(train_set)
+
+    y = train_set[:, -1].astype(int)
+    x = train_set[:, feature_indices]
+
+    return x, y
+
+
+def train_rf_roller_learner(train_set, feature_indices, n_jobs, trained_model_file_path):
+    x_train, y_train = preprocessing_5_to_1_train(train_set, feature_indices)
+
+    # Training the classifier
+    print("\tStart model fitting with {} samples.".format(len(y_train)))
+
+    clf = RandomForestClassifier(n_estimators=400, max_features='sqrt', max_depth=80, n_jobs=n_jobs, criterion='gini')
+
+    start = time.time()
+    clf = clf.fit(x_train, y_train)
+    end = time.time()
+    print("\tTraining took {:10.3f} min".format((end - start) / 60))
+
+    with open(trained_model_file_path, 'wb') as f:
+        pickle.dump(clf, f, protocol=-1)
+
+    print_rf_feature_importance(clf, feature_indices)
+
+    return clf
+
+
+def test_roller_learner(test_set, clf, feature_indices, pred_save_path):
+    np.random.shuffle(test_set)
+
+    y_test = test_set[:, -1].astype(int)
+    x_test = test_set[:, feature_indices]
+    x_egos = test_set[:, 0]
+
+    # predicting
+    print("\tStart predicting {} samples.".format(len(y_test)))
+
+    start = time.time()
+    y_pred = clf.predict_proba(x_test)[:, 1]
+    end = time.time()
+    print("\nPrediction took {:10.3f} min".format((end - start) / 60))
+
+    # putting all data together. egonet_id, y_test, y_pred
+    predicted_data = np.stack((x_egos, y_test, y_pred), axis=-1)
+    np.save(pred_save_path, predicted_data)
+
+    return predicted_data
+
+
+def roller_percision_at_k(predicted_data, k_values):
+    print("\tStart calculating P@K...")
+    start = time.time()
+    # predicted_data must be in the following format: egonet_id, y_test, y_pred
+    unique_egos = np.unique(predicted_data[:, 0])
+
+    top_k_res = {}
+    for k in k_values:
+        top_k_res[k] = []
+
+    for ego in unique_egos:
+        ego_data_indices = np.where(predicted_data[:, 0] == ego, True, False)
+        ego_data = predicted_data[ego_data_indices, :]
+        predicted_data = predicted_data[~ego_data_indices, :]
+
+        res = ego_data[np.argsort(-ego_data[:, 2]), 1]
+
+        for k in k_values:
+            if len(res) >= k:
+                top_k_res[k].append(sum(res[:k]) / k)
+
+    for k in k_values:
+        top_k_res[k] = np.mean(top_k_res[k])
+
+    end = time.time()
+    print("\tP@K calc took {:10.3f} min".format((end - start) / 60))
+
+    return top_k_res
+
+
+def random_forest_roller_learner(result_base_path, data_file_name, model_name, feature_indices, n_jobs=6):
+    k_values = [1, 3, 5, 10, 15, 20, 25, 30]
+
+    result_path = result_base_path + 'trained_models/' + model_name
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+
+    top_k_res = {}
+    for k in k_values:
+        top_k_res[k] = []
+
+    print("Loading the dataset: {}combined/{}".format(result_base_path, data_file_name))
+    dataset = np.load(result_base_path + 'combined/' + data_file_name)
+    print("Dataset loaded.")
+
+    # get the number of distinct snapshots
+    last_snap_index = int(dataset[:, 9].max())
+    print("{} snapshots to be evaluated.".format(last_snap_index))
+
+    # goes up to last snap - 1
+    for sid in range(last_snap_index):
+        trained_model_file_path = "{}/clf-sid-{}.pickle".format(result_path, sid)
+        test_res_file_path = '{}/preds-sid-{}.npy'.format(result_path, sid + 1)
+
+        # Training on this snapshot
+        if os.path.isfile(trained_model_file_path):
+            print("\n\n\nLoading classifier on snapshot {}".format(sid))
+            with open(trained_model_file_path, 'rb') as f:
+                clf = pickle.load(f)
+        else:
+            print("\n\n\nStart training on snapshot {}".format(sid))
+            train_set = dataset[np.where(dataset[:, 9] == sid)[0], :]
+            clf = train_rf_roller_learner(train_set, feature_indices, n_jobs, trained_model_file_path)
+
+        # Testing on the next snapshot
+        if os.path.isfile(test_res_file_path):
+            print("\tLoading test result on snapshot {}".format(sid + 1))
+            predicted_data = np.load(test_res_file_path)
+        else:
+            test_set = dataset[np.where(dataset[:, 9] == sid + 1)[0], :]
+            predicted_data = test_roller_learner(test_set, clf, feature_indices, test_res_file_path)
+
+        # Calculating P@K
+        top_k_res_temp = roller_percision_at_k(predicted_data, k_values)
+        print(top_k_res)
+
+        for k in k_values:
+            top_k_res[k].append(top_k_res_temp[k])
+
+    # Printing final results
+    print(top_k_res)
+    for k in k_values:
+        top_k_res[k] = np.mean(top_k_res[k])
+
+    print(top_k_res)
 
     return
