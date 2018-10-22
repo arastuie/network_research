@@ -12,6 +12,7 @@ import directed_graphs_helpers as dgh
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix, precision_recall_curve
 from sklearn.metrics import average_precision_score, auc
+from sklearn.linear_model import LogisticRegression
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
@@ -428,13 +429,41 @@ def preprocessing_5_to_1_train(train_set, feature_indices):
     return x, y
 
 
-def train_rf_roller_learner(train_set, feature_indices, n_jobs, trained_model_file_path):
+def train_logistic_reg_roller_learner(train_set, feature_indices, trained_model_file_path, n_jobs):
     x_train, y_train = preprocessing_5_to_1_train(train_set, feature_indices)
 
     # Training the classifier
     print("\tStart model fitting with {} samples.".format(len(y_train)))
 
-    clf = RandomForestClassifier(n_estimators=400, max_features='sqrt', max_depth=80, n_jobs=n_jobs, criterion='gini')
+    # roller-4 and 5
+    # clf = LogisticRegression(C=1e20)
+    # roller-6
+    clf = LogisticRegression(solver="lbfgs")
+
+    start = time.time()
+    clf = clf.fit(x_train, y_train)
+    end = time.time()
+    print("\tTraining took {:10.3f} min".format((end - start) / 60))
+
+    with open(trained_model_file_path, 'wb') as f:
+        pickle.dump(clf, f, protocol=-1)
+
+    coefs = clf.coef_[0]
+    print("\tCoefs:\n\t", end='')
+    for i in range(len(coefs)):
+        print("{}: {:1.4f}".format(feature_names[feature_indices[i]], coefs[i]), end=' - ')
+    print()
+
+    return clf
+
+
+def train_rf_roller_learner(train_set, feature_indices, trained_model_file_path, n_jobs):
+    x_train, y_train = preprocessing_5_to_1_train(train_set, feature_indices)
+
+    # Training the classifier
+    print("\tStart model fitting with {} samples.".format(len(y_train)))
+
+    clf = RandomForestClassifier(n_estimators=1000, max_features='sqrt', max_depth=150, n_jobs=n_jobs, criterion='gini')
 
     start = time.time()
     clf = clf.fit(x_train, y_train)
@@ -511,7 +540,7 @@ def roller_percision_at_k(predicted_data, k_values):
     return top_k_res
 
 
-def random_forest_roller_learner(result_base_path, data_file_name, model_name, feature_indices, n_jobs=6):
+def roller_learner(model_def, result_base_path, data_file_name, model_name, feature_indices, n_jobs=6):
     k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
     result_path = result_base_path + 'trained_models/' + model_name
@@ -529,7 +558,7 @@ def random_forest_roller_learner(result_base_path, data_file_name, model_name, f
     # get the number of distinct snapshots
     last_snap_index = int(dataset[:, 9].max())
     print("{} snapshots to be evaluated.".format(last_snap_index))
-    clf_list = []
+
     # goes up to last snap - 1
     for sid in range(last_snap_index):
         trained_model_file_path = "{}/clf-sid-{}.pickle".format(result_path, sid)
@@ -540,29 +569,18 @@ def random_forest_roller_learner(result_base_path, data_file_name, model_name, f
             print("\n\n\nLoading classifier on snapshot {}".format(sid))
             with open(trained_model_file_path, 'rb') as f:
                 clf = pickle.load(f)
-                clf.estimators_.extend(clf_list)
-                clf.n_estimators += len(clf_list)
-                clf_list = clf.estimators_
-                print(clf.n_estimators)
         else:
             print("\n\n\nStart training on snapshot {}".format(sid))
             train_set = dataset[np.where(dataset[:, 9] == sid)[0], :]
-            clf = train_rf_roller_learner(train_set, feature_indices, n_jobs, trained_model_file_path)
-            clf.estimators_.extend(clf_list)
-            clf.n_estimators += len(clf_list)
-            clf_list = clf.estimators_
-            print(clf.n_estimators)
+            clf = model_def(train_set, feature_indices, trained_model_file_path, n_jobs)
 
-        # # Testing on the next snapshot
-        # if os.path.isfile(test_res_file_path):
-        #     print("\tLoading test result on snapshot {}".format(sid + 1))
-        #     predicted_data = np.load(test_res_file_path)
-        # else:
-        #     test_set = dataset[np.where(dataset[:, 9] == sid + 1)[0], :]
-        #     predicted_data = test_roller_learner(test_set, clf, feature_indices, test_res_file_path)
-
-        test_set = dataset[np.where(dataset[:, 9] == sid + 1)[0], :]
-        predicted_data = test_roller_learner(test_set, clf, feature_indices, test_res_file_path)
+        # Testing on the next snapshot
+        if os.path.isfile(test_res_file_path):
+            print("\tLoading test result on snapshot {}".format(sid + 1))
+            predicted_data = np.load(test_res_file_path)
+        else:
+            test_set = dataset[np.where(dataset[:, 9] == sid + 1)[0], :]
+            predicted_data = test_roller_learner(test_set, clf, feature_indices, test_res_file_path)
 
         # Calculating P@K
         top_k_res_temp = roller_percision_at_k(predicted_data, k_values)
@@ -579,3 +597,12 @@ def random_forest_roller_learner(result_base_path, data_file_name, model_name, f
     print(top_k_res)
 
     return
+
+
+def random_forest_roller_learner(result_base_path, data_file_name, model_name, feature_indices, n_jobs=6):
+    roller_learner(train_rf_roller_learner, result_base_path, data_file_name, model_name, feature_indices, n_jobs)
+
+
+def logistic_reg_roller_learner(result_base_path, data_file_name, model_name, feature_indices, n_jobs=6):
+    roller_learner(train_logistic_reg_roller_learner, result_base_path, data_file_name, model_name, feature_indices,
+                   n_jobs)
