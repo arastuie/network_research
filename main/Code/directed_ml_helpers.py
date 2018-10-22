@@ -13,6 +13,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix, precision_recall_curve
 from sklearn.metrics import average_precision_score, auc
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 #    0           1       2   3   4    5        6           7       8       9                  10                 11                   12               13
 # egonet-id, v-node-id, CN, AA, CAR, CCLP, LD-undirectd, LD-in, LD-out, snapshot_index, #_nodes_first_hop, #_nodes_second_hop, #_of_edges_in_egonet, formed?
@@ -422,23 +423,25 @@ def preprocessing_5_to_1_train(train_set, feature_indices):
     print("\tDown-sampling done.")
 
     np.random.shuffle(train_set)
-
     y = train_set[:, -1].astype(int)
     x = train_set[:, feature_indices]
 
-    return x, y
+    x_scaler = StandardScaler()
+    x = x_scaler.fit_transform(x)
+
+    return x, y, x_scaler
 
 
 def train_logistic_reg_roller_learner(train_set, feature_indices, trained_model_file_path, n_jobs):
-    x_train, y_train = preprocessing_5_to_1_train(train_set, feature_indices)
+    x_train, y_train, x_scaler = preprocessing_5_to_1_train(train_set, feature_indices)
 
     # Training the classifier
     print("\tStart model fitting with {} samples.".format(len(y_train)))
 
     # roller-4 and 5
-    # clf = LogisticRegression(C=1e20)
+    clf = LogisticRegression(C=1e20)
     # roller-6
-    clf = LogisticRegression(solver="lbfgs")
+    # clf = LogisticRegression(solver="lbfgs")
 
     start = time.time()
     clf = clf.fit(x_train, y_train)
@@ -446,7 +449,7 @@ def train_logistic_reg_roller_learner(train_set, feature_indices, trained_model_
     print("\tTraining took {:10.3f} min".format((end - start) / 60))
 
     with open(trained_model_file_path, 'wb') as f:
-        pickle.dump(clf, f, protocol=-1)
+        pickle.dump([clf, x_scaler], f, protocol=-1)
 
     coefs = clf.coef_[0]
     print("\tCoefs:\n\t", end='')
@@ -454,11 +457,11 @@ def train_logistic_reg_roller_learner(train_set, feature_indices, trained_model_
         print("{}: {:1.4f}".format(feature_names[feature_indices[i]], coefs[i]), end=' - ')
     print()
 
-    return clf
+    return clf, x_scaler
 
 
 def train_rf_roller_learner(train_set, feature_indices, trained_model_file_path, n_jobs):
-    x_train, y_train = preprocessing_5_to_1_train(train_set, feature_indices)
+    x_train, y_train, x_scaler = preprocessing_5_to_1_train(train_set, feature_indices)
 
     # Training the classifier
     print("\tStart model fitting with {} samples.".format(len(y_train)))
@@ -471,19 +474,21 @@ def train_rf_roller_learner(train_set, feature_indices, trained_model_file_path,
     print("\tTraining took {:10.3f} min".format((end - start) / 60))
 
     with open(trained_model_file_path, 'wb') as f:
-        pickle.dump(clf, f, protocol=-1)
+        pickle.dump([clf, x_scaler], f, protocol=-1)
 
     print_rf_feature_importance(clf, feature_indices)
 
-    return clf
+    return clf, x_scaler
 
 
-def test_roller_learner(test_set, clf, feature_indices, pred_save_path):
+def test_roller_learner(test_set, clf, feature_indices, x_scaler, pred_save_path):
     np.random.shuffle(test_set)
 
     y_test = test_set[:, -1].astype(int)
     x_test = test_set[:, feature_indices]
     x_egos = test_set[:, 0]
+
+    x_test = x_scaler.transform(x_test)
 
     # predicting
     print("\tStart predicting {} samples.".format(len(y_test)))
@@ -568,11 +573,11 @@ def roller_learner(model_def, result_base_path, data_file_name, model_name, feat
         if os.path.isfile(trained_model_file_path):
             print("\n\n\nLoading classifier on snapshot {}".format(sid))
             with open(trained_model_file_path, 'rb') as f:
-                clf = pickle.load(f)
+                clf, x_scaler = pickle.load(f)
         else:
             print("\n\n\nStart training on snapshot {}".format(sid))
             train_set = dataset[np.where(dataset[:, 9] == sid)[0], :]
-            clf = model_def(train_set, feature_indices, trained_model_file_path, n_jobs)
+            clf, x_scaler = model_def(train_set, feature_indices, trained_model_file_path, n_jobs)
 
         # Testing on the next snapshot
         if os.path.isfile(test_res_file_path):
@@ -580,7 +585,7 @@ def roller_learner(model_def, result_base_path, data_file_name, model_name, feat
             predicted_data = np.load(test_res_file_path)
         else:
             test_set = dataset[np.where(dataset[:, 9] == sid + 1)[0], :]
-            predicted_data = test_roller_learner(test_set, clf, feature_indices, test_res_file_path)
+            predicted_data = test_roller_learner(test_set, clf, feature_indices, x_scaler, test_res_file_path)
 
         # Calculating P@K
         top_k_res_temp = roller_percision_at_k(predicted_data, k_values)

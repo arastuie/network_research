@@ -518,8 +518,7 @@ def run_parallel_link_prediction_analysis_for_ml(egonet_files_path, results_base
 # dmlh.random_forest_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-2', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12], n_jobs=6)
 # dmlh.random_forest_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-3', [2, 3, 4, 5, 10, 11, 12], n_jobs=6)
 # dmlh.logistic_reg_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-4-logistic', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
-# dmlh.logistic_reg_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-5-logistic', [2, 3, 4, 5, 10, 11, 12])
-dmlh.logistic_reg_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-6-logistic', [2, 3, 4, 5, 6, 7, 8, 10, 11, 12])
+dmlh.logistic_reg_roller_learner(gplus.lp_results_base_path + 'ml/pickle-files/', 'random_20k.npy', 'roller-5-logistic', [2, 3, 4, 5, 10, 11, 12])
 
 
 # **** Flickr **** #
