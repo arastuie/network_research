@@ -439,7 +439,7 @@ def train_logistic_reg_roller_learner(train_set, feature_indices, trained_model_
     print("\tStart model fitting with {} samples.".format(len(y_train)))
 
     # roller-4 and 5
-    clf = LogisticRegression(C=1e20)
+    clf = LogisticRegression(C=1e6)
     # roller-6
     # clf = LogisticRegression(solver="lbfgs")
 
@@ -466,7 +466,7 @@ def train_rf_roller_learner(train_set, feature_indices, trained_model_file_path,
     # Training the classifier
     print("\tStart model fitting with {} samples.".format(len(y_train)))
 
-    clf = RandomForestClassifier(n_estimators=1000, max_features='sqrt', max_depth=150, n_jobs=n_jobs, criterion='gini')
+    clf = RandomForestClassifier(n_estimators=500, max_features='sqrt', max_depth=80, n_jobs=n_jobs, criterion='gini')
 
     start = time.time()
     clf = clf.fit(x_train, y_train)

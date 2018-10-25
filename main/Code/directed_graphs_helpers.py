@@ -1328,11 +1328,12 @@ def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
     index_of_top_k_scores = np.argsort(y_scores)[::-1][:top_k_values[-1]]
     top_preds = y_true[index_of_top_k_scores]
     for k in top_k_values:
-        percent_score[k].append(sum(top_preds[:k]) / k)
+        if len(top_preds) >= k:
+            percent_score[k].append(sum(top_preds[:k]) / k)
 
 
 def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path, result_file_base_path,
-                                 specific_triads_only=False, skip_over_100k=True):
+                                 specific_triads_only=False, skip_over_100k=True, skip_snapshots_w_no_new_edge=True):
     start_time = datetime.now()
 
     # return if the egonet is on the analyzed list
@@ -1355,7 +1356,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         ego_node, ego_net_snapshots = pickle.load(f)
 
     total_y_true = 0
-
+    max_top_k = max(top_k_values)
     num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
     # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
     if skip_over_100k and num_nodes >= 100000:
@@ -1373,14 +1374,25 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         v_nodes_list = list(v_nodes.keys())
         y_true = []
 
+        # Skip the snapshot if there is no enough nodes in it to evaluate p@k
+        if len(v_nodes_list) < max_top_k:
+            continue
+
         for v_i in range(0, len(v_nodes_list)):
             if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
                 y_true.append(1)
             else:
                 y_true.append(0)
 
-        # continue of no edge was formed
+        # if no edge was formed either skip it, or set all scores to 0, since that's what we are going to get.
         if np.sum(y_true) == 0:
+            if skip_snapshots_w_no_new_edge:
+                continue
+
+            for s in score_list:
+                for k in top_k_values:
+                    if len(y_true) >= k:
+                        percent_scores[s][k].append(0)
             continue
 
         total_y_true += np.sum(y_true)
@@ -1457,7 +1469,6 @@ def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_node
                             (y * (z_global_degree / z_local_degree)))
 
         z_info[z].append(dcaa)
-
 
     for v_i in range(len(v_nodes_list)):
         # cn score
