@@ -180,8 +180,8 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 
 # **** Digg **** #
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 6, skip_over_100k=False)
-run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-1/', 6,
-                                      skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
+# run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-1/', 6,
+#                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 
 # lpe.calculate_lp_performance(digg.lp_results_file_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(digg.lp_results_file_base_path + 'pickle-files-1/', gather_individual_results=True)

@@ -15,8 +15,11 @@ egonet_files_path = '/shared/DataSets/FacebookViswanath2009/egocentric/all_egone
 empirical_pickle_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files-1/'
 empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/plots-1/'
 
-lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-1/'
-lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-1/'
+# lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-1/'
+# lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-1/'
+
+lp_results_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-2/'
+lp_plots_path = '/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-2/'
 
 pymk_directories = ['before-pymk', 'after-pymk']
 
@@ -323,7 +326,8 @@ def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
     index_of_top_k_scores = np.argsort(y_scores)[::-1][:top_k_values[-1]]
     top_preds = y_true[index_of_top_k_scores]
     for k in top_k_values:
-        percent_score[k].append(sum(top_preds[:k]) / k)
+        if len(top_preds) >= k:
+            percent_score[k].append(sum(top_preds[:k]) / k)
 
 
 def common_neighbors_index(ego_net, non_edges):
@@ -541,8 +545,8 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
 
             formed_nodes = second_hop_nodes.intersection(ego_net_snapshots[i + 1].neighbors(ego_node))
 
-            if len(formed_nodes) == 0:
-                continue
+            # if len(formed_nodes) == 0:
+            #     continue
 
             non_edges = []
             y_true = []
@@ -559,7 +563,16 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
             # numpy array is needed for sorting purposes
             y_true = np.array(y_true)
 
-            total_y_true += sum(y_true)
+            # if no edge was formed, all scores will be zero
+            num_edges_formed = np.sum(y_true)
+            if num_edges_formed == 0:
+                for s in score_list:
+                    for k in top_k_values:
+                        if len(y_true) >= k:
+                            percent_scores[s][k].append(0)
+                continue
+
+            total_y_true += num_edges_formed
 
             # evaluating different link prediction methods
             if 'cn' in percent_scores:
@@ -599,7 +612,10 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
             # getting the mean of all snapshots for each score
             for s in percent_scores:
                 for k in top_k_values:
-                    percent_scores[s][k] = np.mean(percent_scores[s][k])
+                    if len(percent_scores[s][k]) == 0:
+                        percent_scores[s][k] = np.nan
+                    else:
+                        percent_scores[s][k] = np.mean(percent_scores[s][k])
 
             with open(lp_results_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
                 pickle.dump(percent_scores, f, protocol=-1)
