@@ -1344,7 +1344,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
     if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
         return
 
-    score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
+    score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp', 'dccar']
     percent_scores = {}
 
     for score in score_list:
@@ -1356,7 +1356,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         ego_node, ego_net_snapshots = pickle.load(f)
 
     total_y_true = 0
-    max_top_k = max(top_k_values)
+
     num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
     # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
     if skip_over_100k and num_nodes >= 100000:
@@ -1373,10 +1373,6 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
 
         v_nodes_list = list(v_nodes.keys())
         y_true = []
-
-        # Skip the snapshot if there is no enough nodes in it to evaluate p@k
-        if len(v_nodes_list) < max_top_k:
-            continue
 
         for v_i in range(0, len(v_nodes_list)):
             if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
@@ -1406,7 +1402,7 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
             calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
         # getting scores for car and cclp
-        lp_scores = car_and_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        lp_scores = car_dccar_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
         for s in lp_scores.keys():
             calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
@@ -1415,7 +1411,10 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         # getting the mean of all snapshots for each score
         for s in percent_scores:
             for k in top_k_values:
-                percent_scores[s][k] = np.mean(percent_scores[s][k])
+                if len(percent_scores[s][k]) == 0:
+                    percent_scores[s][k] = np.nan
+                else:
+                    percent_scores[s][k] = np.mean(percent_scores[s][k])
 
         with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
             pickle.dump(percent_scores, f, protocol=-1)
@@ -1526,17 +1525,18 @@ def aa_dc_lp_scores_directed_for_single_node(ego_net, z, first_hop_nodes):
     return single_z_info
 
 
-def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+def car_dccar_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     # exact same as `car_and_cclp_directed_lp_indices_combined`, but this returns a dict instead
 
     scores = {
         'car': [],
+        'dccar': [],
         'cclp': []
     }
 
     undirected_ego_net = ego_net.to_undirected()
 
-    z_cclp = {}
+    z_info = {}
 
     for z in first_hop_nodes:
         z_deg = undirected_ego_net.degree(z)
@@ -1545,9 +1545,15 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         if z_deg == 1:
             continue
 
-        z_tri = nx.triangles(undirected_ego_net, z)
+        z_info[z] = []
 
-        z_cclp[z] = z_tri / (z_deg * (z_deg - 1) / 2)
+        # calculation for LD-CAR
+        z_local_degree = len(set(nx.neighbors(undirected_ego_net, z)).intersection(first_hop_nodes))
+        z_info[z].append(math.log(z_local_degree + 2))
+
+        # CCLP
+        z_tri = nx.triangles(undirected_ego_net, z)
+        z_info[z].append(z_tri / (z_deg * (z_deg - 1) / 2))
 
     for v_i in range(0, len(v_nodes_list)):
         num_cn = len(v_nodes_z[v_nodes_list[v_i]])
@@ -1564,31 +1570,35 @@ def car_and_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
         scores['car'].append(num_cn * lcl)
 
         temp_cclp = 0
+        temp_dccar = 0
 
         for z in v_nodes_z[v_nodes_list[v_i]]:
-            if z not in z_cclp:
-                z_cclp[z] = cclp_directed_lp_single_node(undirected_ego_net, z)
+            if z not in z_info:
+                z_single_cclp, z_single_car_temp = cclp_dccn_directed_lp_single_node(undirected_ego_net, z,
+                                                                                     first_hop_nodes)
+                z_info[z].append(z_single_car_temp)
+                z_info[z].append(z_single_cclp)
 
-            temp_cclp += z_cclp[z]
+            temp_dccar += z_info[z][0]
+            temp_cclp += z_info[z][1]
 
-        # cclp score
+        # cclp and dccar score
         scores['cclp'].append(temp_cclp)
-
+        scores['dccar'].append(temp_dccar * lcl)
     return scores
 
 
-def cclp_directed_lp_single_node(undirected_ego_net, z):
+def cclp_dccn_directed_lp_single_node(undirected_ego_net, z, first_hop_nodes):
     z_deg = undirected_ego_net.degree(z)
-
-    # # if z_deg = 1, then the z node has no neighbor in the second hop, thus no need to compute
-    # if z_deg == 1:
-    #     continue
 
     z_tri = nx.triangles(undirected_ego_net, z)
 
     z_single_cclp = z_tri / (z_deg * (z_deg - 1) / 2)
 
-    return z_single_cclp
+    z_local_degree = len(set(nx.neighbors(undirected_ego_net, z)).intersection(first_hop_nodes))
+    z_single_car_temp = math.log(z_local_degree + 2)
+
+    return z_single_cclp, z_single_car_temp
 
 
 def dc_car_cclp_directed_lp(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):

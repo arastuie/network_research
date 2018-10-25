@@ -39,6 +39,8 @@ def get_all_results(result_file_base_path, gather_individual_results, scores=Non
 
         for k in top_k_values:
             for score in scores:
+                if np.isnan(egonet_lp_results[score][k]):
+                    continue
                 all_scores[score][k].append(egonet_lp_results[score][k])
 
         cnt += 1
