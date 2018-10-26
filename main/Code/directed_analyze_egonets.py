@@ -42,7 +42,7 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                     triangle_types='all', separete_in_out_degree=False,
 #                                     gather_individual_results=True)
 
-# dgh.local_degree_empirical_result_comparison(gplus.local_degree_empirical_results_path, include_conf_intervals=False,
+# dgh.local_degree_empirical_result_comparison(gplus.local_degree_empirical_results_path, include_conf_intervals=True,
 #                                              gather_individual_results=False)
 
 
@@ -57,7 +57,7 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                     flickr.local_degree_empirical_plot_path, triangle_types='all',
 #                                     separete_in_out_degree=False, gather_individual_results=True)
 
-# dgh.local_degree_empirical_result_comparison(flickr.local_degree_empirical_results_path, include_conf_intervals=False,
+# dgh.local_degree_empirical_result_comparison(flickr.local_degree_empirical_results_path, include_conf_intervals=True,
 #                                              gather_individual_results=False)
 
 
@@ -74,8 +74,8 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                     digg.directed_local_degree_empirical_plot_path, triangle_types='all',
 #                                     separete_in_out_degree=False, gather_individual_results=True)
 
-# dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_results_path,
-#                                              include_conf_intervals=False, gather_individual_results=False)
+dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_results_path,
+                                             include_conf_intervals=True, gather_individual_results=False)
 
 
 # ************************************************************************* #
@@ -160,7 +160,7 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
-# lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-2/', gather_individual_results=True)
+# lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-2/', gather_individual_results=False)
 
 # lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
@@ -168,7 +168,7 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 
 # **** Flickr **** #
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 6, skip_over_100k=False)
-# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-1/', 10,
+# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-1/', 16,
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 
 # lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)

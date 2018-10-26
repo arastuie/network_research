@@ -670,7 +670,7 @@ def local_degree_empirical_result_comparison(result_file_base_path, include_conf
     #   local-formed-in-degree, global-formed-in-degree, local-formed-out-degree, global-formed-out-degree
     #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
     #   global-not-formed-out-degree
-    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
+    triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06']
 
     all_results = get_all_empirical_resutls(result_file_base_path, gather_individual_results)
     print()
@@ -684,22 +684,28 @@ def local_degree_empirical_result_comparison(result_file_base_path, include_conf
         print('In-degree', end=',')
         print('out-degree', end=',')
     print()
-    if include_conf_intervals:
-        for i in range(len(triangle_types)):
-            # difference for in degree
-            print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-not-formed-err'][i] -
-                  all_results['Global']['id-formed'][i] - all_results['Global']['id-formed-err'][i], end=',')
 
-            # difference for in degree
-            print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-not-formed-err'][i] -
-                  all_results['Global']['od-formed'][i] - all_results['Global']['od-formed-err'][i], end=',')
-    else:
-        for i in range(len(triangle_types)):
-            # difference for in degree
-            print(all_results['Global']['id-not-formed'][i] - all_results['Global']['id-formed'][i], end=',')
+    in_degree_diff = []
+    out_degree_diff = []
 
-            # difference for in degree
-            print(all_results['Global']['od-not-formed'][i] - all_results['Global']['od-formed'][i], end=',')
+    for i in range(len(triangle_types)):
+        in_degree_diff_temp = all_results['Global']['id-not-formed'][i] - all_results['Global']['id-formed'][i]
+        out_degree_diff_temp = all_results['Global']['od-not-formed'][i] - all_results['Global']['od-formed'][i]
+
+        if include_conf_intervals:
+            in_degree_diff_temp -= all_results['Global']['id-not-formed-err'][i] + \
+                                   all_results['Global']['id-formed-err'][i]
+            out_degree_diff_temp -= all_results['Global']['od-not-formed-err'][i] + \
+                                    all_results['Global']['od-formed-err'][i]
+
+        in_degree_diff.append(in_degree_diff_temp / all_results['Global']['id-not-formed'][i])
+        out_degree_diff.append(out_degree_diff_temp / all_results['Global']['od-not-formed'][i])
+
+        print(in_degree_diff_temp, end=',')
+        print(out_degree_diff_temp, end=',')
+
+    print("\nAverage global in-degree difference:{}".format(np.mean(in_degree_diff)))
+    print("Average global out-degree difference:{}".format(np.mean(out_degree_diff)))
 
     print()
     print('Local')
@@ -711,22 +717,28 @@ def local_degree_empirical_result_comparison(result_file_base_path, include_conf
         print('In-degree', end=',')
         print('out-degree', end=',')
     print()
-    if include_conf_intervals:
-        for i in range(len(triangle_types)):
-            # difference for in degree
-            print(all_results['Local']['id-formed'][i] - all_results['Local']['id-formed-err'][i] -
-                  all_results['Local']['id-not-formed'][i] - all_results['Local']['id-not-formed-err'][i], end=',')
 
-            # difference for in degree
-            print(all_results['Local']['od-formed'][i] - all_results['Local']['od-formed-err'][i] -
-                  all_results['Local']['od-not-formed'][i] - all_results['Local']['od-not-formed-err'][i], end=',')
-    else:
-        for i in range(len(triangle_types)):
-            # difference for in degree
-            print(all_results['Local']['id-formed'][i] - all_results['Local']['id-not-formed'][i], end=',')
+    in_degree_diff = []
+    out_degree_diff = []
 
-            # difference for in degree
-            print(all_results['Local']['od-formed'][i] - all_results['Local']['od-not-formed'][i], end=',')
+    for i in range(len(triangle_types)):
+        in_degree_diff_temp = all_results['Local']['id-formed'][i] - all_results['Local']['id-not-formed'][i]
+        out_degree_diff_temp = all_results['Local']['od-formed'][i] - all_results['Local']['od-not-formed'][i]
+
+        if include_conf_intervals:
+            in_degree_diff_temp -= all_results['Local']['id-formed-err'][i] + \
+                                   all_results['Local']['id-not-formed-err'][i]
+            out_degree_diff_temp -= all_results['Local']['od-formed-err'][i] + \
+                                    all_results['Local']['od-not-formed-err'][i]
+
+        in_degree_diff.append(in_degree_diff_temp / all_results['Local']['id-formed'][i])
+        out_degree_diff.append(out_degree_diff_temp / all_results['Local']['od-formed'][i])
+
+        print(in_degree_diff_temp, end=',')
+        print(out_degree_diff_temp, end=',')
+
+    print("\nAverage local in-degree difference:{}".format(np.mean(in_degree_diff)))
+    print("Average local out-degree difference:{}".format(np.mean(out_degree_diff)))
 
 
 ########## Links formed in triad ratio analysis ##############

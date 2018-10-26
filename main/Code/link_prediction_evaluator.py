@@ -3,8 +3,9 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp']
-score_names = {'cn': 'CN', 'dccn': 'LD-CN', 'aa': 'AA', 'dcaa': 'LD-AA', 'car': 'CAR', 'cclp': 'CCLP'}
+score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp', 'dccar']
+score_names = {'cn': 'CN', 'dccn': 'LD-CN', 'aa': 'AA', 'dcaa': 'LD-AA', 'car': 'CAR', 'cclp': 'CCLP',
+               'dccar': 'LD-CAR'}
 
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
