@@ -74,8 +74,8 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                     digg.directed_local_degree_empirical_plot_path, triangle_types='all',
 #                                     separete_in_out_degree=False, gather_individual_results=True)
 
-dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_results_path,
-                                             include_conf_intervals=True, gather_individual_results=False)
+# dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_results_path,
+#                                              include_conf_intervals=True, gather_individual_results=False)
 
 
 # ************************************************************************* #
@@ -130,7 +130,7 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 # ************************ Link Prediction Analysis *********************** #
 # ************************************************************************* #
 def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, num_process, skip_over_100k,
-                                          skip_snapshots_w_no_new_edge=True):
+                                          skip_snapshots_w_no_new_edge=True, separate_degree=False):
     top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
     all_egonets = set(os.listdir(egonet_files_path))
     if skip_over_100k:
@@ -144,23 +144,35 @@ def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, 
 
     print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
 
-    Parallel(n_jobs=num_process)(delayed(dgh.run_directed_link_prediction)
-                                 (ego_net_file, top_k_values, egonet_files_path, results_base_path,
-                                  skip_over_100k=skip_over_100k,
-                                  skip_snapshots_w_no_new_edge=skip_snapshots_w_no_new_edge)
-                                 for ego_net_file in egonets_to_analyze)
+    if not separate_degree:
+        Parallel(n_jobs=num_process)(delayed(dgh.run_directed_link_prediction)
+                                     (ego_net_file, top_k_values, egonet_files_path, results_base_path,
+                                      skip_over_100k=skip_over_100k,
+                                      skip_snapshots_w_no_new_edge=skip_snapshots_w_no_new_edge)
+                                     for ego_net_file in egonets_to_analyze)
+    else:
+        Parallel(n_jobs=num_process)(delayed(dgh.run_directed_link_prediction_w_separate_degree)
+                                     (ego_net_file, top_k_values, egonet_files_path, results_base_path,
+                                      skip_over_100k=skip_over_100k,
+                                      skip_snapshots_w_no_new_edge=skip_snapshots_w_no_new_edge)
+                                     for ego_net_file in egonets_to_analyze)
 
 
 # The methods to be compared for improvements plots
 comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
+separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
 
 # **** Google+ **** #
 # run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 6, skip_over_100k=False)
-# run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-2/', 6,
-#                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
+run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-2/', 4,
+                                      skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
+# run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-w-sep-deg/',
+#                                       8, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-2/', gather_individual_results=False)
+# lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-w-sep-deg/', gather_individual_results=True,
+#                              scores=separate_deg_scores)
 
 # lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
@@ -170,6 +182,8 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 6, skip_over_100k=False)
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-1/', 16,
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
+# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-w-sep-deg/',
+#                                       12, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-1/', gather_individual_results=True)
@@ -182,6 +196,8 @@ comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 6, skip_over_100k=False)
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-1/', 6,
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
+# run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-w-sep-deg/',
+#                                       4, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(digg.lp_results_file_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(digg.lp_results_file_base_path + 'pickle-files-1/', gather_individual_results=True)

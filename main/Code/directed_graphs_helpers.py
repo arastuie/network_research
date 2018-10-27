@@ -1439,6 +1439,232 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
         pickle.dump(0, f, protocol=-1)
 
 
+def run_directed_link_prediction_w_separate_degree(ego_net_file, top_k_values, data_file_base_path,
+                                                   result_file_base_path, specific_triads_only=False,
+                                                   skip_over_100k=True, skip_snapshots_w_no_new_edge=True):
+    start_time = datetime.now()
+
+    # return if the egonet is on the analyzed list
+    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+        return
+
+    # return if the egonet is on the skipped list
+    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+        return
+
+    score_list = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+    percent_scores = {}
+
+    for score in score_list:
+        percent_scores[score] = {}
+        for k in top_k_values:
+            percent_scores[score][k] = []
+
+    with open(data_file_base_path + ego_net_file, 'rb') as f:
+        ego_node, ego_net_snapshots = pickle.load(f)
+
+    total_y_true = 0
+
+    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
+    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
+    if skip_over_100k and num_nodes >= 100000:
+        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+            pickle.dump(0, f, protocol=-1)
+        return
+
+    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
+    for i in range(len(ego_net_snapshots) - 1):
+        if specific_triads_only:
+            first_hop_nodes, v_nodes = get_specific_type_nodes_gplus(ego_net_snapshots[i], ego_node)
+        else:
+            first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+
+        v_nodes_list = list(v_nodes.keys())
+        y_true = []
+
+        for v_i in range(0, len(v_nodes_list)):
+            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        # if no edge was formed either skip it, or set all scores to 0, since that's what we are going to get.
+        if np.sum(y_true) == 0:
+            if skip_snapshots_w_no_new_edge:
+                continue
+
+            for s in score_list:
+                for k in top_k_values:
+                    if len(y_true) >= k:
+                        percent_scores[s][k].append(0)
+            continue
+
+        total_y_true += np.sum(y_true)
+
+        # numpy array is needed for sorting purposes
+        y_true = np.array(y_true)
+
+        # getting all scores
+        lp_scores = aa_cn_dc_lp_w_separate_degree_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        for s in lp_scores.keys():
+            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
+
+    # skip if no snapshot returned a score
+    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
+        # getting the mean of all snapshots for each score
+        for s in percent_scores:
+            for k in top_k_values:
+                if len(percent_scores[s][k]) == 0:
+                    percent_scores[s][k] = np.nan
+                else:
+                    percent_scores[s][k] = np.mean(percent_scores[s][k])
+
+        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
+            pickle.dump(percent_scores, f, protocol=-1)
+
+        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
+              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
+
+    # save an empty file in analyzed_egonets to know which ones were analyzed
+    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+        pickle.dump(0, f, protocol=-1)
+
+
+def aa_cn_dc_lp_w_separate_degree_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
+
+    scores = {
+        'od-dccn': [],
+        'in-dccn': [],
+        'od-aa': [],
+        'id-aa': [],
+        'od-dcaa': [],
+        'in-dcaa': []
+    }
+
+    # a dict of info on z nodes. Every key points to a list [od-dccn, id-dccn, od-aa, in-aa, od-dcaa, id-dcaa]
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_preds = set(ego_net.predecessors(z))
+        z_succs = set(ego_net.successors(z))
+        z_neighbors = z_preds.union(z_succs)
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+        z_global_in_degree = len(z_preds)
+        z_global_out_degree = len(z_succs)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+        z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
+        z_local_out_degree = len(z_succs.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_info[z] = []
+        # od-dccn
+        z_info[z].append(math.log(z_local_out_degree + 2))
+
+        # id-dccn
+        z_info[z].append(math.log(z_local_in_degree + 2))
+
+        # od-aa
+        z_info[z].append(1 / math.log(z_global_out_degree + 2))
+
+        # in-aa
+        z_info[z].append(1 / math.log(z_global_in_degree + 2))
+
+        # od-dcaa
+        z_local_out_degree += 1
+        z_global_out_degree += 2
+        y_od = z_global_out_degree - z_local_out_degree
+        od_dcaa = 1 / math.log((z_local_out_degree * (1 - (z_local_out_degree / z_global_out_degree))) +
+                               (y_od * (z_global_out_degree / z_local_out_degree)))
+        z_info[z].append(od_dcaa)
+
+        # id-dcaa
+        z_local_in_degree += 1
+        z_global_in_degree += 2
+        y_id = z_global_in_degree - z_local_in_degree
+        id_dcaa = 1 / math.log((z_local_in_degree * (1 - (z_local_in_degree / z_global_in_degree))) +
+                               (y_id * (z_global_in_degree / z_local_in_degree)))
+        z_info[z].append(id_dcaa)
+
+    for v_i in range(len(v_nodes_list)):
+        temp_od_dccn = 0
+        temp_id_dccn = 0
+        temp_od_aa = 0
+        temp_id_aa = 0
+        temp_od_dcaa = 0
+        temp_in_dcaa = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            if z not in z_info:
+                z_info[z] = aa_cn_dc_lp_w_sep_degree_directed_for_single_node(ego_net, z, first_hop_nodes)
+
+            temp_od_dccn += z_info[z][0]
+            temp_id_dccn += z_info[z][1]
+            temp_od_aa += z_info[z][2]
+            temp_id_aa += z_info[z][3]
+            temp_od_dcaa += z_info[z][4]
+            temp_in_dcaa += z_info[z][5]
+
+        scores['od-dccn'].append(temp_od_dccn)
+        scores['in-dccn'].append(temp_id_dccn)
+        scores['od-aa'].append(temp_od_aa)
+        scores['id-aa'].append(temp_id_aa)
+        scores['od-dcaa'].append(temp_od_dcaa)
+        scores['in-dcaa'].append(temp_in_dcaa)
+
+    return scores
+
+
+def aa_cn_dc_lp_w_sep_degree_directed_for_single_node(ego_net, z, first_hop_nodes):
+    z_info = []
+    z_preds = set(ego_net.predecessors(z))
+    z_succs = set(ego_net.successors(z))
+
+    z_global_in_degree = len(z_preds)
+    z_global_out_degree = len(z_succs)
+
+    z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
+    z_local_out_degree = len(z_succs.intersection(first_hop_nodes))
+
+    # od-dccn
+    z_info.append(math.log(z_local_out_degree + 2))
+
+    # id-dccn
+    z_info.append(math.log(z_local_in_degree + 2))
+
+    # od-aa
+    z_info.append(1 / math.log(z_global_out_degree + 2))
+
+    # in-aa
+    z_info[z].append(1 / math.log(z_global_in_degree + 2))
+
+    # od-dcaa
+    z_local_out_degree += 1
+    z_global_out_degree += 2
+    y_od = z_global_out_degree - z_local_out_degree
+    od_dcaa = 1 / math.log((z_local_out_degree * (1 - (z_local_out_degree / z_global_out_degree))) +
+                           (y_od * (z_global_out_degree / z_local_out_degree)))
+    z_info.append(od_dcaa)
+
+    # id-dcaa
+    z_local_in_degree += 1
+    z_global_in_degree += 2
+    y_id = z_global_in_degree - z_local_in_degree
+    id_dcaa = 1 / math.log((z_local_in_degree * (1 - (z_local_in_degree / z_global_in_degree))) +
+                           (y_id * (z_global_in_degree / z_local_in_degree)))
+    z_info.append(id_dcaa)
+
+    return z_info
+
+
 def aa_cn_dc_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
     # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
 

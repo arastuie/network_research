@@ -149,7 +149,7 @@ def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=Fal
     elif is_test:
         lp_results_base_file_path = lp_results_base_file_path + 'test-methods/' + scores[0] + '/pickle-files/'
 
-    if not is_test and not is_fb:
+    if not is_test and not is_fb and scores is None:
         scores = score_list
 
     # loading result data
