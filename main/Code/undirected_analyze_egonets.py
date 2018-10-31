@@ -43,7 +43,9 @@ def run_parallel_local_degree_empirical_analysis(results_base_path, num_process,
 #                                              log_degree=True, skip_snaps=True, normalize=False)
 
 # Plotting
-# fb.plot_local_degree_empirical_results(gather_individual_results=False)
+fb.plot_local_degree_empirical_results(fb.empirical_pickle_base_path + 'pickle-files-4/',
+                                       fb.empirical_pickle_base_path + 'plots-4/', gather_individual_results=True)
+
 # fb.plot_local_degree_empirical_ecdf(gather_individual_results=True)
 
 # ************************************************************************* #

@@ -552,6 +552,9 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
     #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
     #   global-not-formed-out-degree
 
+    if not os.path.exists(plot_save_path):
+        os.makedirs(plot_save_path)
+
     triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
     gl_labels = ['Local', 'Global']
 

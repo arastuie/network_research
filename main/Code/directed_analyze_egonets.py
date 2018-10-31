@@ -60,9 +60,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
-#                                         gplus.local_degree_empirical_plot_path + 'plots-1/',
-#                                         gather_individual_results=False)
+# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-3/',
+#                                         gplus.local_degree_empirical_base_plot_path + 'plots-3/',
+#                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
 #                                     gplus.local_degree_empirical_plot_path + 'plots-1/',
@@ -93,9 +93,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-# dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_base_path + 'test1/',
-#                                         flickr.local_degree_empirical_plot_base_path + 'test1/',
-#                                         gather_individual_results=False)
+# dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_base_path + 'test4/',
+#                                         flickr.local_degree_empirical_plot_base_path + 'test4/',
+#                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_base_path + 'test1/',
 #                                     flickr.local_degree_empirical_plot_base_path + 'test1/', triangle_types='all',
@@ -124,9 +124,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed/',
-#                                         digg.directed_local_degree_empirical_base_results_path + 'directed/plots/',
-#                                         gather_individual_results=False)
+dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
+                                        digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
+                                        gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_base_results_path + 'directed/',
 #                                     digg.directed_local_degree_empirical_base_results_path + 'directed/plots/',

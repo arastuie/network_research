@@ -222,7 +222,7 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, log_deg
     return
 
 
-def plot_local_degree_empirical_results(gather_individual_results=False):
+def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, gather_individual_results=False):
     # Plotting info
     gl_labels = ['local', 'global']
     z = 1.96
@@ -239,6 +239,9 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
 
     all_results = {'before-pymk': {}, 'after-pymk': {}}
 
+    if not os.path.exists(plot_save_path):
+        os.makedirs(plot_save_path)
+
     for pymk_type in pymk_directories:
         if gather_individual_results:
 
@@ -248,25 +251,25 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
 
             results = []
 
-            for result_file in os.listdir(empirical_pickle_path + pymk_type + '/results'):
-                with open(empirical_pickle_path + pymk_type + '/results/' + result_file, 'rb') as f:
+            for result_file in os.listdir(result_file_base_path + pymk_type + '/results'):
+                with open(result_file_base_path + pymk_type + '/results/' + result_file, 'rb') as f:
                     egonet_result = pickle.load(f)
                     results.append(egonet_result)
             results = np.array(results)
 
             for i, res_type in enumerate(result_types):
-                all_results[pymk_type][res_type] = np.mean(results[:, i])
-                all_results[pymk_type][res_type + '-err'] = h.get_mean_ci(results[:, i], z)
+                all_results[pymk_type][res_type] = np.nanmean(results[:, i])
+                all_results[pymk_type][res_type + '-err'] = h.get_mean_ci(results[:, i], z, has_nan=True)
 
             # Create directory if not exists
-            if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
-                os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
+            if not os.path.exists(result_file_base_path + pymk_type + '/all-scores'):
+                os.makedirs(result_file_base_path + pymk_type + '/all-scores')
 
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'wb') as f:
+            with open(result_file_base_path + pymk_type + '/all-scores/all-barplot.pckl', 'wb') as f:
                 pickle.dump(all_results[pymk_type], f, protocol=-1)
 
         else:
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-barplot.pckl', 'rb') as f:
+            with open(result_file_base_path + pymk_type + '/all-scores/all-barplot.pckl', 'rb') as f:
                 all_results[pymk_type] = pickle.load(f)
 
     # plotting
@@ -296,7 +299,7 @@ def plot_local_degree_empirical_results(gather_individual_results=False):
         plt.tight_layout()
         # plt.ylim(ymax=0.4)
 
-        plt.savefig('{0}barplot-{1}.pdf'.format(empirical_plot_path, i_degree), format='pdf')
+        plt.savefig('{0}barplot-{1}.pdf'.format(plot_save_path, i_degree), format='pdf')
         plt.clf()
 
 
