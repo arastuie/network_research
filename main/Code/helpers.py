@@ -360,5 +360,8 @@ def add_ecdf_with_band_plot_undirected(data, label, color):
     plt.fill_between(data, lb, ub, facecolor=color, alpha=0.2)
 
 
-def get_mean_ci(res, z_value):
-    return z_value * np.std(res) / np.sqrt(len(res))
+def get_mean_ci(res, z_value, has_nan=False):
+    if has_nan:
+        return z_value * np.nanstd(res) / np.sqrt(np.sum(~np.isnan(res)))
+    else:
+        return z_value * np.std(res) / np.sqrt(len(res))

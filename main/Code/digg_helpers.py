@@ -11,9 +11,9 @@ egonet_files_path = '/shared/DataSets/Digg2009/egonets/'
 
 undirected_local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \
                                                  'undirected/'
-directed_local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/'
-directed_local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/directed/' \
-                                            'plots/'
+
+# plot path is inside of the results path
+directed_local_degree_empirical_base_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/'
 
 # This test, forces v nodes not to follow the ego
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/digg/' \

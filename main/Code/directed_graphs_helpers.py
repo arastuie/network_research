@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import helpers as h
 import networkx as nx
+import warnings
 from datetime import datetime
 import matplotlib.pyplot as plt
 
@@ -271,7 +272,12 @@ def get_t09_type_nodes(ego_net, ego_node):
     return list(first_hop_nodes), list(second_hop_nodes), v_nodes
 
 
-def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path, skip_over_100k=True):
+def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path, log_degree, skip_snaps,
+                                        normalize, skip_over_100k=True):
+    # log_degee (boolea): take log of the degrees before the mean
+    # skip_snaps (boolean): skip snapshots where there is no edges formed
+    # normalize (boolean): normalize the mean of each snapshots
+    
     # return if the egonet is on the analyzed list
     if os.path.isfile(results_base_path + 'analyzed_egonets/' + ego_net_file):
         return
@@ -325,23 +331,21 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
             first_hop_nodes, second_hop_nodes, v_nodes = triangle_type_func[triangle_type](ego_net_snapshots[i],
                                                                                            ego_node)
 
-            len_first_hop = len(first_hop_nodes)
-            tot_num_nodes = nx.number_of_nodes(ego_net_snapshots[i])
-
             # Checks whether or not any edge were formed and not formed, if not skips to next snapshot
-            has_any_formed = False
-            has_any_not_formed = False
-            for v in v_nodes:
-                if ego_net_snapshots[i + 1].has_edge(ego_node, v):
-                    has_any_formed = True
-                else:
-                    has_any_not_formed = True
+            if skip_snaps:
+                has_any_formed = False
+                has_any_not_formed = False
+                for v in v_nodes:
+                    if ego_net_snapshots[i + 1].has_edge(ego_node, v):
+                        has_any_formed = True
+                    else:
+                        has_any_not_formed = True
 
-                if has_any_formed and has_any_not_formed:
-                    break
+                    if has_any_formed and has_any_not_formed:
+                        break
 
-            if not has_any_formed or not has_any_not_formed:
-                continue
+                if not has_any_formed or not has_any_not_formed:
+                    continue
 
             # dict of lists -> z: [local_in, local_out, global_in, global_out]
             z_degree_info = {}
@@ -350,10 +354,16 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
                 z_preds = set(ego_net_snapshots[i].predecessors(z))
                 z_succs = set(ego_net_snapshots[i].successors(z))
 
-                z_degree_info[z] = [len(z_preds.intersection(first_hop_nodes)),
-                                    len(z_succs.intersection(first_hop_nodes)),
-                                    len(z_preds),
-                                    len(z_succs)]
+                if log_degree:
+                    z_degree_info[z] = np.log([len(z_preds.intersection(first_hop_nodes)) + 2,
+                                               len(z_succs.intersection(first_hop_nodes)) + 2,
+                                               len(z_preds) + 2,
+                                               len(z_succs) + 2])
+                else:
+                    z_degree_info[z] = [len(z_preds.intersection(first_hop_nodes)),
+                                        len(z_succs.intersection(first_hop_nodes)),
+                                        len(z_preds),
+                                        len(z_succs)]
 
             # ANALYSIS
             local_formed_z_in_degree = []
@@ -393,31 +403,63 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
                     global_not_formed_z_in_degree.append(np.mean(global_temp_in_degree))
                     global_not_formed_z_out_degree.append(np.mean(global_temp_out_degree))
 
-            # normalizing by the number of nodes in the first hop
-            local_snapshots_formed_z_in_degree.append(np.mean(local_formed_z_in_degree) / len_first_hop)
-            local_snapshots_formed_z_out_degree.append(np.mean(local_formed_z_out_degree) / len_first_hop)
-            local_snapshots_not_formed_z_in_degree.append(np.mean(local_not_formed_z_in_degree) / len_first_hop)
-            local_snapshots_not_formed_z_out_degree.append(np.mean(local_not_formed_z_out_degree) / len_first_hop)
+            if normalize:
+                # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
+                # we want. So ignore the warning.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+                    len_first_hop = len(first_hop_nodes)
+                    tot_num_nodes = nx.number_of_nodes(ego_net_snapshots[i])
 
-            # normalizing by the number of nodes in the entire snapshot
-            global_snapshots_formed_z_in_degree.append(np.mean(global_formed_z_in_degree) / tot_num_nodes)
-            global_snapshots_formed_z_out_degree.append(np.mean(global_formed_z_out_degree) / tot_num_nodes)
-            global_snapshots_not_formed_z_in_degree.append(np.mean(global_not_formed_z_in_degree) / tot_num_nodes)
-            global_snapshots_not_formed_z_out_degree.append(np.mean(global_not_formed_z_out_degree) / tot_num_nodes)
+                    # normalizing by the number of nodes in the first hop
+                    local_snapshots_formed_z_in_degree.append(np.mean(local_formed_z_in_degree) / len_first_hop)
+                    local_snapshots_formed_z_out_degree.append(np.mean(local_formed_z_out_degree) / len_first_hop)
+                    local_snapshots_not_formed_z_in_degree.append(np.mean(local_not_formed_z_in_degree) / len_first_hop)
+                    local_snapshots_not_formed_z_out_degree.append(np.mean(local_not_formed_z_out_degree) /
+                                                                   len_first_hop)
+
+                    # normalizing by the number of nodes in the entire snapshot
+                    global_snapshots_formed_z_in_degree.append(np.mean(global_formed_z_in_degree) / tot_num_nodes)
+                    global_snapshots_formed_z_out_degree.append(np.mean(global_formed_z_out_degree) / tot_num_nodes)
+                    global_snapshots_not_formed_z_in_degree.append(np.mean(global_not_formed_z_in_degree) /
+                                                                   tot_num_nodes)
+                    global_snapshots_not_formed_z_out_degree.append(np.mean(global_not_formed_z_out_degree) /
+                                                                    tot_num_nodes)
+
+            else:
+                # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
+                # we want. So ignore the warning.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+                    # normalizing by the number of nodes in the first hop
+                    local_snapshots_formed_z_in_degree.append(np.mean(local_formed_z_in_degree))
+                    local_snapshots_formed_z_out_degree.append(np.mean(local_formed_z_out_degree))
+                    local_snapshots_not_formed_z_in_degree.append(np.mean(local_not_formed_z_in_degree))
+                    local_snapshots_not_formed_z_out_degree.append(np.mean(local_not_formed_z_out_degree))
+
+                    # normalizing by the number of nodes in the entire snapshot
+                    global_snapshots_formed_z_in_degree.append(np.mean(global_formed_z_in_degree))
+                    global_snapshots_formed_z_out_degree.append(np.mean(global_formed_z_out_degree))
+                    global_snapshots_not_formed_z_in_degree.append(np.mean(global_not_formed_z_in_degree))
+                    global_snapshots_not_formed_z_out_degree.append(np.mean(global_not_formed_z_out_degree))
 
         # Return if there was no V node found
         if len(local_snapshots_formed_z_in_degree) == 0:
             continue
 
         with open(results_base_path + triangle_type + '/' + ego_net_file, 'wb') as f:
-            pickle.dump([np.mean(local_snapshots_formed_z_in_degree),
-                         np.mean(global_snapshots_formed_z_in_degree),
-                         np.mean(local_snapshots_formed_z_out_degree),
-                         np.mean(global_snapshots_formed_z_out_degree),
-                         np.mean(local_snapshots_not_formed_z_in_degree),
-                         np.mean(global_snapshots_not_formed_z_in_degree),
-                         np.mean(local_snapshots_not_formed_z_out_degree),
-                         np.mean(global_snapshots_not_formed_z_out_degree)], f, protocol=-1)
+            # if any of these arrays are all nans due to no formed edges in all snapshots, the nanmean returns a nan
+            # value, which is what we want. So ignore the warning.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                pickle.dump([np.nanmean(local_snapshots_formed_z_in_degree),
+                             np.nanmean(global_snapshots_formed_z_in_degree),
+                             np.nanmean(local_snapshots_formed_z_out_degree),
+                             np.nanmean(global_snapshots_formed_z_out_degree),
+                             np.nanmean(local_snapshots_not_formed_z_in_degree),
+                             np.nanmean(global_snapshots_not_formed_z_in_degree),
+                             np.nanmean(local_snapshots_not_formed_z_out_degree),
+                             np.nanmean(global_snapshots_not_formed_z_out_degree)], f, protocol=-1)
 
     # save an empty file in analyzed_egonets to know which ones were analyzed
     with open(results_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
@@ -477,16 +519,16 @@ def get_all_empirical_resutls(result_file_base_path, gather_individual_results):
 
             for i in range(2):
                 # computing mean
-                all_results[gl_labels[i]]['id-formed'].append(np.mean(results[:, i]))
-                all_results[gl_labels[i]]['id-not-formed'].append(np.mean(results[:, i + 4]))
-                all_results[gl_labels[i]]['od-formed'].append(np.mean(results[:, i + 2]))
-                all_results[gl_labels[i]]['od-not-formed'].append(np.mean(results[:, i + 6]))
+                all_results[gl_labels[i]]['id-formed'].append(np.nanmean(results[:, i]))
+                all_results[gl_labels[i]]['id-not-formed'].append(np.nanmean(results[:, i + 4]))
+                all_results[gl_labels[i]]['od-formed'].append(np.nanmean(results[:, i + 2]))
+                all_results[gl_labels[i]]['od-not-formed'].append(np.nanmean(results[:, i + 6]))
 
                 # computing 95% confidence interval
-                all_results[gl_labels[i]]['id-formed-err'].append(h.get_mean_ci(results[:, i], z))
-                all_results[gl_labels[i]]['id-not-formed-err'].append(h.get_mean_ci(results[:, i + 4], z))
-                all_results[gl_labels[i]]['od-formed-err'].append(h.get_mean_ci(results[:, i + 2], z))
-                all_results[gl_labels[i]]['od-not-formed-err'].append(h.get_mean_ci(results[:, i + 6], z))
+                all_results[gl_labels[i]]['id-formed-err'].append(h.get_mean_ci(results[:, i], z, has_nan=True))
+                all_results[gl_labels[i]]['id-not-formed-err'].append(h.get_mean_ci(results[:, i + 4], z, has_nan=True))
+                all_results[gl_labels[i]]['od-formed-err'].append(h.get_mean_ci(results[:, i + 2], z, has_nan=True))
+                all_results[gl_labels[i]]['od-not-formed-err'].append(h.get_mean_ci(results[:, i + 6], z, has_nan=True))
 
             print(triangle_types[t] + ": Done")
 
@@ -544,8 +586,8 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
         plt.xticks(np.arange(len(triangle_types)) + bar_width * 1.5, triangle_types)
 
         plt.legend(loc='upper left')
-        if i_degree == 0:
-            plt.ylim(ymax=.51)
+        # if i_degree == 0:
+        #     plt.ylim(ymax=.51)
         plt.tight_layout()
         plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
         plt.clf()

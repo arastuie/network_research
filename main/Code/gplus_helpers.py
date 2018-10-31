@@ -13,8 +13,8 @@ nx2_incompatible_egonets_file_path = '/shared/DataSets/GooglePlus_Gong2012/egoce
 list_of_first_hop_nodes_file_path = '/shared/DataSets/GooglePlus_Gong2012/egocentric/edge-node-lists/' \
                                     'gplus-nodes-snap-0-list.pckl'
 
-local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/pickle-files-1/'
-local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/plots-1/'
+local_degree_empirical_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/'
+local_degree_empirical_base_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/'
 
 # This test, forces v nodes not to follow the ego
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/gplus/' \

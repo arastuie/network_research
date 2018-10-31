@@ -9,9 +9,12 @@ from joblib import Parallel, delayed
 dataset_file_path = '/shared/DataSets/FlickrGrowth/raw/flickr-growth.txt'
 egonet_files_path = '/shared/DataSets/FlickrGrowth/egonets/'
 
-local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files' \
-                                      '/test1/'
-local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
+# local_degree_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files' \
+#                                       '/test1/'
+# local_degree_empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/test1/'
+
+local_degree_empirical_results_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/pickle-files/'
+local_degree_empirical_plot_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/plots/'
 
 # This test, forces v nodes not to follow the ego
 triad_ratio_empirical_results_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/flickr/' \

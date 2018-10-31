@@ -136,7 +136,7 @@ def get_conf(lp_scores):
     # up = round(m + err, 2)
     # down = round(m - err, 2)
     # return "({0}, {1})".format(down, up)
-    return "{0},{1}".format(round(m, 2), round(err, 2))
+    return "{0},{1}".format(round(m, 4), round(err, 4))
 
 
 def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=False, specific_triads_only=False,
