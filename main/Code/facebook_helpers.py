@@ -2,6 +2,7 @@ import os
 import math
 import time
 import pickle
+import warnings
 import numpy as np
 import helpers as h
 import networkx as nx
@@ -12,6 +13,7 @@ import link_prediction_evaluator as lpe
 dataset_file_path = '/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt'
 egonet_files_path = '/shared/DataSets/FacebookViswanath2009/egocentric/all_egonets/'
 
+empirical_pickle_base_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/'
 empirical_pickle_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/pickle-files-1/'
 empirical_plot_path = '/shared/Results/EgocentricLinkPrediction/main/empirical/fb/plots-1/'
 
@@ -83,13 +85,17 @@ def extract_all_ego_centric_networks_in_fb(original_graph):
 
 
 # ********** Local degree empirical analysis ********** #
-def run_local_degree_empirical_analysis(ego_net_file):
+def run_local_degree_empirical_analysis(ego_net_file, results_base_path, log_degree, skip_snaps, normalize):
     # This analysis is separated into befor and after PYMK. FB intorduced PYMK around March 2008, which means
     # links created between snapshots 0 to 5 are for before PYMK and the ones made between 5 to 9 are after.
     # Also since not all ego nets have 10 snapshots, the index for before and after must be first calculated.
 
+    # log_degee (boolean): take log of the degrees before the mean
+    # skip_snaps (boolean): skip snapshots where there is no edges formed
+    # normalize (boolean): normalize the mean of each snapshots
+
     # return if the egonet is on the analyzed list in after pymk, it must be in before as well
-    if os.path.isfile(empirical_pickle_path + 'after-pymk/analyzed_egonets/' + ego_net_file):
+    if os.path.isfile(results_base_path + 'after-pymk/analyzed_egonets/' + ego_net_file):
         return
 
     with open(egonet_files_path + ego_net_file, 'rb') as f:
@@ -131,7 +137,7 @@ def run_local_degree_empirical_analysis(ego_net_file):
             formed_v_nodes = next_snap_z_nodes.intersection(current_snap_v_nodes)
             not_formed_v_nodes = current_snap_v_nodes - formed_v_nodes
 
-            if len(formed_v_nodes) == 0 or len(not_formed_v_nodes) == 0:
+            if skip_snaps and len(formed_v_nodes) == 0 or len(not_formed_v_nodes) == 0:
                 continue
 
             len_first_hop = len(current_snap_z_nodes)
@@ -146,8 +152,12 @@ def run_local_degree_empirical_analysis(ego_net_file):
             z_local_degree = {}
             z_global_degree = {}
             for z in current_snap_z_nodes:
-                z_local_degree[z] = len(list(nx.common_neighbors(ego_snaps[i], z, ego)))
-                z_global_degree[z] = nx.degree(ego_snaps[i], z)
+                if log_degree:
+                    z_local_degree[z] = np.log(len(list(nx.common_neighbors(ego_snaps[i], z, ego))) + 2)
+                    z_global_degree[z] = np.log(nx.degree(ego_snaps[i], z) + 2)
+                else:
+                    z_local_degree[z] = len(list(nx.common_neighbors(ego_snaps[i], z, ego)))
+                    z_global_degree[z] = nx.degree(ego_snaps[i], z)
 
             for v in formed_v_nodes:
                 common_neighbors = nx.common_neighbors(ego_snaps[i], v, ego)
@@ -173,20 +183,39 @@ def run_local_degree_empirical_analysis(ego_net_file):
                 z_local_not_formed.append(np.mean(temp_local))
                 z_global_not_formed.append(np.mean(temp_global))
 
-            snapshots_local_formed.append(np.mean(z_local_formed) / len_first_hop)
-            snapshots_global_formed.append(np.mean(z_global_formed) / tot_num_nodes)
-            snapshots_local_not_formed.append(np.mean(z_local_not_formed) / len_first_hop)
-            snapshots_global_not_formed.append(np.mean(z_global_not_formed) / tot_num_nodes)
+            # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
+            # we want. So ignore the warning.
+            if normalize:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+
+                    snapshots_local_formed.append(np.mean(z_local_formed) / len_first_hop)
+                    snapshots_global_formed.append(np.mean(z_global_formed) / tot_num_nodes)
+                    snapshots_local_not_formed.append(np.mean(z_local_not_formed) / len_first_hop)
+                    snapshots_global_not_formed.append(np.mean(z_global_not_formed) / tot_num_nodes)
+            else:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+
+                    snapshots_local_formed.append(np.mean(z_local_formed))
+                    snapshots_global_formed.append(np.mean(z_global_formed))
+                    snapshots_local_not_formed.append(np.mean(z_local_not_formed))
+                    snapshots_global_not_formed.append(np.mean(z_global_not_formed))
 
         if len(snapshots_local_formed) > 0:
-            with open(empirical_pickle_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
-                pickle.dump([np.mean(snapshots_local_formed),
-                             np.mean(snapshots_global_formed),
-                             np.mean(snapshots_local_not_formed),
-                             np.mean(snapshots_global_not_formed)], f, protocol=-1)
+            # if any of these arrays are all nans due to no formed edges in all snapshots, the nanmean returns a nan
+            # value, which is what we want. So ignore the warning.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+
+                with open(results_base_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
+                    pickle.dump([np.mean(snapshots_local_formed),
+                                 np.mean(snapshots_global_formed),
+                                 np.mean(snapshots_local_not_formed),
+                                 np.mean(snapshots_global_not_formed)], f, protocol=-1)
 
         # save an empty file in analyzed_egonets to know which ones were analyzed
-        with open(empirical_pickle_path + pymk_type + '/analyzed-egonets/' + ego_net_file, 'wb') as f:
+        with open(results_base_path + pymk_type + '/analyzed-egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 
     print("Analyzed ego net {0}".format(ego_net_file))

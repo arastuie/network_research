@@ -17,10 +17,10 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
                                                  log_degree=False, skip_snaps=True, normalize=True):
     if not os.path.exists(results_base_path):
         os.makedirs(results_base_path)
-        os.makedirs(results_base_path + '/all-scores')
-        os.makedirs(results_base_path + '/analyzed_egonets')
-        os.makedirs(results_base_path + '/skipped_egonets')
-        os.makedirs(results_base_path + '/temp-analyses-start')
+        os.makedirs(results_base_path + 'all-scores')
+        os.makedirs(results_base_path + 'analyzed_egonets')
+        os.makedirs(results_base_path + 'skipped_egonets')
+        os.makedirs(results_base_path + 'temp-analyses-start')
         for i in range(1, 10):
             os.makedirs(results_base_path + '/T0{}'.format(i))
 

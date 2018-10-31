@@ -274,7 +274,7 @@ def get_t09_type_nodes(ego_net, ego_node):
 
 def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_file_base_path, log_degree, skip_snaps,
                                         normalize, skip_over_100k=True):
-    # log_degee (boolea): take log of the degrees before the mean
+    # log_degee (boolean): take log of the degrees before the mean
     # skip_snaps (boolean): skip snapshots where there is no edges formed
     # normalize (boolean): normalize the mean of each snapshots
     
@@ -403,6 +403,8 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
                     global_not_formed_z_in_degree.append(np.mean(global_temp_in_degree))
                     global_not_formed_z_out_degree.append(np.mean(global_temp_out_degree))
 
+            # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
+            # we want. So ignore the warning.
             if normalize:
                 # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
                 # we want. So ignore the warning.
@@ -427,8 +429,6 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
                                                                     tot_num_nodes)
 
             else:
-                # if any of these arrays are empty due to no formed edges, the mean returns a nan value, which is what
-                # we want. So ignore the warning.
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", category=RuntimeWarning)
                     # normalizing by the number of nodes in the first hop
