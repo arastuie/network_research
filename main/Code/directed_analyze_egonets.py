@@ -62,12 +62,12 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 # dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-3/',
 #                                         gplus.local_degree_empirical_base_plot_path + 'plots-3/',
-#                                         gather_individual_results=True)
+#                                         gather_individual_results=False)
 
-# dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
-#                                     gplus.local_degree_empirical_plot_path + 'plots-1/',
-#                                     triangle_types='all', separete_in_out_degree=False,
-#                                     gather_individual_results=True)
+dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
+                                    gplus.local_degree_empirical_base_plot_path + 'plots-1/',
+                                    triangle_types=['T01'], separete_in_out_degree=True,
+                                    gather_individual_results=True)
 
 # dgh.local_degree_empirical_result_comparison(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
 #                                              include_conf_intervals=True,
@@ -98,8 +98,8 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_base_path + 'test1/',
-#                                     flickr.local_degree_empirical_plot_base_path + 'test1/', triangle_types='all',
-#                                     separete_in_out_degree=False, gather_individual_results=True)
+#                                     flickr.local_degree_empirical_plot_base_path + 'test1/', triangle_types=['T01'],
+#                                     separete_in_out_degree=True, gather_individual_results=True)
 
 # dgh.local_degree_empirical_result_comparison(flickr.local_degree_empirical_results_base_path + 'test1/',
 #                                              include_conf_intervals=True, gather_individual_results=False)
@@ -124,13 +124,13 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
-                                        digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
-                                        gather_individual_results=True)
+# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
+#                                         digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
+#                                         gather_individual_results=True)
 
-# dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_base_results_path + 'directed/',
-#                                     digg.directed_local_degree_empirical_base_results_path + 'directed/plots/',
-#                                     triangle_types='all', separete_in_out_degree=False,
+# dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
+#                                     digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
+#                                     triangle_types=['T01'], separete_in_out_degree=True,
 #                                     gather_individual_results=True)
 
 # dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_base_results_path + 'directed/',

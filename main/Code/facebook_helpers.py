@@ -303,7 +303,12 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
         plt.clf()
 
 
-def plot_local_degree_empirical_ecdf(gather_individual_results=False):
+def plot_local_degree_empirical_ecdf(result_file_base_path, plot_save_path, gather_individual_results=False):
+    plot_save_path += 'cdf/'
+
+    if not os.path.exists(plot_save_path):
+        os.makedirs(plot_save_path)
+
     # The order must be kept, since the saved pickle files are in the same order
     result_types = ['local-formed', 'global-formed', 'local-not-formed', 'global-not-formed']
     for pymk_type in pymk_directories:
@@ -315,8 +320,8 @@ def plot_local_degree_empirical_ecdf(gather_individual_results=False):
 
             results = []
 
-            for result_file in os.listdir(empirical_pickle_path + pymk_type + '/results'):
-                with open(empirical_pickle_path + pymk_type + '/results/' + result_file, 'rb') as f:
+            for result_file in os.listdir(result_file_base_path + pymk_type + '/results'):
+                with open(result_file_base_path + pymk_type + '/results/' + result_file, 'rb') as f:
                     egonet_result = pickle.load(f)
                     results.append(egonet_result)
             results = np.array(results)
@@ -325,14 +330,14 @@ def plot_local_degree_empirical_ecdf(gather_individual_results=False):
                 all_results[res_type] = results[:, i]
 
             # Create directory if not exists
-            if not os.path.exists(empirical_pickle_path + pymk_type + '/all-scores'):
-                os.makedirs(empirical_pickle_path + pymk_type + '/all-scores')
+            if not os.path.exists(result_file_base_path + pymk_type + '/all-scores'):
+                os.makedirs(result_file_base_path + pymk_type + '/all-scores')
 
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-ecdf.pckl', 'wb') as f:
+            with open(result_file_base_path + pymk_type + '/all-scores/all-ecdf.pckl', 'wb') as f:
                 pickle.dump(all_results, f, protocol=-1)
 
         else:
-            with open(empirical_pickle_path + pymk_type + '/all-scores/all-ecdf.pckl', 'rb') as f:
+            with open(result_file_base_path + pymk_type + '/all-scores/all-ecdf.pckl', 'rb') as f:
                 all_results = pickle.load(f)
 
         for dt in ['Global', 'Local']:
@@ -349,7 +354,7 @@ def plot_local_degree_empirical_ecdf(gather_individual_results=False):
             plt.legend(loc='lower right')
             plt.tight_layout()
             current_fig = plt.gcf()
-            current_fig.savefig('{0}ecdf-{1}-{2}.pdf'.format(empirical_plot_path, pymk_type, dt), format='pdf')
+            current_fig.savefig('{0}ecdf-{1}-{2}.pdf'.format(plot_save_path, pymk_type, dt), format='pdf')
             plt.clf()
 
 

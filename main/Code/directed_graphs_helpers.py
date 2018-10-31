@@ -603,6 +603,11 @@ def plot_local_degree_empirical_cdf(result_file_base_path, plot_save_path, trian
     #   local-not-formed-in-degree, global-not-formed-in-degree, local-not-formed-out-degree,
     #   global-not-formed-out-degree
 
+    plot_save_path += 'cdf/'
+
+    if not os.path.exists(plot_save_path):
+        os.makedirs(plot_save_path)
+
     if triangle_types == 'all':
         triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
 
@@ -2011,6 +2016,28 @@ def run_directed_link_prediciton_on_test_method(method_pointer, method_name, ego
     # save an empty file in analyzed_egonets to know which ones were analyzed
     with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
+
+
+def reverse_aa(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # Method description: AA but inverse
+
+    scores = []
+    # a dict of info on z nodes. Every key points to the test score
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_neighbors = set(ego_net.predecessors(z)).union(set(ego_net.successors(z)))
+        z_info[z] = math.log(len(z_neighbors))
+
+    for v_i in range(len(v_nodes_list)):
+        temp = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            temp += z_info[z]
+
+        scores.append(temp)
+
+    return scores
 
 
 def test1_lp_scores_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):

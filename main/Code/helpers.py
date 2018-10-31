@@ -295,6 +295,8 @@ def get_avg_num_cluster_per_node(network, clusters, cluster_node_list, nodes=[])
 
 # ECDF plotting
 def get_ecdf_bands(data, alpha):
+    data = np.array(data)
+    data = data[~np.isnan(data)]
     data = np.sort(data)
 
     n = len(data)
@@ -317,6 +319,8 @@ def get_ecdf_bands(data, alpha):
 
 
 def add_ecdf_with_band_plot(data, lb, ub, label, color):
+    data = np.array(data)
+    data = data[~np.isnan(data)]
     data = np.sort(data)
 
     plt.step(data, np.arange(1, len(data) + 1) / np.float(len(data)), alpha=0.9, color=color,
@@ -349,6 +353,9 @@ def get_ecdf_bands_undirected(data, alpha):
 
 
 def add_ecdf_with_band_plot_undirected(data, label, color):
+    data = np.array(data)
+    data = data[~np.isnan(data)]
+
     data = np.sort(data)
 
     plt.step(data, np.arange(1, len(data) + 1) / np.float(len(data)), alpha=0.9, color=color,
