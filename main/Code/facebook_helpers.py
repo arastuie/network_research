@@ -6,6 +6,8 @@ import warnings
 import numpy as np
 import helpers as h
 import networkx as nx
+from scipy.stats import norm
+import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import link_prediction_evaluator as lpe
 
@@ -404,6 +406,75 @@ def gather_local_degree_data(ego_net_file, results_base_path):
     print("Analyzed ego net {0}".format(ego_net_file))
     return
 
+
+def plot_local_degree_distribution_over_single_ego(result_file_base_path, plot_save_path, min_ego_degree, num_ex=5):
+    names = ['Before PYMK', 'After PYMK']
+    for i in range(len(pymk_directories)):
+        ctr = 0
+        for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
+            with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
+                ego, z_local_degrees = pickle.load(f)
+
+            if len(z_local_degrees[-1]) < min_ego_degree:
+                continue
+
+            # if len(z_local_degrees[-1]) < min_ego_degree:
+            #     print("No node with at least a degree of {} in {}".format(min_ego_degree, names[i]))
+            #     continue
+
+            # plot PDF of the data
+            # transformed_data = np.log(np.array(z_local_degrees[-1]) + 2)
+            # n, bins, patches = plt.hist(transformed_data, bins=50, density=True)
+            #
+            # # plot best fit log normal
+            # mu, sigma = norm.fit(transformed_data)
+            # y = mlab.normpdf(bins, mu, sigma)
+            # plt.plot(bins, y, 'r--', linewidth=2)
+
+            plt.hist(z_local_degrees[-1], bins=50, density=True, log=True)
+
+            # plt.title('Local Degree Distribution {} \n of A Node with Global Degree of {} - {}'
+            #           .format(names[i], len(z_local_degrees[-1]), 'Log Normal: mu=%.3f, sigma=%.3f' % (mu, sigma)))
+
+
+            plt.ylabel('Density'.format(len(z_local_degrees[-1])))
+            plt.xlabel('Log Local Degree')
+            plt.show()
+
+            ctr += 1
+            if ctr >= 5:
+                break
+
+        # plt.savefig('{0}LD-dist-{1}.pdf'.format(plot_save_path, pymk_directories[i]), format='pdf')
+        # plt.clf()
+
+
+def plot_local_degree_distribution(result_file_base_path, plot_save_path):
+    names = ['Before PYMK', 'After PYMK']
+    for i in range(len(pymk_directories)):
+        z_all_local_degrees = []
+        for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
+            with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
+                ego, z_local_degrees = pickle.load(f)
+                z_all_local_degrees.extend(z_local_degrees[-1])
+
+        transformed_data = np.log(np.array(z_all_local_degrees) + 2)
+        n, bins, patches = plt.hist(transformed_data, bins=200, density=True)
+
+        # plot best fit log normal
+        mu, sigma = norm.fit(transformed_data)
+        y = mlab.normpdf(bins, mu, sigma)
+        plt.plot(bins, y, 'r--', linewidth=2)
+
+        plt.title('Local Degree Distribution {} \n - {}'.format(len(z_local_degrees[-1]),
+                                                                'Log Normal: mu=%.3f, sigma=%.3f' % (mu, sigma)))
+
+        plt.ylabel('Density'.format(len(z_local_degrees[-1])))
+        plt.xlabel('Log Local Degree')
+        plt.show()
+
+        # plt.savefig('{0}LD-dist-{1}.pdf'.format(plot_save_path, pymk_directories[i]), format='pdf')
+        # plt.clf()
 
 # ********** Link prediction analysis ********** #
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
