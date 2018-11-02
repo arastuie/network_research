@@ -466,7 +466,8 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, egonet_
         pickle.dump(0, f, protocol=-1)
 
     # remove temp analyze file
-    os.remove(results_base_path + 'temp-analyses-start/' + ego_net_file)
+    if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
+        os.remove(results_base_path + 'temp-analyses-start/' + ego_net_file)
 
     print("Analyzed ego net {0}".format(ego_net_file))
 
@@ -1280,88 +1281,79 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
     plt.clf()
 
 
-
 ########## Local degree distribution analysis ##########
-def gather_local_degree_data(ego_net_file, data_file_base_path, result_file_base_path, skip_over_100k=True):
-    start_time = datetime.now()
+def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_path, skip_over_100k=True):
 
     # return if the egonet is on the analyzed list
-    if os.path.isfile(result_file_base_path + 'analyzed_egonets/' + ego_net_file):
+    if os.path.isfile(results_base_path + 'results/' + ego_net_file):
         return
 
     # return if the egonet is on the skipped list
-    if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
+    if skip_over_100k and os.path.isfile(results_base_path + 'skipped_egonets/' + ego_net_file):
         return
 
-    with open(data_file_base_path + ego_net_file, 'rb') as f:
+    # return if the egonet is on the currently being analyzed list
+    if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
+        return
+
+    with open(egonet_file_base_path + ego_net_file, 'rb') as f:
         ego_node, ego_net_snapshots = pickle.load(f)
 
-    num_nodes = nx.number_of_nodes(ego_net_snapshots[-1])
-    # if the number of nodes in the last snapshot of the network is big, skip it and save a file in skipped-nets
-    if skip_over_100k and num_nodes >= 100000:
-        with open(result_file_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
+    # if the number of nodes in the network is really big, skip them and save a file in skipped-nets
+    if skip_over_100k and nx.number_of_nodes(ego_net_snapshots[0]) > 100000:
+        with open(results_base_path + 'skipped_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
+
         return
 
-    # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
-    for i in range(len(ego_net_snapshots) - 1):
-        if specific_triads_only:
-            first_hop_nodes, v_nodes = get_specific_type_nodes_gplus(ego_net_snapshots[i], ego_node)
-        else:
-            first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
-
-        v_nodes_list = list(v_nodes.keys())
-        y_true = []
-
-        for v_i in range(0, len(v_nodes_list)):
-            if ego_net_snapshots[i + 1].has_edge(ego_node, v_nodes_list[v_i]):
-                y_true.append(1)
-            else:
-                y_true.append(0)
-
-        # if no edge was formed either skip it, or set all scores to 0, since that's what we are going to get.
-        if np.sum(y_true) == 0:
-            if not skip_snapshots_w_no_new_edge:
-                for s in score_list:
-                    for k in top_k_values:
-                        if len(y_true) >= k:
-                            percent_scores[s][k].append(0)
-            continue
-
-        total_y_true += np.sum(y_true)
-
-        # numpy array is needed for sorting purposes
-        y_true = np.array(y_true)
-
-        # getting scores for cn, dccn, aa, dcaa
-        lp_scores = aa_cn_dc_lp_scores_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
-        for s in lp_scores.keys():
-            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
-
-        # getting scores for car and cclp
-        lp_scores = car_dccar_cclp_directed_lp(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
-        for s in lp_scores.keys():
-            calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
-
-    # skip if no snapshot returned a score
-    if len(percent_scores[score_list[0]][top_k_values[0]]) > 0:
-        # getting the mean of all snapshots for each score
-        for s in percent_scores:
-            for k in top_k_values:
-                if len(percent_scores[s][k]) == 0:
-                    percent_scores[s][k] = np.nan
-                else:
-                    percent_scores[s][k] = np.mean(percent_scores[s][k])
-
-        with open(result_file_base_path + 'results/' + ego_net_file, 'wb') as f:
-            pickle.dump(percent_scores, f, protocol=-1)
-
-        print("Analyzed ego net: {0} - Duration: {1} - Num nodes: {2} - Formed: {3}"
-              .format(ego_net_file, datetime.now() - start_time, num_nodes, total_y_true))
-
-    # save an empty file in analyzed_egonets to know which ones were analyzed
-    with open(result_file_base_path + 'analyzed_egonets/' + ego_net_file, 'wb') as f:
+    with open(results_base_path + 'temp-analyses-start/' + ego_net_file, 'wb') as f:
         pickle.dump(0, f, protocol=-1)
+
+    # Every list in this dict will contain lists over snapshots
+    # z_local_degrees are local degrees of all the ego's successors with the ego
+    # ego_local_degrees are local degrees of the ego with all of its predecessors
+    results = {
+        "ego_id": ego_node,
+        "z_local_degrees": {
+            "in_degree": [],
+            "out_degree": []
+        },
+        "ego_local_degrees": {
+            "in_degree": [],
+            "out_degree": []
+        }
+    }
+
+    for i in range(len(ego_net_snapshots)):
+        ego_succs = set(ego_net_snapshots[i].successors(ego_node))
+
+        results["z_local_degrees"]["in_degree"].append([])
+        results["z_local_degrees"]["out_degree"].append([])
+        for z in ego_succs:
+            z_preds = set(ego_net_snapshots[i].predecessors(z))
+            z_succs = set(ego_net_snapshots[i].successors(z))
+
+            results["z_local_degrees"]["in_degree"][i].append(len(z_preds.intersection(ego_succs)))
+            results["z_local_degrees"]["out_degree"][i].append(len(z_succs.intersection(ego_succs)))
+
+        ego_pred = set(ego_net_snapshots[i].successors(ego_node))
+
+        results["ego_local_degrees"]["in_degree"].append([])
+        results["ego_local_degrees"]["out_degree"].append([])
+        for e in ego_pred:
+            e_succs = set(ego_net_snapshots[i].successors(e))
+
+            results["z_local_degrees"]["in_degree"][i].append(len(ego_pred.intersection(e_succs)))
+            results["z_local_degrees"]["out_degree"][i].append(len(ego_succs.intersection(e_succs)))
+
+    with open(results_base_path + 'results/' + ego_net_file, 'wb') as f:
+        pickle.dump(results, f, protocol=-1)
+
+    # remove temp analyze file
+    if os.path.isfile(results_base_path + 'temp-analyses-start/' + ego_net_file):
+        os.remove(results_base_path + 'temp-analyses-start/' + ego_net_file)
+
+    print("Gathered data on ego net {0}".format(ego_net_file))
 
 
 ########## Link Prediction analysis ##############

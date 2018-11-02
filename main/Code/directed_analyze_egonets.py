@@ -54,9 +54,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-3/', 2,
 #                                              skip_over_100k=True, log_degree=False, skip_snaps=False, normalize=True)
 
-run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
-                                             gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 15,
-                                             skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
+# run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
+#                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 12,
+#                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
 
 
@@ -136,6 +136,50 @@ run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
 # dgh.local_degree_empirical_result_comparison(digg.directed_local_degree_empirical_base_results_path + 'directed/',
 #                                              include_conf_intervals=True, gather_individual_results=False)
 
+
+# ************************************************************************* #
+# ******************* Local Degree Distribution Analysis ****************** #
+# ************************************************************************* #
+def run_parallel_gather_local_degree_data(egonet_files_path, results_base_path, num_process, skip_over_100k):
+    if not os.path.exists(results_base_path):
+        os.makedirs(results_base_path)
+        os.makedirs(results_base_path + 'results')
+        os.makedirs(results_base_path + 'skipped_egonets')
+        os.makedirs(results_base_path + 'temp-analyses-start')
+
+    all_egonets = set(os.listdir(egonet_files_path))
+    if skip_over_100k:
+        analyzed_egonets = set(os.listdir(results_base_path + 'results')).union(os.listdir(results_base_path +
+                                                                                           'skipped_egonets'))
+    else:
+        analyzed_egonets = set(os.listdir(results_base_path + 'results'))
+
+    egonets_to_analyze = list(all_egonets - analyzed_egonets)
+    np.random.shuffle(egonets_to_analyze)
+
+    print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+
+    Parallel(n_jobs=num_process)(delayed(dgh.gather_local_degree_data)
+                                 (ego_net_file, results_base_path, egonet_files_path, skip_over_100k)
+                                 for ego_net_file in egonets_to_analyze)
+
+
+# **** Google+ **** #
+# run_parallel_gather_local_degree_data(gplus.egonet_files_path,
+#                                       gplus.local_degree_empirical_results_base_path +
+#                                       'local-degree-dist/pickle-files-1/', 8, skip_over_100k=True)
+
+
+# **** Flickr **** #
+# run_parallel_gather_local_degree_data(flickr.egonet_files_path,
+#                                       flickr.local_degree_dist_results_base_path + 'pickle-files-1/', 6,
+#                                       skip_over_100k=True)
+
+
+# **** Digg **** #
+run_parallel_gather_local_degree_data(digg.egonet_files_path,
+                                      digg.directed_local_degree_empirical_base_results_path +
+                                      'local-degree-dist/pickle-files-1/', 4, skip_over_100k=False)
 
 # ************************************************************************* #
 # *************** Triad Links Formed Ratio Empirical Analysis ************* #
