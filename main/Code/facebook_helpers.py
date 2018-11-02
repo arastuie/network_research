@@ -137,7 +137,7 @@ def run_local_degree_empirical_analysis(ego_net_file, results_base_path, log_deg
             formed_v_nodes = next_snap_z_nodes.intersection(current_snap_v_nodes)
             not_formed_v_nodes = current_snap_v_nodes - formed_v_nodes
 
-            if skip_snaps and len(formed_v_nodes) == 0 or len(not_formed_v_nodes) == 0:
+            if skip_snaps and (len(formed_v_nodes) == 0 or len(not_formed_v_nodes) == 0):
                 continue
 
             len_first_hop = len(current_snap_z_nodes)
@@ -356,6 +356,53 @@ def plot_local_degree_empirical_ecdf(result_file_base_path, plot_save_path, gath
             current_fig = plt.gcf()
             current_fig.savefig('{0}ecdf-{1}-{2}.pdf'.format(plot_save_path, pymk_type, dt), format='pdf')
             plt.clf()
+
+
+# ********** Local degree distribution analysis ********** #
+def gather_local_degree_data(ego_net_file, results_base_path):
+    # This analysis is setup the same way as empirical analysis
+
+    if os.path.isfile(results_base_path + 'after-pymk/results/' + ego_net_file):
+        return
+
+    with open(egonet_files_path + ego_net_file, 'rb') as f:
+        ego, ego_snaps = pickle.load(f)
+
+    num_snaps = len(ego_snaps)
+
+    for pymk_type in pymk_directories:
+        if pymk_type == 'before-pymk':
+            # at least need 5 snapshots to have 1 snapshot for before PYMK (this differs from other analyses)
+            before_pymk_ending_snap = num_snaps - 4
+            if before_pymk_ending_snap < 1:
+                continue
+
+            start = 0
+            end = before_pymk_ending_snap
+
+        else:
+            after_pymk_starting_snap = num_snaps - 4
+            if after_pymk_starting_snap < 0:
+                after_pymk_starting_snap = 0
+
+            start = after_pymk_starting_snap
+            end = num_snaps
+
+        # z_local_degree will contain a list from each snapshot of z local degrees
+        z_local_degrees = []
+
+        for i in range(start, end):
+            snap_ctr = len(z_local_degrees)
+            z_local_degrees.append([])
+
+            for z in ego_snaps[i].neighbors(ego):
+                z_local_degrees[snap_ctr].append(len(list(nx.common_neighbors(ego_snaps[i], z, ego))))
+
+        with open(results_base_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
+            pickle.dump([ego, z_local_degrees], f, protocol=-1)
+
+    print("Analyzed ego net {0}".format(ego_net_file))
+    return
 
 
 # ********** Link prediction analysis ********** #

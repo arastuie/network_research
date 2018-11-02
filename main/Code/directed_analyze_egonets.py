@@ -54,9 +54,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-3/', 2,
 #                                              skip_over_100k=True, log_degree=False, skip_snaps=False, normalize=True)
 
-# run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
-#                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 2,
-#                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
+run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
+                                             gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 15,
+                                             skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
 
 
@@ -64,10 +64,10 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                         gplus.local_degree_empirical_base_plot_path + 'plots-3/',
 #                                         gather_individual_results=False)
 
-dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
-                                    gplus.local_degree_empirical_base_plot_path + 'plots-1/',
-                                    triangle_types=['T01'], separete_in_out_degree=True,
-                                    gather_individual_results=True)
+# dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
+#                                     gplus.local_degree_empirical_base_plot_path + 'plots-1/',
+#                                     triangle_types=['T01'], separete_in_out_degree=True,
+#                                     gather_individual_results=True)
 
 # dgh.local_degree_empirical_result_comparison(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
 #                                              include_conf_intervals=True,
@@ -88,7 +88,7 @@ dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_pa
 #                                              skip_over_100k=True, log_degree=False, skip_snaps=False, normalize=True)
 
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path,
-#                                              flickr.local_degree_empirical_results_base_path + 'test4/', 1,
+#                                              flickr.local_degree_empirical_results_base_path + 'test4/', 16,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
 
@@ -274,7 +274,8 @@ separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dc
 # ************************************************************************* #
 def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_name, egonet_files_path,
                                                          results_base_path, num_process, skip_over_100k, num_samples=0,
-                                                         specific_triads_only=False, wipe_older_results=False):
+                                                         specific_triads_only=False, wipe_older_results=False,
+                                                         skip_snapshots_w_no_new_edge=True):
 
     if specific_triads_only:
         results_base_path = results_base_path + 'test-methods/specific-triads/'
@@ -321,7 +322,8 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
     else:
         Parallel(n_jobs=num_process)(delayed(dgh.run_directed_link_prediciton_on_test_method)
                                      (method_pointer, method_name, ego_net_file, top_k_values, egonet_files_path,
-                                      results_base_path, skip_over_100k) for ego_net_file in egonets_to_analyze)
+                                      results_base_path, skip_over_100k, skip_snapshots_w_no_new_edge)
+                                     for ego_net_file in egonets_to_analyze)
 
 
 # **** Google+ **** #
@@ -375,6 +377,23 @@ def run_parallel_link_prediction_analysis_on_test_method(method_pointer, method_
 # lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['one-two-six-seven-nine'], is_test=False,
 #                              specific_triads_only=True, gather_individual_results=True)
 
+
+# ** Inverse Adamic Adar
+# run_parallel_link_prediction_analysis_on_test_method(dgh.reverse_aa, 'reverse-aa', gplus.egonet_files_path,
+#                                                      gplus.lp_results_base_path, num_samples=50000, num_process=4,
+#                                                      skip_over_100k=True, wipe_older_results=False,
+#                                                      skip_snapshots_w_no_new_edge=True)
+#
+# lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['reverse-aa'], is_test=True,
+#                              gather_individual_results=True)
+
+# run_parallel_link_prediction_analysis_on_test_method(dgh.reverse_aa, 'reverse-aa-no-skip', gplus.egonet_files_path,
+#                                                      gplus.lp_results_base_path, num_samples=50000, num_process=4,
+#                                                      skip_over_100k=True, wipe_older_results=False,
+#                                                      skip_snapshots_w_no_new_edge=False)
+
+# lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['reverse-aa-no-skip'], is_test=True,
+#                              gather_individual_results=True)
 
 # lpe.calculate_lp_performance(gplus.lp_results_base_path, scores=['first-three-triads'], is_test=False,
 #                              specific_triads_only=True, gather_individual_results=True)

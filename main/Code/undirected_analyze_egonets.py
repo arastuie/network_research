@@ -49,6 +49,32 @@ def run_parallel_local_degree_empirical_analysis(results_base_path, num_process,
 # fb.plot_local_degree_empirical_ecdf(fb.empirical_pickle_base_path + 'pickle-files-4/',
 #                                     fb.empirical_pickle_base_path + 'plots-4/', gather_individual_results=True)
 
+
+# ************************************************************************* #
+# ****************** Local Degree Distribution Analysis ******************* #
+# ************************************************************************* #
+def run_parallel_local_degree_distribution_gathering(results_base_path, num_process):
+    if not os.path.exists(results_base_path):
+        os.makedirs(results_base_path)
+        for path in ['before-pymk', 'after-pymk']:
+            os.makedirs(results_base_path + path)
+            os.makedirs(results_base_path + path + '/results')
+
+    all_egonets = set(os.listdir(fb.egonet_files_path))
+    analyzed_egonets = set(os.listdir(results_base_path + 'after-pymk/results'))
+
+    egonets_to_analyze = list(all_egonets - analyzed_egonets)
+    np.random.shuffle(egonets_to_analyze)
+
+    print("{} egonets left to analyze!".format(len(egonets_to_analyze)))
+
+    Parallel(n_jobs=num_process)(delayed(fb.gather_local_degree_data)(ego_net_file, results_base_path)
+                                 for ego_net_file in egonets_to_analyze)
+
+
+run_parallel_local_degree_distribution_gathering(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/',
+                                                 24)
+
 # ************************************************************************* #
 # ************************ Link Prediction Analysis *********************** #
 # ************************************************************************* #
