@@ -1310,41 +1310,58 @@ def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_p
         pickle.dump(0, f, protocol=-1)
 
     # Every list in this dict will contain lists over snapshots
-    # z_local_degrees are local degrees of all the ego's successors with the ego
-    # ego_local_degrees are local degrees of the ego with all of its predecessors
+    # z_local_degrees / global are local / global degrees of all the ego's successors with the ego
+    # ego_local_degrees are local degrees of the ego with all of its predecessors, preds_out_degree is the
+    # outdegree of those predecessors
     results = {
         "ego_id": ego_node,
+        "ego_in_degree": [],
+        "ego_out_degree": [],
         "z_local_degrees": {
+            "in_degree": [],
+            "out_degree": []
+        },
+        "z_global_degrees": {
             "in_degree": [],
             "out_degree": []
         },
         "ego_local_degrees": {
             "in_degree": [],
-            "out_degree": []
+            "out_degree": [],
+            "preds_out_degree": []
         }
     }
 
     for i in range(len(ego_net_snapshots)):
         ego_succs = set(ego_net_snapshots[i].successors(ego_node))
+        results["ego_out_degree"].append(len(ego_succs))
 
         results["z_local_degrees"]["in_degree"].append([])
         results["z_local_degrees"]["out_degree"].append([])
+        results["z_global_degrees"]["in_degree"].append([])
+        results["z_global_degrees"]["out_degree"].append([])
+
         for z in ego_succs:
             z_preds = set(ego_net_snapshots[i].predecessors(z))
             z_succs = set(ego_net_snapshots[i].successors(z))
 
+            results["z_global_degrees"]["in_degree"][i].append(len(z_preds))
+            results["z_global_degrees"]["out_degree"][i].append(len(z_succs))
             results["z_local_degrees"]["in_degree"][i].append(len(z_preds.intersection(ego_succs)))
             results["z_local_degrees"]["out_degree"][i].append(len(z_succs.intersection(ego_succs)))
 
         ego_pred = set(ego_net_snapshots[i].successors(ego_node))
+        results["ego_in_degree"].append(len(ego_pred))
 
+        results["ego_local_degrees"]["preds_out_degree"].append([])
         results["ego_local_degrees"]["in_degree"].append([])
         results["ego_local_degrees"]["out_degree"].append([])
         for e in ego_pred:
             e_succs = set(ego_net_snapshots[i].successors(e))
 
-            results["z_local_degrees"]["in_degree"][i].append(len(ego_pred.intersection(e_succs)))
-            results["z_local_degrees"]["out_degree"][i].append(len(ego_succs.intersection(e_succs)))
+            results["ego_local_degrees"]["preds_out_degree"][i].append(len(e_succs))
+            results["ego_local_degrees"]["in_degree"][i].append(len(ego_pred.intersection(e_succs)))
+            results["ego_local_degrees"]["out_degree"][i].append(len(ego_succs.intersection(e_succs)))
 
     with open(results_base_path + 'results/' + ego_net_file, 'wb') as f:
         pickle.dump(results, f, protocol=-1)

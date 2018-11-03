@@ -392,16 +392,19 @@ def gather_local_degree_data(ego_net_file, results_base_path):
 
         # z_local_degree will contain a list from each snapshot of z local degrees
         z_local_degrees = []
+        z_global_degrees = []
 
         for i in range(start, end):
             snap_ctr = len(z_local_degrees)
             z_local_degrees.append([])
+            z_global_degrees.append([])
 
             for z in ego_snaps[i].neighbors(ego):
                 z_local_degrees[snap_ctr].append(len(list(nx.common_neighbors(ego_snaps[i], z, ego))))
+                z_global_degrees[snap_ctr].append(nx.degree(ego_snaps[i], z))
 
         with open(results_base_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
-            pickle.dump([ego, z_local_degrees], f, protocol=-1)
+            pickle.dump([ego, z_local_degrees, z_global_degrees], f, protocol=-1)
 
     print("Analyzed ego net {0}".format(ego_net_file))
     return
@@ -413,7 +416,7 @@ def plot_local_degree_distribution_over_single_ego(result_file_base_path, plot_s
         ctr = 0
         for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
             with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
-                ego, z_local_degrees = pickle.load(f)
+                ego, z_local_degrees, z_global_degrees = pickle.load(f)
 
             if len(z_local_degrees[-1]) < min_ego_degree:
                 continue
@@ -455,7 +458,7 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path):
         z_all_local_degrees = []
         for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
             with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
-                ego, z_local_degrees = pickle.load(f)
+                ego, z_local_degrees, z_global_degrees = pickle.load(f)
                 z_all_local_degrees.extend(z_local_degrees[-1])
 
         transformed_data = np.log(np.array(z_all_local_degrees) + 2)

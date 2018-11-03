@@ -60,9 +60,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-3/',
-#                                         gplus.local_degree_empirical_base_plot_path + 'plots-3/',
-#                                         gather_individual_results=False)
+# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-4/',
+#                                         gplus.local_degree_empirical_base_plot_path + 'plots-4/',
+#                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
 #                                     gplus.local_degree_empirical_base_plot_path + 'plots-1/',
@@ -165,9 +165,9 @@ def run_parallel_gather_local_degree_data(egonet_files_path, results_base_path, 
 
 
 # **** Google+ **** #
-# run_parallel_gather_local_degree_data(gplus.egonet_files_path,
-#                                       gplus.local_degree_empirical_results_base_path +
-#                                       'local-degree-dist/pickle-files-1/', 8, skip_over_100k=True)
+run_parallel_gather_local_degree_data(gplus.egonet_files_path,
+                                      gplus.local_degree_empirical_results_base_path +
+                                      'local-degree-dist/pickle-files-1/', 5, skip_over_100k=True)
 
 
 # **** Flickr **** #
@@ -177,9 +177,9 @@ def run_parallel_gather_local_degree_data(egonet_files_path, results_base_path, 
 
 
 # **** Digg **** #
-run_parallel_gather_local_degree_data(digg.egonet_files_path,
-                                      digg.directed_local_degree_empirical_base_results_path +
-                                      'local-degree-dist/pickle-files-1/', 4, skip_over_100k=False)
+# run_parallel_gather_local_degree_data(digg.egonet_files_path,
+#                                       digg.directed_local_degree_empirical_base_results_path +
+#                                       'local-degree-dist/pickle-files-1/', 4, skip_over_100k=False)
 
 # ************************************************************************* #
 # *************** Triad Links Formed Ratio Empirical Analysis ************* #
