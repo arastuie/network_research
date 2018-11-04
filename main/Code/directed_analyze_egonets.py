@@ -58,6 +58,10 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 12,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
+run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
+                                             gplus.local_degree_empirical_results_base_path + 'pickle-files-5/', 5,
+                                             skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
+
 
 
 # dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-4/',
@@ -91,6 +95,10 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                              flickr.local_degree_empirical_results_base_path + 'test4/', 16,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
+# run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path,
+#                                              flickr.local_degree_empirical_results_base_path + 'test5/', 8,
+#                                              skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
+
 
 
 # dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_base_path + 'test4/',
@@ -121,6 +129,10 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 # run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
 #                                              digg.directed_local_degree_empirical_base_results_path + 'directed-3/', 1,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
+
+# run_parallel_local_degree_empirical_analysis(digg.egonet_files_path,
+#                                              digg.directed_local_degree_empirical_base_results_path + 'directed-4/', 3,
+#                                              skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
 
 
 
@@ -165,14 +177,14 @@ def run_parallel_gather_local_degree_data(egonet_files_path, results_base_path, 
 
 
 # **** Google+ **** #
-run_parallel_gather_local_degree_data(gplus.egonet_files_path,
-                                      gplus.local_degree_empirical_results_base_path +
-                                      'local-degree-dist/pickle-files-1/', 5, skip_over_100k=True)
+# run_parallel_gather_local_degree_data(gplus.egonet_files_path,
+#                                       gplus.local_degree_empirical_results_base_path +
+#                                       'local-degree-dist/pickle-files-1/', 5, skip_over_100k=True)
 
 
 # **** Flickr **** #
 # run_parallel_gather_local_degree_data(flickr.egonet_files_path,
-#                                       flickr.local_degree_dist_results_base_path + 'pickle-files-1/', 6,
+#                                       flickr.local_degree_dist_results_base_path + 'pickle-files-1/', 10,
 #                                       skip_over_100k=True)
 
 

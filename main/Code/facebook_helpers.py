@@ -10,6 +10,7 @@ from scipy.stats import norm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import link_prediction_evaluator as lpe
+import statsmodels.discrete.discrete_model as stat
 
 
 dataset_file_path = '/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt'
@@ -452,32 +453,119 @@ def plot_local_degree_distribution_over_single_ego(result_file_base_path, plot_s
         # plt.clf()
 
 
-def plot_local_degree_distribution(result_file_base_path, plot_save_path):
+def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather_individual_results=False):
     names = ['Before PYMK', 'After PYMK']
-    for i in range(len(pymk_directories)):
+    # for i in range(len(pymk_directories)):
+    for i in [0]:
+        if gather_individual_results:
+            egos = []
+            gather_z_all_local_degrees = []
+            gather_z_all_global_degrees = []
+
+            print(names[i], ":")
+            num_res = len(os.listdir(result_file_base_path + pymk_directories[i] + '/results'))
+            ctr = 1
+            for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
+                with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
+                    ego, z_local_degrees, z_global_degrees = pickle.load(f)
+
+                    egos.append(ego)
+                    gather_z_all_local_degrees.append(z_local_degrees[-1])
+                    gather_z_all_global_degrees.append(z_global_degrees[-1])
+
+                print("{:2.3f}%".format(100 * ctr / num_res), end='\r')
+                ctr += 1
+
+            # Create directory if not exists
+            if not os.path.exists(result_file_base_path + pymk_directories[i] + '/all-scores'):
+                os.makedirs(result_file_base_path + pymk_directories[i] + '/all-scores')
+
+            with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'wb') as f:
+                pickle.dump([egos, gather_z_all_local_degrees, gather_z_all_global_degrees], f, protocol=-1)
+        else:
+            with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'rb') as f:
+                egos, gather_z_all_local_degrees, gather_z_all_global_degrees = pickle.load(f)
+
+
+        c = 0
         z_all_local_degrees = []
-        for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
-            with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
-                ego, z_local_degrees, z_global_degrees = pickle.load(f)
-                z_all_local_degrees.extend(z_local_degrees[-1])
+        z_all_global_degrees = []
+        num_egonets_to_analyze = len(gather_z_all_local_degrees)
+        for i in range(num_egonets_to_analyze):
+            # if 20 <= len(z_local_degrees[-1]) <= 100:
+            # if len(gather_z_all_global_degrees[i]) == 100:
+            #     z_all_global_degrees.extend(gather_z_all_global_degrees[i])
+            #     z_all_local_degrees.extend(gather_z_all_local_degrees[i])
+            #     c += 1
+            z_all_global_degrees.extend(gather_z_all_global_degrees[i])
+            z_all_local_degrees.extend(gather_z_all_local_degrees[i])
 
-        transformed_data = np.log(np.array(z_all_local_degrees) + 2)
-        n, bins, patches = plt.hist(transformed_data, bins=200, density=True)
+        print()
+        # print(c)
 
-        # plot best fit log normal
-        mu, sigma = norm.fit(transformed_data)
-        y = mlab.normpdf(bins, mu, sigma)
-        plt.plot(bins, y, 'r--', linewidth=2)
+        data_shifted = (np.array(z_all_local_degrees) + 1) / (np.array(z_all_global_degrees) + 1)
+        data = np.array(z_all_local_degrees) / np.array(z_all_global_degrees)
 
-        plt.title('Local Degree Distribution {} \n - {}'.format(len(z_local_degrees[-1]),
-                                                                'Log Normal: mu=%.3f, sigma=%.3f' % (mu, sigma)))
-
-        plt.ylabel('Density'.format(len(z_local_degrees[-1])))
-        plt.xlabel('Log Local Degree')
-        plt.show()
-
-        # plt.savefig('{0}LD-dist-{1}.pdf'.format(plot_save_path, pymk_directories[i]), format='pdf')
+        # plt.hist(np.log(data_shifted), bins=100, density=True, log=True)
+        # plt.xlabel('Log Local to Global Degree Ratio Both Shifted Up By 1')
+        # plt.ylabel('Log Density')
+        # plt.show()
         # plt.clf()
+        #
+        # plt.hist(data, bins=100, density=True)
+        # plt.xlabel('Local to Global Degree Ratio')
+        # plt.ylabel('Density')
+        # plt.show()
+        # plt.clf()
+        #
+        # plt.hist(np.log(z_all_global_degrees), bins=100, density=True, log=True)
+        # plt.xlabel('Log Global Degree')
+        # plt.ylabel('Log Density')
+        # plt.show()
+        # plt.clf()
+        #
+        # plt.hist(z_all_global_degrees, bins=100, density=True)
+        # plt.xlabel('Global Degree')
+        # plt.ylabel('Density')
+        # plt.show()
+        # plt.clf()
+
+        plt.hist(z_all_local_degrees, bins=50, density=True)
+        plt.xlabel('Local Degree')
+        plt.ylabel('Density')
+        plt.show()
+        plt.clf()
+
+        # plt.hist(np.log(np.array(z_all_local_degrees) + 2), bins=100, density=True)
+        # plt.xlabel('Log Local Degree + 2')
+        # plt.ylabel('Density')
+        # plt.show()
+        # plt.clf()
+        #
+        # plt.hist(np.log(np.array(z_all_global_degrees) + 2), bins=100, density=True, log=False)
+        # plt.xlabel('Log Global Degree + 2')
+        # plt.ylabel('Density')
+        # plt.show()
+        # plt.clf()
+
+
+        # transformed_data = np.log(np.array(z_all_local_degrees) + 2)
+        # n, bins, patches = plt.hist(transformed_data, bins=200, density=True)
+        #
+        # # plot best fit log normal
+        # mu, sigma = norm.fit(transformed_data)
+        # y = mlab.normpdf(bins, mu, sigma)
+        # plt.plot(bins, y, 'r--', linewidth=2)
+        #
+        # plt.title('Local Degree Distribution {} \n - {}'.format(len(z_local_degrees[-1]),
+        #                                                         'Log Normal: mu=%.3f, sigma=%.3f' % (mu, sigma)))
+        #
+        # plt.ylabel('Density'.format(len(z_local_degrees[-1])))
+        # plt.xlabel('Log Local Degree')
+        # plt.show()
+        #
+        # # plt.savefig('{0}LD-dist-{1}.pdf'.format(plot_save_path, pymk_directories[i]), format='pdf')
+        # # plt.clf()
 
 # ********** Link prediction analysis ********** #
 def calc_top_k_scores(y_scores, y_true, top_k_values, percent_score):
@@ -505,8 +593,10 @@ def degree_corrected_common_neighbors_index(ego_net, non_edges, first_hop_nodes)
         cn_neighbors = set(nx.neighbors(ego_net, z))
 
         # local degree
-        l = len(cn_neighbors.intersection(first_hop_nodes)) + 2
-        z_dccn[z] = math.log(l)
+        # l = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+        # z_dccn[z] = math.log(l)
+
+        z_dccn[z] = len(cn_neighbors.intersection(first_hop_nodes)) + 1
 
     for u, v in non_edges:
         dccn_score = 0
@@ -646,15 +736,15 @@ def dccclp(ego_net, non_edges, first_hop_nodes):
     return scores
 
 
-def run_link_prediction_analysis(ego_net_file, top_k_values):
+def run_link_prediction_analysis(ego_net_file, results_base_path, top_k_values):
     start_time = time.time()
 
     # return if the egonet is on the analyzed list
-    if os.path.isfile(lp_results_path + 'after-pymk/analyzed_egonets/' + ego_net_file):
+    if os.path.isfile(results_base_path + 'after-pymk/analyzed_egonets/' + ego_net_file):
         return
 
     # return if the egonet is on the skipped list
-    if os.path.isfile(lp_results_path + 'after-pymk/skipped_egonets/' + ego_net_file):
+    if os.path.isfile(results_base_path + 'after-pymk/skipped_egonets/' + ego_net_file):
         return
 
     with open(egonet_files_path + ego_net_file, 'rb') as f:
@@ -680,7 +770,8 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
             start = after_pymk_starting_snap
             end = num_snaps - 1
 
-        score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
+        # score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
+        score_list = ['cn', 'dccn']
         percent_scores = {}
 
         for score in score_list:
@@ -775,14 +866,14 @@ def run_link_prediction_analysis(ego_net_file, top_k_values):
                     else:
                         percent_scores[s][k] = np.mean(percent_scores[s][k])
 
-            with open(lp_results_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
+            with open(results_base_path + pymk_type + '/results/' + ego_net_file, 'wb') as f:
                 pickle.dump(percent_scores, f, protocol=-1)
 
             print("{} ego net: {} - Duration: {} - Num nodes: {} - Formed: {}"
                   .format(pymk_type, ego_net_file, time.time() - start_time, num_nodes, total_y_true))
 
         # save an empty file in analyzed_egonets to know which ones were analyzed
-        with open(lp_results_path + pymk_type + '/analyzed_egonets/' + ego_net_file, 'wb') as f:
+        with open(results_base_path + pymk_type + '/analyzed_egonets/' + ego_net_file, 'wb') as f:
             pickle.dump(0, f, protocol=-1)
 
 
@@ -792,8 +883,8 @@ def plot_percent_improvements(comparison_pairs, gather_individual_results=False)
                                       gather_individual_results, facebook_pymk_type=pymk_type)
 
 
-def calculate_lp_performance(scores=None, gather_individual_results=False):
+def calculate_lp_performance(results_base_path, scores=None, gather_individual_results=False):
     for pymk_type in pymk_directories:
         print(pymk_type)
-        lpe.calculate_lp_performance(lp_results_path + pymk_type + '/', scores=scores, is_fb=True,
+        lpe.calculate_lp_performance(results_base_path + pymk_type + '/', scores=scores, is_fb=True,
                                      gather_individual_results=gather_individual_results)
