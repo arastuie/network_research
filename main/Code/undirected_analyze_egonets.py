@@ -42,13 +42,13 @@ def run_parallel_local_degree_empirical_analysis(results_base_path, num_process,
 # run_parallel_local_degree_empirical_analysis(fb.empirical_pickle_base_path + 'pickle-files-4/', 1,
 #                                              log_degree=True, skip_snaps=True, normalize=False)
 
-run_parallel_local_degree_empirical_analysis(fb.empirical_pickle_base_path + 'pickle-files-5/', 3,
-                                             log_degree=False, skip_snaps=True, normalize=False)
+# run_parallel_local_degree_empirical_analysis(fb.empirical_pickle_base_path + 'pickle-files-5/', 3,
+#                                              log_degree=False, skip_snaps=True, normalize=False)
 
 
 # Plotting
-# fb.plot_local_degree_empirical_results(fb.empirical_pickle_base_path + 'pickle-files-3/',
-#                                        fb.empirical_pickle_base_path + 'plots-3/', gather_individual_results=False)
+# fb.plot_local_degree_empirical_results(fb.empirical_pickle_base_path + 'pickle-files-5/',
+#                                        fb.empirical_pickle_base_path + 'plots-5/', gather_individual_results=True)
 
 # fb.plot_local_degree_empirical_ecdf(fb.empirical_pickle_base_path + 'pickle-files-4/',
 #                                     fb.empirical_pickle_base_path + 'plots-4/', gather_individual_results=True)
@@ -116,9 +116,9 @@ def run_parallel_link_prediction_analysis(results_base_path, num_process):
 # run_parallel_link_prediction_analysis('/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-3/', 24)
 
 # Result Calculation
-score_list = ['cn', 'dccn']
+score_list = ['dccn', 'dccar', 'dcaa']
 fb.calculate_lp_performance('/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-3/', scores=score_list,
-                            gather_individual_results=True)
+                            togather_individual_results=True)
 
 # score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
 # fb.calculate_lp_performance(fb.lp_results_path, scores=score_list, gather_individual_results=True)

@@ -1583,8 +1583,8 @@ def run_directed_link_prediction(ego_net_file, top_k_values, data_file_base_path
 
 
 def run_directed_link_prediction_w_separate_degree(ego_net_file, top_k_values, data_file_base_path,
-                                                   result_file_base_path, specific_triads_only=False,
-                                                   skip_over_100k=True, skip_snapshots_w_no_new_edge=True):
+                                                   result_file_base_path, skip_over_100k=True,
+                                                   skip_snapshots_w_no_new_edge=True):
     start_time = datetime.now()
 
     # return if the egonet is on the analyzed list
@@ -1595,7 +1595,9 @@ def run_directed_link_prediction_w_separate_degree(ego_net_file, top_k_values, d
     if skip_over_100k and os.path.isfile(result_file_base_path + 'skipped_egonets/' + ego_net_file):
         return
 
-    score_list = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+    # score_list = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+    score_list = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn', 'dcaa', 'od-dcaa', 'in-dcaa']
+
     percent_scores = {}
 
     for score in score_list:
@@ -1617,10 +1619,7 @@ def run_directed_link_prediction_w_separate_degree(ego_net_file, top_k_values, d
 
     # only goes up to one to last snap, since it compares every snap with the next one, to find formed edges.
     for i in range(len(ego_net_snapshots) - 1):
-        if specific_triads_only:
-            first_hop_nodes, v_nodes = get_specific_type_nodes_gplus(ego_net_snapshots[i], ego_node)
-        else:
-            first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
+        first_hop_nodes, second_hop_nodes, v_nodes = get_combined_type_nodes(ego_net_snapshots[i], ego_node)
 
         v_nodes_list = list(v_nodes.keys())
         y_true = []
@@ -1648,7 +1647,9 @@ def run_directed_link_prediction_w_separate_degree(ego_net_file, top_k_values, d
         y_true = np.array(y_true)
 
         # getting all scores
-        lp_scores = aa_cn_dc_lp_w_separate_degree_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+        # lp_scores = aa_cn_dc_lp_w_separate_degree_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
+
+        lp_scores = ld_no_log_update_directed(ego_net_snapshots[i], v_nodes_list, v_nodes, first_hop_nodes)
         for s in lp_scores.keys():
             calc_top_k_scores(lp_scores[s], y_true, top_k_values, percent_scores[s])
 
@@ -1804,6 +1805,171 @@ def aa_cn_dc_lp_w_sep_degree_directed_for_single_node(ego_net, z, first_hop_node
     id_dcaa = 1 / math.log((z_local_in_degree * (1 - (z_local_in_degree / z_global_in_degree))) +
                            (y_id * (z_global_in_degree / z_local_in_degree)))
     z_info.append(id_dcaa)
+
+    return z_info
+
+
+def ld_no_log_update_directed(ego_net, v_nodes_list, v_nodes_z, first_hop_nodes):
+    # this is the same function as `all_directed_lp_indices_combined` method, only returns a dict of scores instead.
+
+    scores = {
+        'dccar': [],
+        'od-dccar': [],
+        'id-dccar': [],
+        'dccn': [],
+        'od-dccn': [],
+        'in-dccn': [],
+        'dcaa': [],
+        'od-dcaa': [],
+        'in-dcaa': []
+    }
+
+    # a dict of info on z nodes. Every key points to a list [dccn, od-dccn, id-dccn, dcaa, od-dcaa, id-dcaa]
+    z_info = {}
+
+    for z in first_hop_nodes:
+        z_preds = set(ego_net.predecessors(z))
+        z_succs = set(ego_net.successors(z))
+        z_neighbors = z_preds.union(z_succs)
+
+        # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+        z_global_degree = len(z_neighbors)
+        z_global_in_degree = len(z_preds)
+        z_global_out_degree = len(z_succs)
+
+        z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+        z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
+        z_local_out_degree = len(z_succs.intersection(first_hop_nodes))
+
+        y = z_global_degree - z_local_degree
+
+        # if y = 1, then the z node has no neighbor in the second hop, thus no need to compute
+        if y == 1:
+            continue
+
+        z_info[z] = []
+
+        # dccn
+        z_info[z].append(z_local_degree + 1)
+
+        # od-dccn
+        z_info[z].append(z_local_out_degree + 1)
+
+        # id-dccn
+        z_info[z].append(z_local_in_degree + 1)
+
+        # dcaa
+        z_global_degree += 1
+        z_local_degree += 1
+        y = z_global_degree - z_local_degree
+        z_info[z].append(1 / math.log((z_local_degree * (y / z_global_degree)) +
+                                      (z_global_degree * (y / z_local_degree))))
+
+        # od-dcaa
+        z_global_out_degree += 2
+        z_local_out_degree += 1
+        y_od = z_global_out_degree - z_local_out_degree
+        z_info[z].append(1 / math.log((z_local_out_degree * (y_od / z_global_out_degree)) +
+                                      (z_global_out_degree * (y_od / z_local_out_degree))))
+
+        # id-dcaa
+        z_global_in_degree += 2
+        z_local_in_degree += 1
+        y_id = z_global_in_degree - z_local_in_degree
+        z_info[z].append(1 / math.log((z_local_in_degree * (y_id / z_global_in_degree)) +
+                                      (z_global_in_degree * (y_id / z_local_in_degree))))
+
+    for v_i in range(len(v_nodes_list)):
+        num_cn = len(v_nodes_z[v_nodes_list[v_i]])
+        lcl = 0
+
+        if num_cn > 1:
+            for zz_i in range(num_cn - 1):
+                for zzz_i in range(zz_i + 1, num_cn):
+                    if ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zz_i], v_nodes_z[v_nodes_list[v_i]][zzz_i]) or \
+                            ego_net.has_edge(v_nodes_z[v_nodes_list[v_i]][zzz_i], v_nodes_z[v_nodes_list[v_i]][zz_i]):
+                        lcl += 1
+
+        temp_dccn = 0
+        temp_od_dccn = 0
+        temp_id_dccn = 0
+
+        temp_dcaa = 0
+        temp_od_dcaa = 0
+        temp_in_dcaa = 0
+
+        for z in v_nodes_z[v_nodes_list[v_i]]:
+            if z not in z_info:
+                z_info[z] = ld_no_log_update_directed_single_node(ego_net, z, first_hop_nodes)
+
+            temp_dccn += z_info[z][0]
+            temp_od_dccn += z_info[z][1]
+            temp_id_dccn += z_info[z][2]
+
+            temp_dcaa += z_info[z][3]
+            temp_od_dcaa += z_info[z][4]
+            temp_in_dcaa += z_info[z][5]
+
+        scores['dccar'].append(temp_dccn * lcl)
+        scores['od-dccar'].append(temp_od_dccn * lcl)
+        scores['id-dccar'].append(temp_id_dccn * lcl)
+
+        scores['dccn'].append(temp_dccn)
+        scores['od-dccn'].append(temp_od_dccn)
+        scores['in-dccn'].append(temp_id_dccn)
+
+        scores['dcaa'].append(temp_dcaa)
+        scores['od-dcaa'].append(temp_od_dcaa)
+        scores['in-dcaa'].append(temp_in_dcaa)
+
+    return scores
+
+
+def ld_no_log_update_directed_single_node(ego_net, z, first_hop_nodes):
+    z_info = []
+
+    z_preds = set(ego_net.predecessors(z))
+    z_succs = set(ego_net.successors(z))
+    z_neighbors = z_preds.union(z_succs)
+
+    # This should be the intersection of z_neighbors with the union of nodes in first and second hops
+    z_global_degree = len(z_neighbors)
+    z_global_in_degree = len(z_preds)
+    z_global_out_degree = len(z_succs)
+
+    z_local_degree = len(z_neighbors.intersection(first_hop_nodes))
+    z_local_in_degree = len(z_preds.intersection(first_hop_nodes))
+    z_local_out_degree = len(z_succs.intersection(first_hop_nodes))
+
+    # dccn
+    z_info.append(z_local_degree + 1)
+
+    # od-dccn
+    z_info.append(z_local_out_degree + 1)
+
+    # id-dccn
+    z_info.append(z_local_in_degree + 1)
+
+    # dcaa
+    z_global_degree += 1
+    z_local_degree += 1
+    y = z_global_degree - z_local_degree
+    z_info.append(1 / math.log((z_local_degree * (y / z_global_degree)) +
+                               (z_global_degree * (y / z_local_degree))))
+
+    # od-dcaa
+    z_global_out_degree += 1
+    z_local_out_degree += 1
+    y_od = z_global_out_degree - z_local_out_degree
+    z_info.append(1 / math.log((z_local_out_degree * (y_od / z_global_out_degree)) +
+                               (z_global_out_degree * (y_od / z_local_out_degree))))
+
+    # id-dcaa
+    z_global_in_degree += 1
+    z_local_in_degree += 1
+    y_id = z_global_in_degree - z_local_in_degree
+    z_info.append(1 / math.log((z_local_in_degree * (y_id / z_global_in_degree)) +
+                               (z_global_in_degree * (y_id / z_local_in_degree))))
 
     return z_info
 

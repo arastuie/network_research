@@ -614,12 +614,28 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
     scores = []
 
     z_dcaa = {}
+    # for z in first_hop_nodes:
+    #     cn_neighbors = set(nx.neighbors(ego_net, z))
+    #     # total degree
+    #     g = len(cn_neighbors)
+    #     # local degree
+    #     l = len(cn_neighbors.intersection(first_hop_nodes))
+    #
+    #     y = g - l
+    #
+    #     # if y == 1, z does not have an edge with v nodes
+    #     if y == 1:
+    #         continue
+    #
+    #     l += 1
+    #     z_dcaa[z] = 1 / math.log((l * (1 - l / g)) + (y * (g / l)))
+
     for z in first_hop_nodes:
         cn_neighbors = set(nx.neighbors(ego_net, z))
         # total degree
-        g = len(cn_neighbors)
+        g = len(cn_neighbors) + 1
         # local degree
-        l = len(cn_neighbors.intersection(first_hop_nodes))
+        l = len(cn_neighbors.intersection(first_hop_nodes)) + 1
 
         y = g - l
 
@@ -627,8 +643,7 @@ def degree_corrected_adamic_adar_index(ego_net, non_edges, first_hop_nodes):
         if y == 1:
             continue
 
-        l += 1
-        z_dcaa[z] = 1 / math.log((l * (1 - l / g)) + (y * (g / l)))
+        z_dcaa[z] = 1 / math.log((l * (y / g)) + (g * (y / l)))
 
     for u, v in non_edges:
         dcaa_score = 0
@@ -688,8 +703,10 @@ def dccar(ego_net, non_edges, first_hop_nodes):
         cn_neighbors = set(nx.neighbors(ego_net, z))
 
         # local degree
-        l = len(cn_neighbors.intersection(first_hop_nodes)) + 2
-        z_dccn[z] = math.log(l)
+        # l = len(cn_neighbors.intersection(first_hop_nodes)) + 2
+        # z_dccn[z] = math.log(l)
+
+        z_dccn[z] = len(cn_neighbors.intersection(first_hop_nodes)) + 1
 
     for u, v in non_edges:
         dccn_score = 0
@@ -771,7 +788,7 @@ def run_link_prediction_analysis(ego_net_file, results_base_path, top_k_values):
             end = num_snaps - 1
 
         # score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar', 'cclp', 'dccclp']
-        score_list = ['cn', 'dccn']
+        score_list = ['dccn', 'dccar', 'dcaa']
         percent_scores = {}
 
         for score in score_list:

@@ -58,15 +58,14 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 #                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-4/', 12,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
-run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
-                                             gplus.local_degree_empirical_results_base_path + 'pickle-files-5/', 5,
-                                             skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
+# run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
+#                                              gplus.local_degree_empirical_results_base_path + 'pickle-files-5/', 6,
+#                                              skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
 
 
-
-# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-4/',
-#                                         gplus.local_degree_empirical_base_plot_path + 'plots-4/',
-#                                         gather_individual_results=True)
+# dgh.plot_local_degree_empirical_results(gplus.local_degree_empirical_results_base_path + 'pickle-files-5/',
+#                                         gplus.local_degree_empirical_base_plot_path + 'plots-5/',
+#                                         gather_individual_results=False)
 
 # dgh.plot_local_degree_empirical_cdf(gplus.local_degree_empirical_results_base_path + 'pickle-files-1/',
 #                                     gplus.local_degree_empirical_base_plot_path + 'plots-1/',
@@ -96,13 +95,13 @@ run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
 #                                              skip_over_100k=True, log_degree=True, skip_snaps=True, normalize=False)
 
 # run_parallel_local_degree_empirical_analysis(flickr.egonet_files_path,
-#                                              flickr.local_degree_empirical_results_base_path + 'test5/', 8,
+#                                              flickr.local_degree_empirical_results_base_path + 'test5/', 16,
 #                                              skip_over_100k=True, log_degree=False, skip_snaps=True, normalize=False)
 
 
 
-# dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_base_path + 'test4/',
-#                                         flickr.local_degree_empirical_plot_base_path + 'test4/',
+# dgh.plot_local_degree_empirical_results(flickr.local_degree_empirical_results_base_path + 'test5/',
+#                                         flickr.local_degree_empirical_plot_base_path + 'test5/',
 #                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(flickr.local_degree_empirical_results_base_path + 'test1/',
@@ -136,8 +135,8 @@ run_parallel_local_degree_empirical_analysis(gplus.egonet_files_path,
 
 
 
-# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
-#                                         digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
+# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-4/',
+#                                         digg.directed_local_degree_empirical_base_results_path + 'directed-4/plots/',
 #                                         gather_individual_results=True)
 
 # dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
@@ -246,6 +245,13 @@ def run_parallel_triad_ratio_analysis(egonet_files_path, results_base_path, num_
 # ************************************************************************* #
 def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, num_process, skip_over_100k,
                                           skip_snapshots_w_no_new_edge=True, separate_degree=False):
+    if not os.path.exists(results_base_path):
+        os.makedirs(results_base_path)
+        os.makedirs(results_base_path + 'analyzed_egonets')
+        os.makedirs(results_base_path + 'cumulated_results')
+        os.makedirs(results_base_path + 'results')
+        os.makedirs(results_base_path + 'skipped_egonets')
+
     top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
     all_egonets = set(os.listdir(egonet_files_path))
     if skip_over_100k:
@@ -276,6 +282,7 @@ def run_parallel_link_prediction_analysis(egonet_files_path, results_base_path, 
 # The methods to be compared for improvements plots
 comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+ld_no_log_scores = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn', 'dcaa', 'od-dcaa', 'in-dcaa']
 
 # **** Google+ **** #
 # run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_path, 6, skip_over_100k=False)
@@ -283,11 +290,15 @@ separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dc
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 # run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-w-sep-deg/',
 #                                       5, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
+run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-no-log/',
+                                      5, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-2/', gather_individual_results=False)
 # lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-w-sep-deg/', gather_individual_results=False,
 #                              scores=separate_deg_scores)
+# lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-no-log/', gather_individual_results=False,
+#                              scores=ld_no_log_scores)
 
 # lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
@@ -299,11 +310,15 @@ separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dc
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-w-sep-deg/',
 #                                       12, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
+# run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-no-log/',
+#                                       12, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-1/', gather_individual_results=False)
 # lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-w-sep-deg/', gather_individual_results=False,
 #                              scores=separate_deg_scores)
+# lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-no-log/', gather_individual_results=False,
+#                              scores=ld_no_log_scores)
 
 # lpe.plot_percent_improvements(flickr.lp_results_path, flickr.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=False)
@@ -315,11 +330,15 @@ separate_deg_scores = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dc
 #                                       skip_over_100k=True, skip_snapshots_w_no_new_edge=False)
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-w-sep-deg/',
 #                                       4, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
+# run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_base_path + 'pickle-files-no-log/',
+#                                       6, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(digg.lp_results_file_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(digg.lp_results_file_base_path + 'pickle-files-1/', gather_individual_results=False)
 # lpe.calculate_lp_performance(digg.lp_results_file_base_path + 'pickle-files-w-sep-deg/', gather_individual_results=False,
 #                              scores=separate_deg_scores)
+# lpe.calculate_lp_performance(digg.lp_results_file_base_path + 'pickle-files-no-log/', gather_individual_results=False,
+#                              scores=ld_no_log_scores)
 
 # lpe.plot_percent_improvements(digg.lp_results_file_path, digg.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
