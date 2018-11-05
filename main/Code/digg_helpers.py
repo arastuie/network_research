@@ -293,3 +293,28 @@ def extract_egonets_from(orig_snaps, nodes_to_extract, snap_index):
             pickle.dump([ego, ego_snaps], f, protocol=-1)
 
         print('{} egonet extracted!'.format(ego))
+
+
+def degree_dist():
+    digg = read_graph_as_directed()
+    in_degree = []
+    out_degree = []
+    for n in digg.nodes:
+        in_degree.append(digg.in_degree(n))
+        out_degree.append(digg.out_degree(n))
+
+    bins = np.logspace(np.log10(1), np.log10(max(in_degree)), 50)
+    plt.hist(in_degree, bins=bins, density=True, log=True)
+    plt.xscale('log')
+    plt.xlabel('Global In-Degree')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()
+
+    bins = np.logspace(np.log10(1), np.log10(max(out_degree)), 50)
+    plt.hist(out_degree, bins=bins, density=True, log=True)
+    plt.xscale('log')
+    plt.xlabel('Global Out-Degree')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()

@@ -296,7 +296,7 @@ ld_no_log_scores = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn
 # run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-w-sep-deg/',
 #                                       5, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 # run_parallel_link_prediction_analysis(gplus.egonet_files_path, gplus.lp_results_base_path + 'pickle-files-no-log/',
-#                                       5, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
+#                                       6, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(gplus.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(gplus.lp_results_base_path + 'pickle-files-2/', gather_individual_results=False)
@@ -308,6 +308,7 @@ ld_no_log_scores = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn
 # lpe.plot_percent_improvements(gplus.lp_results_path, gplus.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
 
+# lpe.plot_lp_performance([gplus.lp_results_base_path + 'pickle-files-2/', gplus.lp_results_base_path + 'pickle-files-w-sep-deg/'], "Google+")
 
 # **** Flickr **** #
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_path, 6, skip_over_100k=False)
@@ -316,18 +317,19 @@ ld_no_log_scores = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-w-sep-deg/',
 #                                       12, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 # run_parallel_link_prediction_analysis(flickr.egonet_files_path, flickr.lp_results_base_path + 'pickle-files-no-log/',
-#                                       14, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
+#                                       12, skip_over_100k=True, skip_snapshots_w_no_new_edge=False, separate_degree=True)
 
 # lpe.calculate_lp_performance(flickr.lp_results_path, gather_individual_results=True)
 # lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-1/', gather_individual_results=False)
 # lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-w-sep-deg/', gather_individual_results=False,
 #                              scores=separate_deg_scores)
-# lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-no-log/', gather_individual_results=False,
+# lpe.calculate_lp_performance(flickr.lp_results_base_path + 'pickle-files-no-log/', gather_individual_results=True,
 #                              scores=ld_no_log_scores)
 
 # lpe.plot_percent_improvements(flickr.lp_results_path, flickr.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=False)
 
+# lpe.plot_lp_performance([flickr.lp_results_base_path + 'pickle-files-1/', flickr.lp_results_base_path + 'pickle-files-w-sep-deg/'], "Flickr")
 
 # **** Digg **** #
 # run_parallel_link_prediction_analysis(digg.egonet_files_path, digg.lp_results_file_path, 6, skip_over_100k=False)
@@ -348,6 +350,7 @@ ld_no_log_scores = ['dccar', 'od-dccar', 'id-dccar', 'dccn', 'od-dccn', 'in-dccn
 # lpe.plot_percent_improvements(digg.lp_results_file_path, digg.lp_plots_path, comparison_pairs,
 #                               gather_individual_results=True)
 
+# lpe.plot_lp_performance([digg.lp_results_file_base_path + 'pickle-files-1/', digg.lp_results_file_base_path + 'pickle-files-w-sep-deg/'], "Digg")
 
 # ************************************************************************* #
 # **************** Link Prediction Analysis on Test Methods *************** #

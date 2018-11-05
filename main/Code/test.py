@@ -394,3 +394,4 @@ import gplus_helpers as gplus
 # g = facebook.read_graph()
 # facebook.extract_all_ego_centric_networks_in_fb(g)
 
+digg.degree_dist()

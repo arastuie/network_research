@@ -82,8 +82,8 @@ def run_parallel_local_degree_distribution_gathering(results_base_path, num_proc
 # fb.plot_local_degree_distribution_over_single_ego(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/',
 #                                                   "", 200)
 
-fb.plot_local_degree_distribution(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/', "",
-                                  gather_individual_results=False)
+# fb.plot_local_degree_distribution(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/', "",
+#                                   gather_individual_results=False)
 
 
 # ************************************************************************* #
@@ -116,7 +116,7 @@ def run_parallel_link_prediction_analysis(results_base_path, num_process):
 # run_parallel_link_prediction_analysis('/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-3/', 24)
 
 # Result Calculation
-score_list = ['dccn', 'dccar', 'dcaa']
+# score_list = ['dccn', 'dccar', 'dcaa']
 # fb.calculate_lp_performance('/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-3/', scores=score_list,
 #                             togather_individual_results=True)
 
@@ -125,3 +125,5 @@ score_list = ['dccn', 'dccar', 'dcaa']
 
 # comparison_pairs = [('cn', 'dccn'), ('aa', 'dcaa')]
 # fb.plot_percent_improvements(comparison_pairs, gather_individual_results=False)
+
+# fb.plot_lp_performance_bar_plot('/shared/Results/EgocentricLinkPrediction/main/lp/fb/pickle-files-2/')

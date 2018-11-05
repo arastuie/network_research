@@ -1414,29 +1414,35 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         z_all_local_out_degrees.extend(res['z_local_degrees']['out_degree'][-1])
         z_all_global_out_degrees.extend(res['z_global_degrees']['out_degree'][-1])
 
-    plt.hist(np.array(z_all_local_in_degrees) / np.array(z_all_global_in_degrees), bins=100, density=True)
-    plt.xlabel('Local to Global In-Degree Ratio')
-    plt.ylabel('Density')
-    plt.show()
-    plt.clf()
+    # plt.hist(np.array(z_all_local_in_degrees) / np.array(z_all_global_in_degrees), bins=100, density=True)
+    # plt.xlabel('Local to Global In-Degree Ratio')
+    # plt.ylabel('Density')
+    # plt.show()
+    # plt.clf()
+    #
+    # zero_global_out_degree_ind = np.where(np.array(z_all_global_out_degrees) == 0)[0]
+    # local_deg_ratio = np.delete(z_all_local_out_degrees, zero_global_out_degree_ind) / \
+    #                   np.delete(z_all_global_out_degrees, zero_global_out_degree_ind)
+    #
+    # plt.hist(local_deg_ratio, bins=100, density=True)
+    # plt.xlabel('Local to Global Out-Degree Ratio')
+    # plt.ylabel('Density')
+    # plt.show()
+    # plt.clf()
 
-    zero_global_out_degree_ind = np.where(np.array(z_all_global_out_degrees) == 0)[0]
-    local_deg_ratio = np.delete(z_all_local_out_degrees, zero_global_out_degree_ind) / \
-                      np.delete(z_all_global_out_degrees, zero_global_out_degree_ind)
-
-    plt.hist(local_deg_ratio, bins=100, density=True)
-    plt.xlabel('Local to Global Out-Degree Ratio')
-    plt.ylabel('Density')
-    plt.show()
-    plt.clf()
-
-    plt.hist(z_all_local_in_degrees, bins=100, density=True)
+    z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
+    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    plt.xscale('log')
     plt.xlabel('Local In-Degree')
     plt.ylabel('Density')
     plt.show()
     plt.clf()
 
-    plt.hist(z_all_local_out_degrees, bins=100, density=True)
+    z_all_local_out_degrees = np.array(z_all_local_out_degrees) + 1
+    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_out_degrees)), 50)
+    plt.hist(z_all_local_out_degrees, bins=bins, density=True, log=True)
+    plt.xscale('log')
     plt.xlabel('Local Out-Degree')
     plt.ylabel('Density')
     plt.show()

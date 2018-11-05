@@ -4,8 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 score_list = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'cclp', 'dccar']
-score_names = {'cn': 'CN', 'dccn': 'LD-CN', 'aa': 'AA', 'dcaa': 'LD-AA', 'car': 'CAR', 'cclp': 'CCLP',
-               'dccar': 'LD-CAR'}
+score_names = {'cn': 'CN', 'dccn': 'PD-CN', 'aa': 'AA', 'dcaa': 'PD-AA', 'car': 'CAR', 'cclp': 'CCLP',
+               'dccar': 'PD-CAR', 'od-dccn': 'PD-CN (OD)', 'in-dccn': 'PD-CN (ID)', 'od-aa': 'AA (OD)',
+               'id-aa': 'AA (ID)', 'od-dcaa': 'PD-AA (OD)', 'in-dcaa': 'PD-AA (ID)'}
 
 top_k_values = [1, 3, 5, 10, 15, 20, 25, 30]
 
@@ -76,6 +77,38 @@ def eval_2_std(base_score, imp_score, ki):
         return ((imp_std - base_std) / base_std) * 100
     else:
         return imp_std * 100
+
+
+def plot_lp_performance(lp_res_paths, name, directed=True):
+    k_values = [1, 5, 20]
+    if directed:
+        all_res = calculate_lp_performance_for_bar_plot_directed(lp_res_paths[0], lp_res_paths[1], k_values)
+        score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn', 'aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa', 'car',
+                       'dccar']
+        width = 0.05
+    else:
+        all_res = calculate_lp_performance_for_bar_plot_undirected(lp_res_paths, k_values)
+        print(all_res)
+        score_order = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar']
+        width = 0.14
+
+    ind = np.arange(len(k_values))  # the x locations for the groups
+
+    fig, ax = plt.subplots()
+
+    for i in range(len(score_order)):
+        ax.bar(ind + i * width, all_res[score_order[i]][0], width, yerr=all_res[score_order[i]][1],
+               label=score_names[score_order[i]])
+
+    ax.set_title("{} P@K Link Recommendation".format(name))
+    ax.set_xticks(ind + width * (len(score_order) - 1) / 2)
+    ax.set_xticklabels(k_values)
+    ax.set_xlabel("K")
+    ax.set_ylabel("Precision at K")
+    # ax.set_ylim(2)
+    ax.legend(loc='best', frameon=False)
+    ax.autoscale_view()
+    plt.show()
 
 
 def plot_percent_improvements(result_file_base_path, plot_save_path, comparison_pairs, gather_individual_results=False,
@@ -168,6 +201,51 @@ def calculate_lp_performance(lp_results_base_file_path, scores=None, is_test=Fal
         for k in top_k_values:
             print(get_conf(all_scores[score][k]), end=',')
         print("")
+
+
+def get_conf_as_values(lp_scores):
+    m = np.mean(lp_scores) * 100
+    err = 100 * np.std(lp_scores) / np.sqrt(len(lp_scores))
+    return m, err
+
+
+def calculate_lp_performance_for_bar_plot_directed(lp_res_reg_path, lp_res_sep_path, k_values):
+    all = {}
+
+    reg_score_names = ['cn', 'dccn', 'aa', 'dcaa', 'car', 'dccar']
+    reg_scores = get_all_results(lp_res_reg_path, False, scores=reg_score_names)
+    for score in reg_scores:
+        all[score] = [[], []]
+        for k in k_values:
+            m, err = get_conf_as_values(reg_scores[score][k])
+            all[score][0].append(m)
+            all[score][1].append(err)
+
+    sep_score_names = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+    sep_scores = get_all_results(lp_res_sep_path, False, scores=sep_score_names)
+    for score in sep_scores:
+        all[score] = [[], []]
+        for k in k_values:
+            m, err = get_conf_as_values(sep_scores[score][k])
+            all[score][0].append(m)
+            all[score][1].append(err)
+
+    return all
+
+
+def calculate_lp_performance_for_bar_plot_undirected(lp_res_path, k_values):
+    all = {}
+    s_names = ['od-dccn', 'in-dccn', 'od-aa', 'id-aa', 'od-dcaa', 'in-dcaa']
+    scores = get_all_results(lp_res_path, False, scores=s_names)
+
+    for score in scores:
+        all[score] = [[], []]
+        for k in k_values:
+            m, err = get_conf_as_values(scores[score][k])
+            all[score][0].append(m)
+            all[score][1].append(err)
+
+    return all
 
 
 def calculate_lp_performance_on_personalized_triads(lp_results_base_file_path, test_name, gather_individual_results=False):
