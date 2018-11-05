@@ -1373,6 +1373,77 @@ def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_p
     print("Gathered data on ego net {0}".format(ego_net_file))
 
 
+def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather_individual_results=False):
+    if gather_individual_results:
+        all_results = []
+
+        num_res = len(os.listdir(result_file_base_path + 'results'))
+        ctr = 0
+        for result_file in os.listdir(result_file_base_path + 'results'):
+            try:
+                with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+                    egonet_results = pickle.load(f)
+                    all_results.append(egonet_results)
+            except EOFError:
+                os.remove(result_file_base_path + 'results/' + result_file)
+
+            ctr += 1
+            print("{:2.3f}".format(100 * ctr / num_res), end='\r')
+
+        print()
+        # Create directory if not exists
+        if not os.path.exists(result_file_base_path + "cumulated_results"):
+            os.makedirs(result_file_base_path + "cumulated_results")
+
+        # Write data into a single file for fraction of all edges
+        with open(result_file_base_path + "cumulated_results/all-res.pckle", 'wb') as f:
+            pickle.dump(all_results, f, protocol=-1)
+    else:
+        with open(result_file_base_path + "cumulated_results/all-res.pckle", 'rb') as f:
+            all_results = pickle.load(f)
+
+    z_all_local_in_degrees = []
+    z_all_global_in_degrees = []
+
+    z_all_local_out_degrees = []
+    z_all_global_out_degrees = []
+    for res in all_results:
+        z_all_local_in_degrees.extend(res['z_local_degrees']['in_degree'][-1])
+        z_all_global_in_degrees.extend(res['z_global_degrees']['in_degree'][-1])
+
+        z_all_local_out_degrees.extend(res['z_local_degrees']['out_degree'][-1])
+        z_all_global_out_degrees.extend(res['z_global_degrees']['out_degree'][-1])
+
+    plt.hist(np.array(z_all_local_in_degrees) / np.array(z_all_global_in_degrees), bins=100, density=True)
+    plt.xlabel('Local to Global In-Degree Ratio')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()
+
+    zero_global_out_degree_ind = np.where(np.array(z_all_global_out_degrees) == 0)[0]
+    local_deg_ratio = np.delete(z_all_local_out_degrees, zero_global_out_degree_ind) / \
+                      np.delete(z_all_global_out_degrees, zero_global_out_degree_ind)
+
+    plt.hist(local_deg_ratio, bins=100, density=True)
+    plt.xlabel('Local to Global Out-Degree Ratio')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()
+
+    plt.hist(z_all_local_in_degrees, bins=100, density=True)
+    plt.xlabel('Local In-Degree')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()
+
+    plt.hist(z_all_local_out_degrees, bins=100, density=True)
+    plt.xlabel('Local Out-Degree')
+    plt.ylabel('Density')
+    plt.show()
+    plt.clf()
+
+
+
 ########## Link Prediction analysis ##############
 def get_combined_type_nodes(ego_net, ego_node):
     first_hop_nodes = set(ego_net.successors(ego_node))

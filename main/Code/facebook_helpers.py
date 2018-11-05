@@ -490,6 +490,7 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         c = 0
         z_all_local_degrees = []
         z_all_global_degrees = []
+        z_all_local_degrees_normalized = []
         num_egonets_to_analyze = len(gather_z_all_local_degrees)
         for i in range(num_egonets_to_analyze):
             # if 20 <= len(z_local_degrees[-1]) <= 100:
@@ -497,14 +498,15 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
             #     z_all_global_degrees.extend(gather_z_all_global_degrees[i])
             #     z_all_local_degrees.extend(gather_z_all_local_degrees[i])
             #     c += 1
-            z_all_global_degrees.extend(gather_z_all_global_degrees[i])
+            # z_all_global_degrees.extend(gather_z_all_global_degrees[i])
             z_all_local_degrees.extend(gather_z_all_local_degrees[i])
+            z_all_local_degrees_normalized.extend((np.array(gather_z_all_local_degrees[i]) + 1) / (len(gather_z_all_local_degrees[i])))
 
         print()
         # print(c)
 
-        data_shifted = (np.array(z_all_local_degrees) + 1) / (np.array(z_all_global_degrees) + 1)
-        data = np.array(z_all_local_degrees) / np.array(z_all_global_degrees)
+        # data_shifted = (np.array(z_all_local_degrees) + 1) / (np.array(z_all_global_degrees) + 1)
+        # data = np.array(z_all_local_degrees) / np.array(z_all_global_degrees)
 
         # plt.hist(np.log(data_shifted), bins=100, density=True, log=True)
         # plt.xlabel('Log Local to Global Degree Ratio Both Shifted Up By 1')
@@ -530,18 +532,24 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         # plt.show()
         # plt.clf()
 
-        plt.hist(z_all_local_degrees, bins=50, density=True)
-        plt.xlabel('Local Degree')
-        plt.ylabel('Density')
-        plt.show()
-        plt.clf()
+        # plt.hist(z_all_local_degrees, bins=100, density=True)
+        # plt.xlabel('Local Degree')
+        # plt.ylabel('Density')
+        # plt.show()
+        # plt.clf()
 
         # plt.hist(np.log(np.array(z_all_local_degrees) + 2), bins=100, density=True)
         # plt.xlabel('Log Local Degree + 2')
         # plt.ylabel('Density')
         # plt.show()
         # plt.clf()
-        #
+
+        plt.hist(np.log(z_all_local_degrees_normalized), bins=100, density=True, log=True)
+        plt.xlabel('Log Normalized Local Degree + 1')
+        plt.ylabel('Log Density')
+        plt.show()
+        plt.clf()
+
         # plt.hist(np.log(np.array(z_all_global_degrees) + 2), bins=100, density=True, log=False)
         # plt.xlabel('Log Global Degree + 2')
         # plt.ylabel('Density')
