@@ -6,11 +6,12 @@ import warnings
 import numpy as np
 import helpers as h
 import networkx as nx
+import fit_nbinom
 from scipy.stats import norm
+from scipy.stats import nbinom, binom, ttest_ind
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import link_prediction_evaluator as lpe
-import statsmodels.discrete.discrete_model as stat
 
 
 dataset_file_path = '/shared/DataSets/FacebookViswanath2009/raw/facebook-links.txt'
@@ -494,13 +495,13 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         num_egonets_to_analyze = len(gather_z_all_local_degrees)
         for i in range(num_egonets_to_analyze):
             # if 20 <= len(z_local_degrees[-1]) <= 100:
-            # if len(gather_z_all_global_degrees[i]) == 100:
-            #     z_all_global_degrees.extend(gather_z_all_global_degrees[i])
-            #     z_all_local_degrees.extend(gather_z_all_local_degrees[i])
+            if len(gather_z_all_global_degrees[i]) == 100:
+                z_all_global_degrees.extend(gather_z_all_global_degrees[i])
+                z_all_local_degrees.extend(gather_z_all_local_degrees[i])
             #     c += 1
             # z_all_global_degrees.extend(gather_z_all_global_degrees[i])
-            z_all_local_degrees.extend(gather_z_all_local_degrees[i])
-            z_all_local_degrees_normalized.extend((np.array(gather_z_all_local_degrees[i]) + 1) / (len(gather_z_all_local_degrees[i])))
+            # z_all_local_degrees.extend(gather_z_all_local_degrees[i])
+            # z_all_local_degrees_normalized.extend((np.array(gather_z_all_local_degrees[i]) + 1) / (len(gather_z_all_local_degrees[i])))
 
         print()
         # print(c)
@@ -532,11 +533,34 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         # plt.show()
         # plt.clf()
 
-        # plt.hist(z_all_local_degrees, bins=100, density=True)
-        # plt.xlabel('Local Degree')
-        # plt.ylabel('Density')
-        # plt.show()
-        # plt.clf()
+        n, bins, patches = plt.hist(z_all_local_degrees, bins=100, density=True)
+
+        nbino = fit_nbinom.fit_nbinom(np.array(z_all_local_degrees))
+        floor_bin = np.floor(bins)
+        nbino_rv = nbinom(nbino['size'], nbino['prob'])
+        nbino_rvs = nbinom.rvs(n=nbino['size'], p=nbino['prob'], size=len(z_all_local_degrees))
+        nbino_stat, nbino_pval = ttest_ind(z_all_local_degrees, nbino_rvs, equal_var=False)
+
+        plt.plot(floor_bin, nbino_rv.pmf(floor_bin), 'r--', linewidth=2,
+                 label='Fitted Negative Binomial - n:{0:3.3f}, p:{1:1.3f} \n t-statistic: {2:1.3f}, p-value: {3:1.3f}'
+                 .format(nbino['size'], nbino['prob'], nbino_stat, nbino_pval))
+
+        binom_n = 100
+        binom_p = np.mean(z_all_local_degrees) / binom_n
+        bino_rv = binom(binom_n, binom_p)
+        bino_rvs = binom.rvs(n=binom_n, p=binom_p, size=len(z_all_local_degrees))
+
+        bino_stat, bino_pval = ttest_ind(z_all_local_degrees, bino_rvs, equal_var=False)
+
+        plt.plot(floor_bin, bino_rv.pmf(floor_bin), 'y--', linewidth=2,
+                 label='Fitted Binomial - n:{0}, p:{1:1.3f} \n t-statistic: {2:1.3f}, p-value: {3:1.3f}'
+                 .format(binom_n, binom_p, bino_stat, bino_pval))
+
+        plt.legend(loc='best', frameon=False)
+        plt.xlabel('Local Degree')
+        plt.ylabel('Density')
+        plt.show()
+        plt.clf()
 
         # plt.hist(np.log(np.array(z_all_local_degrees) + 2), bins=100, density=True)
         # plt.xlabel('Log Local Degree + 2')
@@ -544,11 +568,11 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         # plt.show()
         # plt.clf()
 
-        plt.hist(np.log(z_all_local_degrees_normalized), bins=100, density=True, log=True)
-        plt.xlabel('Log Normalized Local Degree + 1')
-        plt.ylabel('Log Density')
-        plt.show()
-        plt.clf()
+        # plt.hist(np.log(z_all_local_degrees_normalized), bins=100, density=True, log=True)
+        # plt.xlabel('Log Normalized Local Degree + 1')
+        # plt.ylabel('Log Density')
+        # plt.show()
+        # plt.clf()
 
         # plt.hist(np.log(np.array(z_all_global_degrees) + 2), bins=100, density=True, log=False)
         # plt.xlabel('Log Global Degree + 2')
