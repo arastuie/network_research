@@ -281,7 +281,7 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
     for i_degree in gl_labels:
         plt.rc('legend', fontsize=25)
         plt.rc('xtick', labelsize=28)
-        plt.rc('ytick', labelsize=14)
+        plt.rc('ytick', labelsize=22)
 
         fig, ax = plt.subplots()
 
@@ -297,12 +297,13 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
                     error_kw=error_config,
                     label=bar_legends[i_bar])
 
-        plt.ylabel('Mean Normalized {0} Degree'.format(i_degree.capitalize()), fontsize=25)
+        # plt.ylabel('Mean Log {0} Degree'.format(i_degree.capitalize()), fontsize=25)
+        plt.ylabel('Mean Log Personalized Degree'.format(i_degree.capitalize()), fontsize=25)
+        plt.ylim(ymax=2)
+
         plt.xticks(np.arange(len(names)) + bar_width / 2, names)
         plt.legend(loc='upper left')
         plt.tight_layout()
-        # plt.ylim(ymax=0.4)
-
         plt.savefig('{0}barplot-{1}.pdf'.format(plot_save_path, i_degree), format='pdf')
         plt.clf()
 
@@ -487,7 +488,10 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
             with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'rb') as f:
                 egos, gather_z_all_local_degrees, gather_z_all_global_degrees = pickle.load(f)
 
+        if not os.path.exists(plot_save_path):
+            os.makedirs(plot_save_path)
 
+        plot_save_path
         c = 0
         z_all_local_degrees = []
         z_all_global_degrees = []
@@ -499,7 +503,7 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
             #     z_all_global_degrees.extend(gather_z_all_global_degrees[i])
             #     z_all_local_degrees.extend(gather_z_all_local_degrees[i])
             #     c += 1
-            # z_all_global_degrees.extend(gather_z_all_global_degrees[i])
+            z_all_global_degrees.extend(gather_z_all_global_degrees[i])
             z_all_local_degrees.extend(gather_z_all_local_degrees[i])
             # z_all_local_degrees_normalized.extend((np.array(gather_z_all_local_degrees[i]) + 1) / (len(gather_z_all_local_degrees[i])))
 
@@ -562,26 +566,56 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         # plt.show()
         # plt.clf()
 
-        bins = np.logspace(np.log10(0.5), np.log10(max(z_all_local_degrees)), 50)
-        plt.hist(z_all_local_degrees, bins=bins, density=True, log=True)
+        plt.tight_layout()
+        bins = np.logspace(np.log10(0.5), np.log10(max(z_all_global_degrees)), 50)
+        plt.hist(z_all_global_degrees, bins=bins, density=True, log=True)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
         plt.xscale('log')
-        plt.xlabel('Local Degree')
-        plt.ylabel('Density')
+        # plt.xlabel('Global Degree', fontsize=14)
+        plt.ylabel('Density', fontsize=20)
+        # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
+        # plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
+
+        # plt.show()
+        plt.clf()
+
+
+        z_all_local_degrees = np.array(z_all_local_degrees) + 1
+        bins = np.logspace(np.log10(0.5), np.log10(max(z_all_local_degrees)), 50)
+
+        plt.hist(z_all_local_degrees, bins=bins, density=True, log=True)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.xscale('log')
+        # plt.xlabel('Personalized Degree', fontsize=14)
+        plt.ylabel('Density', fontsize=20)
+        plt.tight_layout()
+        # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
+        plt.savefig('{}local-degree-dist.pdf'.format(plot_save_path), format='pdf')
+
+        # plt.show()
+        plt.clf()
+
+
+
+        global_deg = []
+        fb = read_graph()
+        for n in fb.nodes:
+            global_deg.append(fb.degree(n))
+
+
+        bins = np.logspace(np.log10(0.5), np.log10(max(global_deg)), 50)
+        plt.hist(global_deg, bins=bins, density=True, log=True)
+        plt.xscale('log')
+        # plt.xlabel('Global Degree')
+        plt.ylabel('Density', fontsize=20)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.tight_layout()
+        plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
         plt.show()
         plt.clf()
-        #
-        # global_deg = []
-        # fb = read_graph()
-        # for n in fb.nodes:
-        #     global_deg.append(fb.degree(n))
-        #
-        # bins = np.logspace(np.log10(0.5), np.log10(max(global_deg)), 50)
-        # plt.hist(global_deg, bins=bins, density=True, log=True)
-        # plt.xscale('log')
-        # plt.xlabel('Global Degree')
-        # plt.ylabel('Density')
-        # plt.show()
-        # plt.clf()
 
         # plt.hist(np.log(np.array(z_all_local_degrees) + 2), bins=100, density=True)
         # plt.xlabel('Log Local Degree + 2')
@@ -964,5 +998,14 @@ def plot_lp_performance_bar_plot(results_base_path):
     baf = ['Before', 'After']
     for i in range(len(pymk_directories)):
         print(pymk_directories[i])
-        lpe.plot_lp_performance(results_base_path + pymk_directories[i] + '/', "Facebook {} PYMK".format(baf[i]),
+        lpe.plot_lp_performance(results_base_path + pymk_directories[i] + '/',
+                                "/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-2/{}/".format(pymk_directories[i]), "Facebook {} PYMK".format(baf[i]),
                                 directed=False)
+
+
+def plot_percent_improvements_all(results_base_path):
+    baf = ['Before', 'After']
+    for i in range(len(pymk_directories)):
+        print(pymk_directories[i])
+        lpe.plot_percent_improvements_all(results_base_path + pymk_directories[i] + '/', "/shared/Results/EgocentricLinkPrediction/main/lp/fb/plots-2/{}/".format(pymk_directories[i]),
+                                          "Facebook {} PYMK".format(baf[i]), directed=False)

@@ -558,7 +558,7 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
 
     triangle_types = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09']
     gl_labels = ['Local', 'Global']
-
+    new_gl_labels = ['Personalized', 'Global']
     all_results = get_all_empirical_resutls(result_file_base_path, gather_individual_results)
 
     # plotting
@@ -586,10 +586,11 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
                     label=bar_legends[i_bar])
 
         plt.xlabel('Triangle Types', fontsize=16)
-        plt.ylabel('Mean Normalized {0} Degree'.format(gl_labels[i_degree]), fontsize=16)
+        plt.ylabel('Mean Log {0} Degree'.format(new_gl_labels[i_degree]), fontsize=16)
         plt.xticks(np.arange(len(triangle_types)) + bar_width * 1.5, triangle_types)
 
         plt.legend(loc='upper left')
+        plt.ylim(ymax=9, ymin=4)
         # if i_degree == 0:
         #     plt.ylim(ymax=.51)
         plt.tight_layout()
@@ -1402,6 +1403,9 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         with open(result_file_base_path + "cumulated_results/all-res.pckle", 'rb') as f:
             all_results = pickle.load(f)
 
+    if not os.path.exists(plot_save_path):
+        os.makedirs(plot_save_path)
+
     z_all_local_in_degrees = []
     z_all_global_in_degrees = []
 
@@ -1434,20 +1438,39 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
     bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
     plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
     plt.xscale('log')
-    plt.xlabel('Local In-Degree')
-    plt.ylabel('Density')
-    plt.show()
+    # plt.xlabel('Local In-Degree')
+    plt.ylabel('Density', fontsize=20)
+    plt.tight_layout()
+    # plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # plt.show()
+    plt.clf()
+    
+    z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
+    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    plt.xscale('log')
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    # plt.xlabel('Local In-Degree')
+    plt.ylabel('Density', fontsize=20)
+    plt.tight_layout()
+    plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # plt.show()
     plt.clf()
 
     z_all_local_out_degrees = np.array(z_all_local_out_degrees) + 1
     bins = np.logspace(np.log10(1), np.log10(max(z_all_local_out_degrees)), 50)
     plt.hist(z_all_local_out_degrees, bins=bins, density=True, log=True)
     plt.xscale('log')
-    plt.xlabel('Local Out-Degree')
-    plt.ylabel('Density')
-    plt.show()
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    # plt.xlabel('Local Out-Degree')
+    plt.ylabel('Density', fontsize=20)
+    plt.tight_layout()
+    plt.savefig('{}local-out-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # plt.show()
     plt.clf()
-
+    
 
 
 ########## Link Prediction analysis ##############
