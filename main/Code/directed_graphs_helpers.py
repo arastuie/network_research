@@ -1283,7 +1283,8 @@ def empirical_triad_list_formed_ratio_results_plot(result_file_base_path, plot_s
 
 
 ########## Local degree distribution analysis ##########
-def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_path, skip_over_100k=True):
+def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_path, get_z_id_global_degree=False,
+                             skip_over_100k=True):
 
     # return if the egonet is on the analyzed list
     if os.path.isfile(results_base_path + 'results/' + ego_net_file):
@@ -1312,6 +1313,7 @@ def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_p
 
     # Every list in this dict will contain lists over snapshots
     # z_local_degrees / global are local / global degrees of all the ego's successors with the ego
+    # if get_z_id_global_degree is True, then z_global_degrees is a list of dict where each key is the z node id
     # ego_local_degrees are local degrees of the ego with all of its predecessors, preds_out_degree is the
     # outdegree of those predecessors
     results = {
@@ -1339,15 +1341,25 @@ def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_p
 
         results["z_local_degrees"]["in_degree"].append([])
         results["z_local_degrees"]["out_degree"].append([])
-        results["z_global_degrees"]["in_degree"].append([])
-        results["z_global_degrees"]["out_degree"].append([])
+
+        if get_z_id_global_degree:
+            results["z_global_degrees"]["in_degree"].append({})
+            results["z_global_degrees"]["out_degree"].append({})
+        else:
+            results["z_global_degrees"]["in_degree"].append([])
+            results["z_global_degrees"]["out_degree"].append([])
 
         for z in ego_succs:
             z_preds = set(ego_net_snapshots[i].predecessors(z))
             z_succs = set(ego_net_snapshots[i].successors(z))
 
-            results["z_global_degrees"]["in_degree"][i].append(len(z_preds))
-            results["z_global_degrees"]["out_degree"][i].append(len(z_succs))
+            if get_z_id_global_degree:
+                results["z_global_degrees"]["in_degree"][i][z] = len(z_preds)
+                results["z_global_degrees"]["out_degree"][i][z] = len(z_succs)
+            else:
+                results["z_global_degrees"]["in_degree"][i].append(len(z_preds))
+                results["z_global_degrees"]["out_degree"][i].append(len(z_succs))
+
             results["z_local_degrees"]["in_degree"][i].append(len(z_preds.intersection(ego_succs)))
             results["z_local_degrees"]["out_degree"][i].append(len(z_succs.intersection(ego_succs)))
 
