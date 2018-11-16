@@ -51,6 +51,32 @@ def read_graph():
     return original_graph
 
 
+def read_graph_before_pymk():
+    # time stamp is Saturday, March 15, 2008 11:59:59 PM. Approximating when PYMK began.
+    begin_pymk_timestamp = 1205625599
+    print("Reading the original graph...")
+
+    t0 = time.time()
+    original_graph = nx.Graph()
+
+    with open(dataset_file_path, 'r') as infile:
+        for l in infile:
+            nums = l.rstrip().split("\t")
+
+            # replace no timestamp with -1
+            if nums[2] == '\\N':
+                nums[2] = -1
+
+            nums[2] = int(nums[2])
+            if nums[2] > begin_pymk_timestamp:
+                continue
+
+            original_graph.add_edge(int(nums[0]), int(nums[1]), timestamp=int(nums[2]))
+
+    print("Facebook network in. Took {0:.2f}min".format((time.time() - t0) / 60))
+    return original_graph
+
+
 def extract_all_ego_centric_networks_in_fb(original_graph):
     """
     Extracts and saves all ego centric networks, divided into 10 snapshots
@@ -455,123 +481,134 @@ def plot_local_degree_distribution_over_single_ego(result_file_base_path, plot_s
 
 
 def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather_individual_results=False):
-    # to set all results to after pymk
-    i = 1
-    if gather_individual_results:
-        egos = []
-        gather_z_all_local_degrees = {}
+    for i in range(len(pymk_directories)):
+        if gather_individual_results:
+            egos = []
+            gather_z_all_local_degrees = {}
 
-        num_res = len(os.listdir(result_file_base_path + pymk_directories[i] + '/results'))
-        ctr = 1
-        for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
-            with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
-                ego, z_local_degrees = pickle.load(f)
+            num_res = len(os.listdir(result_file_base_path + pymk_directories[i] + '/results'))
+            ctr = 1
+            for result_file in os.listdir(result_file_base_path + pymk_directories[i] + '/results'):
+                try:
+                    with open(result_file_base_path + pymk_directories[i] + '/results/' + result_file, 'rb') as f:
+                        ego, z_local_degrees = pickle.load(f)
 
-                egos.append(ego)
-                for z in z_local_degrees[-1]:
-                    if (ego, z) in gather_z_all_local_degrees \
-                            and gather_z_all_local_degrees[(ego, z)] != z_local_degrees[-1][z]:
-                        print("Mismatch")
-                    elif (z, ego) in gather_z_all_local_degrees \
-                                and gather_z_all_local_degrees[(z, ego)] != z_local_degrees[-1][z]:
-                        print("Mismatch")
-                    else:
-                        gather_z_all_local_degrees[(ego, z)] = z_local_degrees[-1][z]
+                        egos.append(ego)
 
-            print("{:2.3f}%".format(100 * ctr / num_res), end='\r')
-            ctr += 1
+                        for z in z_local_degrees[-1]:
+                            if (ego, z) in gather_z_all_local_degrees \
+                                    and gather_z_all_local_degrees[(ego, z)] != z_local_degrees[-1][z]:
+                                print("Mismatch")
+                            elif (z, ego) in gather_z_all_local_degrees \
+                                    and gather_z_all_local_degrees[(z, ego)] != z_local_degrees[-1][z]:
+                                print("Mismatch")
+                            else:
+                                gather_z_all_local_degrees[(ego, z)] = z_local_degrees[-1][z]
 
-        gather_z_all_local_degrees = list(gather_z_all_local_degrees.values())
-        # Create directory if not exists
-        if not os.path.exists(result_file_base_path + pymk_directories[i] + '/all-scores'):
-            os.makedirs(result_file_base_path + pymk_directories[i] + '/all-scores')
+                except EOFError:
+                    os.remove(result_file_base_path + pymk_directories[i] + '/results/' + result_file)
+                    exit("Result file removed!")
 
-        with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'wb') as f:
-            pickle.dump([egos, gather_z_all_local_degrees], f, protocol=-1)
-    else:
-        with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'rb') as f:
-            egos, gather_z_all_local_degrees = pickle.load(f)
+                print("{:2.3f}%".format(100 * ctr / num_res), end='\r')
+                ctr += 1
 
-    if not os.path.exists(plot_save_path):
-        os.makedirs(plot_save_path)
+            gather_z_all_local_degrees = list(gather_z_all_local_degrees.values())
+            # Create directory if not exists
+            if not os.path.exists(result_file_base_path + pymk_directories[i] + '/all-scores'):
+                os.makedirs(result_file_base_path + pymk_directories[i] + '/all-scores')
 
-    global_deg = []
-    fb = read_graph()
-    for n in fb.nodes:
-        global_deg.append(fb.degree(n))
+            with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'wb') as f:
+                pickle.dump([egos, gather_z_all_local_degrees], f, protocol=-1)
+        else:
+            with open(result_file_base_path + pymk_directories[i] + '/all-scores/all-res-last-snap.pckl', 'rb') as f:
+                egos, gather_z_all_local_degrees = pickle.load(f)
 
-    # in degree
-    global_deg = np.array(global_deg) + 1
-    global_deg_count = np.unique(global_deg, return_counts=True)
-    global_deg_count = h.log_binning(global_deg_count, 75)
+        if not os.path.exists(plot_save_path):
+            os.makedirs(plot_save_path)
 
-    local_in = np.array(gather_z_all_local_degrees) + 1
-    local_in_count = np.unique(local_in, return_counts=True)
-    local_in_count = h.log_binning(local_in_count, 75)
+        global_deg = []
+        if i == 0:
+            fb = read_graph_before_pymk()
+        else:
+            fb = read_graph()
 
-    plt.xscale('log')
-    plt.yscale('log')
+        for n in fb.nodes:
+            global_deg.append(fb.degree(n))
 
-    plt.scatter(local_in_count[0], local_in_count[1], c='b', marker='x', alpha=0.9, label="Personalized")
-    plt.scatter(global_deg_count[0], global_deg_count[1], c='r', marker='*', alpha=0.9, label="Global")
+        print(len(gather_z_all_local_degrees))
 
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.legend(loc="best", fontsize=20)
-    plt.ylabel('Frequency', fontsize=20)
-    plt.xlabel('Degree', fontsize=20)
-    plt.tight_layout()
-    # plt.savefig('{}in-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    plt.show()
-    plt.clf()
+        # in degree
+        global_deg = np.array(global_deg)
+        global_deg_count = np.unique(global_deg, return_counts=True)
+        global_deg_count = h.log_binning(global_deg_count, 75)
 
-    # plt.tight_layout()
-    # bins = np.logspace(np.log10(0.5), np.log10(max(z_all_global_degrees)), 50)
-    # plt.hist(z_all_global_degrees, bins=bins, density=True, log=True)
-    # plt.xticks(fontsize=20)
-    # plt.yticks(fontsize=20)
-    # plt.xscale('log')
-    # # plt.xlabel('Global Degree', fontsize=14)
-    # plt.ylabel('Density', fontsize=20)
-    # # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
-    # # plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    #
-    # # plt.show()
-    # plt.clf()
-    #
-    #
-    # z_all_local_degrees = np.array(z_all_local_degrees) + 1
-    # bins = np.logspace(np.log10(0.5), np.log10(max(z_all_local_degrees)), 50)
-    #
-    # plt.hist(z_all_local_degrees, bins=bins, density=True, log=True)
-    # plt.xticks(fontsize=20)
-    # plt.yticks(fontsize=20)
-    # plt.xscale('log')
-    # # plt.xlabel('Personalized Degree', fontsize=14)
-    # plt.ylabel('Density', fontsize=20)
-    # plt.tight_layout()
-    # # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
-    # plt.savefig('{}local-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    #
-    # # plt.show()
-    # plt.clf()
-    #
-    #
-    #
-    #
-    #
-    #
-    # bins = np.logspace(np.log10(0.5), np.log10(max(global_deg)), 50)
-    # plt.hist(global_deg, bins=bins, density=True, log=True)
-    # plt.xscale('log')
-    # # plt.xlabel('Global Degree')
-    # plt.ylabel('Density', fontsize=20)
-    # plt.xticks(fontsize=20)
-    # plt.yticks(fontsize=20)
-    # plt.tight_layout()
-    # plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    # plt.show()
-    # plt.clf()
+        local_in = np.array(gather_z_all_local_degrees) + 1
+        local_in_count = np.unique(local_in, return_counts=True)
+        local_in_count = h.log_binning(local_in_count, 75)
+
+        plt.xscale('log')
+        plt.yscale('log')
+
+        plt.scatter(local_in_count[0], local_in_count[1], c='b', marker='x', alpha=0.9, label="Personalized")
+        plt.scatter(global_deg_count[0], global_deg_count[1], c='r', marker='*', alpha=0.9, label="Global")
+
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.legend(loc="best", fontsize=20)
+        plt.ylabel('Frequency', fontsize=20)
+        plt.xlabel('Degree', fontsize=20)
+        plt.tight_layout()
+        plt.savefig('{}degree-dist-{}.pdf'.format(plot_save_path, pymk_directories[i]), format='pdf')
+        # plt.show()
+        plt.clf()
+
+        # plt.tight_layout()
+        # bins = np.logspace(np.log10(0.5), np.log10(max(z_all_global_degrees)), 50)
+        # plt.hist(z_all_global_degrees, bins=bins, density=True, log=True)
+        # plt.xticks(fontsize=20)
+        # plt.yticks(fontsize=20)
+        # plt.xscale('log')
+        # # plt.xlabel('Global Degree', fontsize=14)
+        # plt.ylabel('Density', fontsize=20)
+        # # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
+        # # plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
+        #
+        # # plt.show()
+        # plt.clf()
+        #
+        #
+        # z_all_local_degrees = np.array(z_all_local_degrees) + 1
+        # bins = np.logspace(np.log10(0.5), np.log10(max(z_all_local_degrees)), 50)
+        #
+        # plt.hist(z_all_local_degrees, bins=bins, density=True, log=True)
+        # plt.xticks(fontsize=20)
+        # plt.yticks(fontsize=20)
+        # plt.xscale('log')
+        # # plt.xlabel('Personalized Degree', fontsize=14)
+        # plt.ylabel('Density', fontsize=20)
+        # plt.tight_layout()
+        # # plt.title("Facebook Peronalized Degree Distribution", fontsize=20)
+        # plt.savefig('{}local-degree-dist.pdf'.format(plot_save_path), format='pdf')
+        #
+        # # plt.show()
+        # plt.clf()
+        #
+        #
+        #
+        #
+        #
+        #
+        # bins = np.logspace(np.log10(0.5), np.log10(max(global_deg)), 50)
+        # plt.hist(global_deg, bins=bins, density=True, log=True)
+        # plt.xscale('log')
+        # # plt.xlabel('Global Degree')
+        # plt.ylabel('Density', fontsize=20)
+        # plt.xticks(fontsize=20)
+        # plt.yticks(fontsize=20)
+        # plt.tight_layout()
+        # plt.savefig('{}global-degree-dist.pdf'.format(plot_save_path), format='pdf')
+        # plt.show()
+        # plt.clf()
 
 
 # ********** Link prediction analysis ********** #
