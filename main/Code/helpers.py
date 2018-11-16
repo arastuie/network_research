@@ -372,3 +372,22 @@ def get_mean_ci(res, z_value, has_nan=False):
         return z_value * np.nanstd(res) / np.sqrt(np.sum(~np.isnan(res)))
     else:
         return z_value * np.std(res) / np.sqrt(len(res))
+
+
+# Local Degree Distribution
+def log_binning(counter, bin_count=35):
+    keys = counter[0]
+    values = counter[1]
+
+    max_x = np.log10(max(keys))
+    max_y = np.log10(max(values))
+    max_base = max([max_x, max_y])
+
+    min_x = np.log10(min(keys))
+
+    bins = np.logspace(min_x, max_base, num=bin_count)
+
+    bin_means_y = np.histogram(keys, bins, weights=values)[0] / np.histogram(keys, bins)[0]
+    bin_means_x = np.histogram(keys, bins, weights=keys)[0] / np.histogram(keys, bins)[0]
+
+    return bin_means_x, bin_means_y

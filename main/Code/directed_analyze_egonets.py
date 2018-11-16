@@ -186,20 +186,28 @@ def run_parallel_gather_local_degree_data(egonet_files_path, results_base_path, 
 #                                       'local-degree-dist/pickle-files-2/', 6, skip_over_100k=True,
 #                                       get_z_id_global_degree=True)
 
-# dgh.plot_local_degree_distribution(gplus.local_degree_empirical_results_base_path + 'local-degree-dist/pickle-files-1/',
-#                                    "", gather_individual_results=False)
+
+
+# dgh.plot_local_degree_distribution(gplus.local_degree_empirical_results_base_path + 'local-degree-dist/pickle-files-2/',
+#                                    "", gather_individual_results=True)
+
+# dgh.plot_local_degree_distribution(gplus.local_degree_empirical_results_base_path + 'local-degree-dist/pickle-files-2/',
+#                                    "", gather_individual_results=False, get_z_id_global_degree=True)
 
 # **** Flickr **** #
 # run_parallel_gather_local_degree_data(flickr.egonet_files_path,
 #                                       flickr.local_degree_dist_results_base_path + 'pickle-files-1/', 6,
 #                                       skip_over_100k=True)
 
-run_parallel_gather_local_degree_data(flickr.egonet_files_path,
-                                      flickr.local_degree_dist_results_base_path + 'pickle-files-2/', 8,
-                                      skip_over_100k=True, get_z_id_global_degree=True)
+# run_parallel_gather_local_degree_data(flickr.egonet_files_path,
+#                                       flickr.local_degree_dist_results_base_path + 'pickle-files-2/', 8,
+#                                       skip_over_100k=True, get_z_id_global_degree=True)
 
-# dgh.plot_local_degree_distribution(flickr.local_degree_dist_results_base_path + 'pickle-files-1/', "",
-#                                    gather_individual_results=False)
+# dgh.plot_local_degree_distribution(flickr.local_degree_dist_results_base_path + 'pickle-files-2/', "",
+#                                    gather_individual_results=True)
+
+# dgh.plot_local_degree_distribution(flickr.local_degree_dist_results_base_path + 'pickle-files-2/', "",
+#                                    gather_individual_results=False, get_z_id_global_degree=True)
 
 # **** Digg **** #
 # run_parallel_gather_local_degree_data(digg.egonet_files_path,

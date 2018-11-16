@@ -210,7 +210,7 @@ def plot_percent_improvements_all(lp_res_paths, plot_save_path, name, directed=T
     # plt.title('{} Percent Improvement Based on CN'.format(name))
     # plt.tight_layout()
     # plt.grid(True)
-    plt.savefig('{0}/lp-percent-imp.pdf'.format(plot_save_path), format='pdf', bbox_inches = "tight")
+    plt.savefig('{0}/lp-percent-imp.pdf'.format(plot_save_path), format='pdf', bbox_inches="tight")
     # plt.show()
 
     # current_fig = plt.gcf()

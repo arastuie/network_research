@@ -14,6 +14,7 @@ import flickr_helpers as flickr
 import link_prediction_helpers as lph
 import facebook_helpers as facebook
 import gplus_helpers as gplus
+import get_results_for_paper as paper
 
 # graph = nx.read_gml("../Data/karate.gml")
 #
@@ -394,4 +395,6 @@ import gplus_helpers as gplus
 # g = facebook.read_graph()
 # facebook.extract_all_ego_centric_networks_in_fb(g)
 
-digg.degree_dist()
+# digg.degree_dist()
+
+paper.plot_all_degree_distributions()

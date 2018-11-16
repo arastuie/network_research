@@ -1386,7 +1386,7 @@ def gather_local_degree_data(ego_net_file, results_base_path, egonet_file_base_p
     print("Gathered data on ego net {0}".format(ego_net_file))
 
 
-def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather_individual_results=False):
+def get_degree_dist_data(result_file_base_path, gather_individual_results=False, get_z_id_global_degree=False):
     if gather_individual_results:
         all_results = []
 
@@ -1415,20 +1415,92 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
         with open(result_file_base_path + "cumulated_results/all-res.pckle", 'rb') as f:
             all_results = pickle.load(f)
 
-    if not os.path.exists(plot_save_path):
-        os.makedirs(plot_save_path)
-
     z_all_local_in_degrees = []
-    z_all_global_in_degrees = []
-
     z_all_local_out_degrees = []
-    z_all_global_out_degrees = []
+
+    if get_z_id_global_degree:
+        z_all_global_in_degrees = {}
+        z_all_global_out_degrees = {}
+    else:
+        z_all_global_in_degrees = []
+        z_all_global_out_degrees = []
+
     for res in all_results:
         z_all_local_in_degrees.extend(res['z_local_degrees']['in_degree'][-1])
-        z_all_global_in_degrees.extend(res['z_global_degrees']['in_degree'][-1])
-
         z_all_local_out_degrees.extend(res['z_local_degrees']['out_degree'][-1])
-        z_all_global_out_degrees.extend(res['z_global_degrees']['out_degree'][-1])
+
+        if get_z_id_global_degree:
+            z_all_global_in_degrees.update(res['z_global_degrees']['in_degree'][-1])
+            z_all_global_out_degrees.update(res['z_global_degrees']['out_degree'][-1])
+        else:
+            z_all_global_in_degrees.extend(res['z_global_degrees']['in_degree'][-1])
+            z_all_global_out_degrees.extend(res['z_global_degrees']['out_degree'][-1])
+
+    if get_z_id_global_degree:
+        z_all_global_in_degrees = list(z_all_global_in_degrees.values())
+        z_all_global_out_degrees = list(z_all_global_out_degrees.values())
+
+    return z_all_local_in_degrees, z_all_local_out_degrees, z_all_global_in_degrees, z_all_global_out_degrees
+
+
+def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather_individual_results=False,
+                                   get_z_id_global_degree=False):
+    if gather_individual_results:
+        all_results = []
+
+        num_res = len(os.listdir(result_file_base_path + 'results'))
+        ctr = 0
+        for result_file in os.listdir(result_file_base_path + 'results'):
+            try:
+                with open(result_file_base_path + 'results/' + result_file, 'rb') as f:
+                    egonet_results = pickle.load(f)
+                    all_results.append(egonet_results)
+            except EOFError:
+                os.remove(result_file_base_path + 'results/' + result_file)
+
+            ctr += 1
+            print("{:2.3f}".format(100 * ctr / num_res), end='\r')
+
+        print()
+        # Create directory if not exists
+        if not os.path.exists(result_file_base_path + "cumulated_results"):
+            os.makedirs(result_file_base_path + "cumulated_results")
+
+        # Write data into a single file for fraction of all edges
+        with open(result_file_base_path + "cumulated_results/all-res.pckle", 'wb') as f:
+            pickle.dump(all_results, f, protocol=-1)
+    else:
+        with open(result_file_base_path + "cumulated_results/all-res.pckle", 'rb') as f:
+            all_results = pickle.load(f)
+
+    # if not os.path.exists(plot_save_path):
+    #     os.makedirs(plot_save_path)
+
+    z_all_local_in_degrees = []
+    z_all_local_out_degrees = []
+
+    if get_z_id_global_degree:
+        z_all_global_in_degrees = {}
+        z_all_global_out_degrees = {}
+    else:
+        z_all_global_in_degrees = []
+        z_all_global_out_degrees = []
+
+    for res in all_results:
+        z_all_local_in_degrees.extend(res['z_local_degrees']['in_degree'][-1])
+        z_all_local_out_degrees.extend(res['z_local_degrees']['out_degree'][-1])
+
+        if get_z_id_global_degree:
+            z_all_global_in_degrees.update(res['z_global_degrees']['in_degree'][-1])
+            z_all_global_out_degrees.update(res['z_global_degrees']['out_degree'][-1])
+        else:
+            z_all_global_in_degrees.extend(res['z_global_degrees']['in_degree'][-1])
+            z_all_global_out_degrees.extend(res['z_global_degrees']['out_degree'][-1])
+
+    if get_z_id_global_degree:
+        z_all_global_in_degrees = list(z_all_global_in_degrees.values())
+        z_all_global_out_degrees = list(z_all_global_out_degrees.values())
+
 
     # plt.hist(np.array(z_all_local_in_degrees) / np.array(z_all_global_in_degrees), bins=100, density=True)
     # plt.xlabel('Local to Global In-Degree Ratio')
@@ -1446,44 +1518,94 @@ def plot_local_degree_distribution(result_file_base_path, plot_save_path, gather
     # plt.show()
     # plt.clf()
 
+    # z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
+    # bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    # plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    # plt.xscale('log')
+    # # plt.xlabel('Local In-Degree')
+    # plt.ylabel('Density', fontsize=20)
+    # plt.tight_layout()
+    # # plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # # plt.show()
+    # plt.clf()
+
+
+    # z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
+    # bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    # plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    # plt.xscale('log')
+    # plt.xticks(fontsize=20)
+    # plt.yticks(fontsize=20)
+    # # plt.xlabel('Local In-Degree')
+    # plt.ylabel('Density', fontsize=20)
+    # plt.tight_layout()
+    # # plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # # plt.show()
+    # plt.clf()
+    
+
+    # z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
+    # plt.scatter()
+    # bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    # plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    # plt.xscale('log')
+    # plt.xticks(fontsize=20)
+    # plt.yticks(fontsize=20)
+    # # plt.xlabel('Local In-Degree')
+    # plt.ylabel('Density', fontsize=20)
+    # plt.tight_layout()
+    # # plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # plt.show()
+    # plt.clf()
+
+    # z_all_local_out_degrees = np.array(z_all_local_out_degrees) + 1
+    # bins = np.logspace(np.log10(1), np.log10(max(z_all_local_out_degrees)), 50)
+    # plt.hist(z_all_local_out_degrees, bins=bins, density=True, log=True)
+    # plt.xscale('log')
+    # plt.xticks(fontsize=20)
+    # plt.yticks(fontsize=20)
+    # # plt.xlabel('Local Out-Degree')
+    # plt.ylabel('Density', fontsize=20)
+    # plt.tight_layout()
+    # plt.savefig('{}local-out-degree-dist.pdf'.format(plot_save_path), format='pdf')
+    # # plt.show()
+    # plt.clf()
+
+    # z_all_global_in_degrees = np.array(z_all_global_in_degrees) + 1
+    # global_in_deg_count = np.unique(z_all_global_in_degrees, return_counts=True)
+    # global_in_deg_count = h.log_binning(global_in_deg_count, 100)
+
     z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
-    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
-    plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    local_in_deg_count = np.unique(z_all_local_in_degrees, return_counts=True)
+    local_in_deg_count = h.log_binning(local_in_deg_count, 100)
+
+    # z_all_global_out_degrees = np.array(z_all_global_out_degrees) + 1
+    # global_out_deg_count = np.unique(z_all_global_out_degrees, return_counts=True)
+    # global_out_deg_count = h.log_binning(global_out_deg_count, 100)
+    # 
+    # z_all_local_out_degrees = np.array(z_all_local_out_degrees) + 1
+    # local_out_deg_count = np.unique(z_all_local_out_degrees, return_counts=True)
+    # local_out_deg_count = h.log_binning(local_out_deg_count, 100)
+
     plt.xscale('log')
+    plt.yscale('log')
+    # plt.scatter(global_in_deg_count[0], global_in_deg_count[1], c='r', marker='.', alpha=0.5, label="Global in-degree")
+    plt.scatter(local_in_deg_count[0], local_in_deg_count[1], c='b', marker='*', alpha=0.5, label="Personalized in-degree")
+
+    # plt.scatter(global_out_deg_count[0], global_out_deg_count[1], c='black', marker='d', alpha=0.5, label="Global out-degree")
+    # plt.scatter(local_out_deg_count[0], local_out_deg_count[1], c='g', marker='v', alpha=0.5, label="Personalized out-degree")
+
+    # bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
+    # plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     # plt.xlabel('Local In-Degree')
-    plt.ylabel('Density', fontsize=20)
+    plt.legend(loc="best")
+    plt.ylabel('Frequency', fontsize=20)
     plt.tight_layout()
     # plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    # plt.show()
+    plt.show()
     plt.clf()
-    
-    z_all_local_in_degrees = np.array(z_all_local_in_degrees) + 1
-    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_in_degrees)), 50)
-    plt.hist(z_all_local_in_degrees, bins=bins, density=True, log=True)
-    plt.xscale('log')
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    # plt.xlabel('Local In-Degree')
-    plt.ylabel('Density', fontsize=20)
-    plt.tight_layout()
-    plt.savefig('{}local-in-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    # plt.show()
-    plt.clf()
-
-    z_all_local_out_degrees = np.array(z_all_local_out_degrees) + 1
-    bins = np.logspace(np.log10(1), np.log10(max(z_all_local_out_degrees)), 50)
-    plt.hist(z_all_local_out_degrees, bins=bins, density=True, log=True)
-    plt.xscale('log')
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    # plt.xlabel('Local Out-Degree')
-    plt.ylabel('Density', fontsize=20)
-    plt.tight_layout()
-    plt.savefig('{}local-out-degree-dist.pdf'.format(plot_save_path), format='pdf')
-    # plt.show()
-    plt.clf()
-    
-
 
 ########## Link Prediction analysis ##############
 def get_combined_type_nodes(ego_net, ego_node):
