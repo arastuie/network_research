@@ -570,7 +570,7 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
     bar_color = ['r', 'b', 'g', 'y']
 
     for i_degree in range(2):
-        plt.rc('legend', fontsize=14)
+        plt.rc('legend', fontsize=12)
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=14)
         fig, ax = plt.subplots()
@@ -588,13 +588,9 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
         plt.xlabel('Triangle Types', fontsize=16)
         plt.ylabel('Mean Log {0} Degree'.format(new_gl_labels[i_degree]), fontsize=16)
         plt.xticks(np.arange(len(triangle_types)) + bar_width * 1.5, triangle_types)
-
-        plt.legend(loc='upper left')
-        plt.ylim(ymax=9, ymin=4)
-        # if i_degree == 0:
-        #     plt.ylim(ymax=.51)
+        plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=2)
         plt.tight_layout()
-        plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf')
+        plt.savefig('{0}/overall-{1}.pdf'.format(plot_save_path, gl_labels[i_degree]), format='pdf', bbox_inches="tight")
         plt.clf()
 
 

@@ -95,32 +95,48 @@ def plot_lp_performance(lp_res_paths, plot_save_path, name, directed=True):
     k_values = [1, 5, 20]
     if directed:
         all_res = calculate_lp_performance_for_bar_plot_directed(lp_res_paths[0], lp_res_paths[1], lp_res_paths[2], k_values)
-        score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn', 'aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa']
-        width = 0.08
+        # score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn', 'aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa']
+        score_order = ['cn', 'dccn', 'aa', 'dcaa']
+        # width = 0.08
+        width = 0.15
     else:
         all_res = calculate_lp_performance_for_bar_plot_undirected(lp_res_paths, k_values)
         score_order = ['cn', 'dccn', 'aa', 'dcaa']
-        width = 0.14
+        width = 0.15
 
     ind = np.arange(len(k_values))  # the x locations for the groups
 
     fig, ax = plt.subplots()
+    plt.rc('ytick', labelsize=18)
+    plt.rc('xtick', labelsize=18)
 
     for i in range(len(score_order)):
         ax.bar(ind + i * width, all_res[score_order[i]][0], width, yerr=all_res[score_order[i]][1],
                color=colors[score_order[i]], label=score_names[score_order[i]])
 
-    plt.rc('legend', fontsize=14)
-    plt.rc('xtick', labelsize=14)
-    plt.rc('ytick', labelsize=14)
-    # ax.set_title("{} P@K Link Recommendation".format(name))
     ax.set_xticks(ind + width * (len(score_order) - 1) / 2)
     ax.set_xticklabels(k_values)
-    ax.set_xlabel("K", fontsize=18)
-    ax.set_ylabel("Precision at K", fontsize=18)
-    # ax.set_ylim(2)
-    # ax.legend(loc='best', frameon=False)
-    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=3)
+    ax.set_xlabel("K", fontsize=20)
+    ax.set_ylabel("Precision at K", fontsize=20)
+    plt.rc('legend', fontsize=16)
+    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4)
+    plt.clf()
+
+    fig, ax = plt.subplots()
+    plt.rc('ytick', labelsize=18)
+    plt.rc('xtick', labelsize=18)
+
+    for i in range(len(score_order)):
+        ax.bar(ind + i * width, all_res[score_order[i]][0], width, yerr=all_res[score_order[i]][1],
+               color=colors[score_order[i]], label=score_names[score_order[i]])
+
+    ax.set_xticks(ind + width * (len(score_order) - 1) / 2)
+    ax.set_xticklabels(k_values)
+    ax.set_xlabel("K", fontsize=20)
+    ax.set_ylabel("Precision at K", fontsize=20)
+    plt.rc('legend', fontsize=16)
+    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4)
+
     plt.tight_layout()
     plt.savefig('{0}/lp-performance.pdf'.format(plot_save_path), format='pdf', bbox_inches="tight")
     # plt.show()
@@ -159,6 +175,8 @@ def plot_percent_improvements(result_file_base_path, plot_save_path, comparison_
         plt.errorbar(top_k_values, imp_mse['imp'], yerr=imp_mse['imp_err'], marker='o', color='b', ecolor='r',
                      elinewidth=2)
 
+        plt.xticks(top_k_values, top_k_values)
+
         plt.ylabel('Percent Improvement', fontsize=22)
         plt.xlabel('Top K Value', fontsize=22)
         plt.tight_layout()
@@ -182,41 +200,45 @@ def plot_percent_improvements_all(lp_res_paths, plot_save_path, name, directed=T
     if not os.path.exists(plot_save_path):
         os.makedirs(plot_save_path)
 
-    base = 'cn'
+    for base in ['cn', 'aa']:
+        if not directed and base == 'aa':
+            continue
 
-    if directed:
-        all_res = calculate_lp_performance_for_bar_plot_directed(lp_res_paths[0], lp_res_paths[1], lp_res_paths[2], top_k_values)
-        score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn', 'aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa']
-    else:
-        all_res = calculate_lp_performance_for_bar_plot_undirected(lp_res_paths, top_k_values)
-        score_order = ['cn', 'dccn', 'aa', 'dcaa']
+        if directed:
+            all_res = calculate_lp_performance_for_bar_plot_directed(lp_res_paths[0], lp_res_paths[1], lp_res_paths[2],
+                                                                     top_k_values)
+            # score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn', 'aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa']
+            if base == 'cn':
+                score_order = ['cn', 'dccn', 'od-dccn', 'in-dccn']
+            else:
+                score_order = ['aa', 'od-aa', 'id-aa', 'dcaa', 'od-dcaa', 'in-dcaa']
+        else:
+            all_res = calculate_lp_performance_for_bar_plot_undirected(lp_res_paths, top_k_values)
+            score_order = ['cn', 'dccn', 'aa', 'dcaa']
 
-    plt.figure()
-    plt.rc('legend', fontsize=14)
-    plt.rc('xtick', labelsize=14)
-    plt.rc('ytick', labelsize=14)
+        plt.figure()
+        plt.rc('legend', fontsize=18)
+        plt.rc('xtick', labelsize=18)
+        plt.rc('ytick', labelsize=18)
 
-    for i in range(1, len(score_order)):
-        p_imp = 100 * (np.array(all_res[score_order[i]][0]) - np.array(all_res[base][0])) / np.array(all_res[base][0])
+        for i in range(1, len(score_order)):
+            p_imp = 100 * (np.array(all_res[score_order[i]][0]) - np.array(all_res[base][0])) / np.array(all_res[base][0])
+            print(score_order[i])
+            print(p_imp)
+            plt.plot(top_k_values, p_imp, markers[score_order[i]], color=colors[score_order[i]],
+                     label=score_names[score_order[i]])
 
-        plt.plot(top_k_values, p_imp, markers[score_order[i]], color=colors[score_order[i]],
-                 label=score_names[score_order[i]])
+        plt.ylabel('Percent Improvement Over {}'.format(base.upper()), fontsize=20)
+        plt.xlabel('Top K Value', fontsize=20)
+        # plt.legend(loc='upper right')
 
-    plt.ylabel('Percent Improvement', fontsize=18)
-    plt.xlabel('Top K Value', fontsize=18)
-    # plt.legend(loc='upper right')
-
-    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=3)
-    # plt.title('{} Percent Improvement Based on CN'.format(name))
-    # plt.tight_layout()
-    # plt.grid(True)
-    plt.savefig('{0}/lp-percent-imp.pdf'.format(plot_save_path), format='pdf', bbox_inches="tight")
-    # plt.show()
-
-    # current_fig = plt.gcf()
-    # plt.yticks(np.arange(0, max(imp_mse['imp']) + 1, 0.5))
-    # plt.yticks(np.arange(0, max(imp_mse['imp_aa']) + 0.5, 0.2))
-
+        ncolu = 2
+        if not directed:
+            ncolu = 3
+        plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=ncolu)
+        # plt.tight_layout()
+        plt.savefig('{0}/lp-percent-imp-{1}.pdf'.format(plot_save_path, base), format='pdf', bbox_inches="tight")
+        # plt.show()
 
 
 def get_conf(lp_scores):
@@ -287,7 +309,6 @@ def calculate_lp_performance_for_bar_plot_directed(lp_res_reg_path, lp_res_sep_p
             all[score][0].append(m)
             all[score][1].append(err)
 
-
     no_log_score_names = ['dcaa',  'od-dcaa', 'in-dcaa']
     log_scores = get_all_results(lp_res_no_log, False, scores=no_log_score_names)
     for score in log_scores:
@@ -298,6 +319,7 @@ def calculate_lp_performance_for_bar_plot_directed(lp_res_reg_path, lp_res_sep_p
             all[score][1].append(err)
 
     return all
+
 
 def calculate_lp_performance_for_bar_plot_undirected(lp_res_path, k_values):
     all = {}

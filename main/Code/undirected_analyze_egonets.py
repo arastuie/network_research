@@ -81,8 +81,8 @@ def run_parallel_local_degree_distribution_gathering(results_base_path, num_proc
 # fb.plot_local_degree_distribution_over_single_ego(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/',
 #                                                   "", 200)
 
-fb.plot_local_degree_distribution(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/',
-                                  fb.empirical_pickle_base_path + 'local-degree-dist/plots/', gather_individual_results=True)
+# fb.plot_local_degree_distribution(fb.empirical_pickle_base_path + 'local-degree-dist/pickle-files-1/',
+#                                   fb.empirical_pickle_base_path + 'local-degree-dist/plots/', gather_individual_results=True)
 
 
 # ************************************************************************* #

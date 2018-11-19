@@ -303,7 +303,6 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
                 all_results[pymk_type] = pickle.load(f)
 
     # plotting
-    # plt.rcParams["figure.figsize"] = (8, 10)
     for i_degree in gl_labels:
         plt.rc('legend', fontsize=20)
         plt.rc('xtick', labelsize=20)
@@ -323,16 +322,15 @@ def plot_local_degree_empirical_results(result_file_base_path, plot_save_path, g
                     error_kw=error_config,
                     label=bar_legends[i_bar])
 
-        # plt.ylabel('Mean Log {0} Degree'.format(i_degree.capitalize()), fontsize=25)
+        if i_degree == "local":
+            plt.ylabel('Mean Log Personalized Degree'.format(i_degree.capitalize()), fontsize=20)
+        else:
+            plt.ylabel('Mean Log Global Degree'.format(i_degree.capitalize()), fontsize=20)
 
-        plt.ylabel('Mean Log {} Degree'.format(i_degree.capitalize()), fontsize=20)
-        # plt.ylim(ymin=3.5, ymax=4.5)
         plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=2)
         plt.xticks(np.arange(len(names)) + bar_width / 2, names)
-        # plt.legend(loc='upper left')
         plt.tight_layout()
         plt.savefig('{0}barplot-{1}.pdf'.format(plot_save_path, i_degree), format='pdf', bbox_inches="tight")
-        # plt.show()
         plt.clf()
 
 

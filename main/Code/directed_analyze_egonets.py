@@ -135,9 +135,9 @@ def run_parallel_local_degree_empirical_analysis(egonet_files_path, results_base
 
 
 
-# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-4/',
-#                                         digg.directed_local_degree_empirical_base_results_path + 'directed-4/plots/',
-#                                         gather_individual_results=True)
+# dgh.plot_local_degree_empirical_results(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
+#                                         digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
+#                                         gather_individual_results=False)
 
 # dgh.plot_local_degree_empirical_cdf(digg.directed_local_degree_empirical_base_results_path + 'directed-3/',
 #                                     digg.directed_local_degree_empirical_base_results_path + 'directed-3/plots/',
