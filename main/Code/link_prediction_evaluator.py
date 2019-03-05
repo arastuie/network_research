@@ -223,8 +223,8 @@ def plot_percent_improvements_all(lp_res_paths, plot_save_path, name, directed=T
 
         for i in range(1, len(score_order)):
             p_imp = 100 * (np.array(all_res[score_order[i]][0]) - np.array(all_res[base][0])) / np.array(all_res[base][0])
-            print(score_order[i])
-            print(p_imp)
+            print(base, score_order[i], round(min(p_imp), 2), round(max(p_imp), 2), round(np.mean(p_imp)))
+
             plt.plot(top_k_values, p_imp, markers[score_order[i]], color=colors[score_order[i]],
                      label=score_names[score_order[i]])
 
@@ -232,12 +232,12 @@ def plot_percent_improvements_all(lp_res_paths, plot_save_path, name, directed=T
         plt.xlabel('Top K Value', fontsize=20)
         # plt.legend(loc='upper right')
 
-        ncolu = 2
-        if not directed:
-            ncolu = 3
-        plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=ncolu)
+        # ncolu = 2
+        # if not directed:
+        #     ncolu = 3
+        # plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=ncolu)
         # plt.tight_layout()
-        plt.savefig('{0}/lp-percent-imp-{1}.pdf'.format(plot_save_path, base), format='pdf', bbox_inches="tight")
+        # plt.savefig('{0}/lp-percent-imp-{1}.pdf'.format(plot_save_path, base), format='pdf', bbox_inches="tight")
         # plt.show()
 
 
